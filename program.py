@@ -10,7 +10,7 @@ def get_team(game_details, home_or_away):
         team_details = re.split(' at | - ', game_details[0])[1]
     else:
         team_details = re.split(' at | - ', game_details[0])[0]
-    team_score_position = re.search('\d+', team_details).span()
+    team_score_position = re.search(r'\d+', team_details).span()
     team_score_start = team_score_position[0]
     return team_details[:team_score_start].strip()
 
@@ -25,7 +25,7 @@ def get_score(game_details, home_or_away):
         team_details = re.split(' at | - ', game_details[0])[1]
     else:
         team_details = re.split(' at | - ', game_details[0])[0]
-    team_score_position = re.search('\d+', team_details).span()
+    team_score_position = re.search(r'\d+', team_details).span()
     team_score_start = team_score_position[0]
     team_score_end = team_score_position[1]
     return team_details[team_score_start:team_score_end]
@@ -123,7 +123,7 @@ def write_game_data(game_id: int, full_load: bool=False):
         print(f"Game id {game_id} is potentially scheduled to be played but hasn't been played yet!")
     
     else: 
-        if get_game_status(game_details) == "Final":
+        if get_game_status(game_details).startswith("Final"):
             data = [
                 game_id,
                 get_away_team(game_details),
