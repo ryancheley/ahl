@@ -4,7 +4,7 @@ repos:
     -   id: commit-message
         name: check for proper git commit message
         language: pygrep
-        entry: '\A(?![A-Z]+-[0-9]+)'
+        entry: '^[\p{Emoji}]:.{0,65}$'
         args: [--multiline]
         stages: [commit-msg]
 -   repo: https://github.com/psf/black
@@ -13,9 +13,9 @@ repos:
     - id: black
       language_version: python3.11
 -   repo: https://github.com/jazzband/pip-tools
-    rev: 6.12.0
+    rev: 6.13.0
     hooks:
       - id: pip-compile
-        name: pip-compile requirements.in
-        args: [requirements.in]
+        name: pip-compile
+        args: [--generate-hashes, requirements.in]
         files: ^requirements\.(in|txt)$
