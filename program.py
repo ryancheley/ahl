@@ -5,62 +5,72 @@ import time
 
 import requests
 
+
 def get_team(game_details, home_or_away):
-    if home_or_away == 'home':
-        team_details = re.split(' at | - ', game_details[0])[1]
+    if home_or_away == "home":
+        team_details = re.split(" at | - ", game_details[0])[1]
     else:
-        team_details = re.split(' at | - ', game_details[0])[0]
-    team_score_position = re.search(r'\d+', team_details).span()
+        team_details = re.split(" at | - ", game_details[0])[0]
+    team_score_position = re.search(r"\d+", team_details).span()
     team_score_start = team_score_position[0]
     return team_details[:team_score_start].strip()
 
+
 def get_away_team(game_details):
-    return get_team(game_details, 'away')
+    return get_team(game_details, "away")
+
 
 def get_home_team(game_details):
-    return get_team(game_details, 'home')
+    return get_team(game_details, "home")
+
 
 def get_score(game_details, home_or_away):
-    if home_or_away == 'home':    
-        team_details = re.split(' at | - ', game_details[0])[1]
+    if home_or_away == "home":
+        team_details = re.split(" at | - ", game_details[0])[1]
     else:
-        team_details = re.split(' at | - ', game_details[0])[0]
-    team_score_position = re.search(r'\d+', team_details).span()
+        team_details = re.split(" at | - ", game_details[0])[0]
+    team_score_position = re.search(r"\d+", team_details).span()
     team_score_start = team_score_position[0]
     team_score_end = team_score_position[1]
     return team_details[team_score_start:team_score_end]
 
+
 def get_away_team_score(game_details):
-    return get_score(game_details, 'away')
+    return get_score(game_details, "away")
+
 
 def get_home_team_score(game_details):
-    return get_score(game_details, 'home')
+    return get_score(game_details, "home")
+
 
 def get_game_status(game_details):
-    return re.split(' at | - ', game_details[0])[2].replace('Status: ', '')
+    return re.split(" at | - ", game_details[0])[2].replace("Status: ", "")
+
 
 def get_date(game_details):
-    date_format = '%A, %B %d, %Y'
-    date_details = re.split(' - ', game_details[1])[0]
+    date_format = "%A, %B %d, %Y"
+    date_details = re.split(" - ", game_details[1])[0]
     return datetime.strptime(date_details, date_format)
+
 
 def get_attendance(game_details):
     try:
-        attendance = int(game_details[-3].replace('A-', '').replace(',', ''))
+        attendance = int(game_details[-3].replace("A-", "").replace(",", ""))
     except ValueError:
         attendance = 0
     return attendance
 
-def get_game_details(response:str):
-    for i in response.text.split('\n'):
+
+def get_game_details(response: str):
+    for i in response.text.split("\n"):
         line_item = i.strip()
         try:
             start_item = line_item[0]
-            if start_item != '<':
+            if start_item != "<":
                 game_details = []
-                page_details = line_item.split('<br />')
+                page_details = line_item.split("<br />")
                 for item in page_details:
-                    if item != '':
+                    if item != "":
                         game_details.append(item)
                 return game_details
         except IndexError:
@@ -69,7 +79,7 @@ def get_game_details(response:str):
 
 def get_most_recent_game_id_to_check_for_data():
     # Connect to the database
-    conn = sqlite3.connect('games.db')
+    conn = sqlite3.connect("games.db")
     cursor = conn.cursor()
 
     # Execute a SELECT query
@@ -77,7 +87,6 @@ def get_most_recent_game_id_to_check_for_data():
 
     # Fetch all rows returned by the query
     rows = cursor.fetchall()
-
 
     # Close the cursor and the connection
     cursor.close()
@@ -89,8 +98,8 @@ def get_most_recent_game_id_to_check_for_data():
     return most_recent_game_id_to_check_for_data
 
 
-def write_game_data(game_id: int, full_load: bool=False):
-    url = f'https://lscluster.hockeytech.com/game_reports/text-game-report.php?client_code=ahl&game_id={game_id}'
+def write_game_data(game_id: int, full_load: bool = False):
+    url = f"https://lscluster.hockeytech.com/game_reports/text-game-report.php?client_code=ahl&game_id={game_id}"
     response = requests.get(url)
     game_details = get_game_details(response)
     if game_id % 10 == 0 and full_load:
@@ -101,28 +110,33 @@ def write_game_data(game_id: int, full_load: bool=False):
         print(f"Getting data for game {game_id}")
 
     if game_details == ['{"error": "No such game"}']:
-        conn = sqlite3.connect('games.db')
+        conn = sqlite3.connect("games.db")
         cursor = conn.cursor()
 
-        cursor.execute('''
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS unplayed_games (
                 game_id TEXT PRIMARY KEY
             )
-        ''')
-        try: 
-            cursor.execute('''
+        """
+        )
+        try:
+            cursor.execute(
+                """
                 INSERT INTO unplayed_games (game_id)
                 VALUES (?)
-            ''', [game_id])
+            """,
+                [game_id],
+            )
         except sqlite3.IntegrityError:
             print(f"Game {game_id} has already been added")
 
         conn.commit()
         conn.close()
-    elif game_details == ['This game is not available.']:
+    elif game_details == ["This game is not available."]:
         print(f"Game id {game_id} is potentially scheduled to be played but hasn't been played yet!")
-    
-    else: 
+
+    else:
         if get_game_status(game_details).startswith("Final"):
             data = [
                 game_id,
@@ -132,13 +146,14 @@ def write_game_data(game_id: int, full_load: bool=False):
                 get_home_team_score(game_details),
                 get_game_status(game_details),
                 get_date(game_details),
-                get_attendance(game_details)
+                get_attendance(game_details),
             ]
 
-            conn = sqlite3.connect('games.db')
+            conn = sqlite3.connect("games.db")
             cursor = conn.cursor()
 
-            cursor.execute('''
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS games (
                     game_id TEXT PRIMARY KEY,
                     away_team TEXT,
@@ -149,12 +164,16 @@ def write_game_data(game_id: int, full_load: bool=False):
                     game_date TEXT,
                     game_attendance INTEGER
                 )
-            ''')
-            try: 
-                cursor.execute('''
+            """
+            )
+            try:
+                cursor.execute(
+                    """
                     INSERT INTO games (game_id, away_team, away_team_score, home_team, home_team_score, game_status, game_date, game_attendance)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ''', data)
+                """,
+                    data,
+                )
             except sqlite3.IntegrityError:
                 print(f"Game {game_id} has already been added")
 
