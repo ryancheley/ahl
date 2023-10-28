@@ -183,6 +183,8 @@ def write_game_data(game_id: int, full_load: bool = False):
 
 if __name__ == "__main__":
     start_game_id = get_most_recent_game_id_to_check_for_data()
-    end_game_id = start_game_id + 25
+    # start_game_id = 1001034
+    end_game_id = start_game_id + 100
+    # end_game_id = 1025179
     for i in range(start_game_id, end_game_id):
         write_game_data(i)
