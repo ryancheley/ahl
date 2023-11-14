@@ -1,14 +1,9 @@
 # AHL Scraper
 
-A small script to scrape the AHL site to get details about games played
+A small script to scrape the AHL site to get details about games played. It runs on a schedule and posts the games.db to a vercel project. 
 
-## Set Up
+The project leverages the great library [datasette](https://datasette.io/)
 
-Create a virtual environment and then pip install the `requirements.txt` file
-
-## Tests
-
-Run `pytest`
 
 ## Helpful links
 
