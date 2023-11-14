@@ -1,0 +1,32 @@
+name: Python Script and Publish to Vercel
+
+on:
+    workflow_dispatch:
+    schedule:
+      - cron: 13 4 * * *
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install datasette
+
+    - name: Run Python script to generate SQLite database
+      run: python program.py
+
+    - name: Publish database to Vercel
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      run: datasette publish vercel your_database.db --project your-vercel-project-name --token $VERCEL_TOKEN

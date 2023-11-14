@@ -79,7 +79,7 @@ def get_game_details(response: str):
 
 def get_most_recent_game_id_to_check_for_data():
     # Connect to the database
-    conn = sqlite3.connect("games.db")
+    conn = sqlite3.connect("/Users/ryan/Documents/testbed/ahl/games.db")
     cursor = conn.cursor()
 
     # Execute a SELECT query
@@ -110,7 +110,7 @@ def write_game_data(game_id: int, full_load: bool = False):
         print(f"Getting data for game {game_id}")
 
     if game_details == ['{"error": "No such game"}']:
-        conn = sqlite3.connect("games.db")
+        conn = sqlite3.connect("/Users/ryan/Documents/testbed/ahl/games.db")
         cursor = conn.cursor()
 
         cursor.execute(
@@ -137,54 +137,58 @@ def write_game_data(game_id: int, full_load: bool = False):
         print(f"Game id {game_id} is potentially scheduled to be played but hasn't been played yet!")
 
     else:
-        if get_game_status(game_details).startswith("Final"):
-            data = [
-                game_id,
-                get_away_team(game_details),
-                get_away_team_score(game_details),
-                get_home_team(game_details),
-                get_home_team_score(game_details),
-                get_game_status(game_details),
-                get_date(game_details),
-                get_attendance(game_details),
-            ]
+        try:
+            if get_game_status(game_details).startswith("Final"):
+                data = [
+                    game_id,
+                    get_away_team(game_details),
+                    get_away_team_score(game_details),
+                    get_home_team(game_details),
+                    get_home_team_score(game_details),
+                    get_game_status(game_details),
+                    get_date(game_details),
+                    get_attendance(game_details),
+                ]
 
-            conn = sqlite3.connect("games.db")
-            cursor = conn.cursor()
+                conn = sqlite3.connect("/Users/ryan/Documents/testbed/ahl/games.db")
+                cursor = conn.cursor()
 
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS games (
-                    game_id TEXT PRIMARY KEY,
-                    away_team TEXT,
-                    away_team_score INTEGER,
-                    home_team TEXT,
-                    home_team_score INTEGER,
-                    game_status TEXT,
-                    game_date TEXT,
-                    game_attendance INTEGER
-                )
-            """
-            )
-            try:
                 cursor.execute(
                     """
-                    INSERT INTO games (game_id, away_team, away_team_score, home_team, home_team_score, game_status, game_date, game_attendance)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                    data,
+                    CREATE TABLE IF NOT EXISTS games (
+                        game_id TEXT PRIMARY KEY,
+                        away_team TEXT,
+                        away_team_score INTEGER,
+                        home_team TEXT,
+                        home_team_score INTEGER,
+                        game_status TEXT,
+                        game_date TEXT,
+                        game_attendance INTEGER
+                    )
+                """
                 )
-            except sqlite3.IntegrityError:
-                print(f"Game {game_id} has already been added")
+                try:
+                    cursor.execute(
+                        """
+                        INSERT INTO games (game_id, away_team, away_team_score, home_team, home_team_score, game_status, game_date, game_attendance)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                        data,
+                    )
+                except sqlite3.IntegrityError:
+                    print(f"Game {game_id} has already been added")
 
-            conn.commit()
-            conn.close()
+                conn.commit()
+                conn.close()
+        except IndexError:
+            print(f"There is an issue getting game id {game_id}")
 
 
 if __name__ == "__main__":
     start_game_id = get_most_recent_game_id_to_check_for_data()
-    # start_game_id = 1001034
-    end_game_id = start_game_id + 100
+    # start_game_id = 1025316
+    end_game_id = start_game_id + 32
     # end_game_id = 1025179
     for i in range(start_game_id, end_game_id):
+        time.sleep(1)
         write_game_data(i)
