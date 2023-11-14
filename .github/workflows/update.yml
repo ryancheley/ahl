@@ -6,7 +6,7 @@ on:
       - cron: 13 4 * * *
 
 jobs:
-  build-and-deploy:
+  scheduled:
     runs-on: ubuntu-latest
 
     steps:
