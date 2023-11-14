@@ -26,6 +26,17 @@ jobs:
     - name: Run Python script to generate SQLite database
       run: python program.py
 
+    - name: Configure Git
+      run: |
+        git config --global user.name 'Scheduled Update'
+        git config --global user.email 'bot@update.com'
+
+    - name: Commit and Push SQLite Database
+      run: |
+        git add games.db
+        git commit -m "Update SQLite Database"
+        git push
+
     - name: Publish database to Vercel
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
