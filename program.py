@@ -79,7 +79,7 @@ def get_game_details(response: str):
 
 def get_most_recent_game_id_to_check_for_data():
     # Connect to the database
-    conn = sqlite3.connect("/Users/ryan/Documents/testbed/ahl/games.db")
+    conn = sqlite3.connect("games.db")
     cursor = conn.cursor()
 
     # Execute a SELECT query
@@ -110,7 +110,7 @@ def write_game_data(game_id: int, full_load: bool = False):
         print(f"Getting data for game {game_id}")
 
     if game_details == ['{"error": "No such game"}']:
-        conn = sqlite3.connect("/Users/ryan/Documents/testbed/ahl/games.db")
+        conn = sqlite3.connect("games.db")
         cursor = conn.cursor()
 
         cursor.execute(
@@ -150,7 +150,7 @@ def write_game_data(game_id: int, full_load: bool = False):
                     get_attendance(game_details),
                 ]
 
-                conn = sqlite3.connect("/Users/ryan/Documents/testbed/ahl/games.db")
+                conn = sqlite3.connect("games.db")
                 cursor = conn.cursor()
 
                 cursor.execute(
