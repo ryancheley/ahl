@@ -1,9 +1,0 @@
-black
-chardet
-datasette
-datasette-publish-vercel
-faker
-pip-tools
-pre-commit
-pytest
-requests
