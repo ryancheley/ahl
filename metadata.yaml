@@ -1,0 +1,76 @@
+title: "Year over Year Performance"
+databases:
+   games:
+      queries:
+         yoy_performance:
+            sql: |-
+               with data as (
+               select 
+               game_date
+               , game_status
+               , home_team
+               , home_team_score
+               , away_team
+               , away_team_score
+               , season
+               , case 
+               when 
+               (home_team = :team and home_team_score > away_team_score) or (away_team = :team and home_team_score < away_team_score)
+               then 
+                  1 
+               else 
+                  0
+               end as 'W'
+               , case 
+                  when game_status = 'Final' then
+                  case
+                     when (home_team = :team and home_team_score < away_team_score) or (away_team = :team and home_team_score > away_team_score)
+                     then 1
+                     else 0
+                  end
+                  else 0
+               end as 'L'
+               , case 
+                  when game_status = 'Final OT' then
+                  case
+                     when (home_team = :team and home_team_score < away_team_score) or (away_team = :team and home_team_score > away_team_score)
+                     then 1
+                     else 0
+                  end
+                  else 0
+               end as 'OTL'
+               , case 
+                  when game_status = 'Final SO' then
+                  case
+                     when (home_team = :team and home_team_score < away_team_score) or (away_team = :team and home_team_score > away_team_score)
+                     then 1
+                     else 0
+                  end
+                  else 0
+               end as 'SOL'
+               from games g 
+               inner join dim_date dd on g.game_date = dd.date
+               where (home_team = :team or away_team = :team)
+               )
+               select d.season
+               , sum(2*W+OTL+SOL) as 'Points'
+               , count(*) as 'Games'
+               from data d
+               INNER join season s on d.season = s.season
+               where game_date <= date(date('now'), '-1 year')
+               and current_yn = 'N'
+               group by d.season
+               union 
+               select d.season
+               , sum(2*W+OTL+SOL) as 'Points'
+               , count(*) as 'Games'
+               from data d
+               INNER join season s on d.season = s.season
+               where s.current_yn = 'Y'
+               group by d.season
+               order by d.season desc
+               
+            title: "Year over Year Performance"
+            hide_sql: true
+            
+            description: "This query returns the year over year performance of a team"
