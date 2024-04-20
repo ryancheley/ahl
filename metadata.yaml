@@ -51,6 +51,7 @@ databases:
                from games g 
                inner join dim_date dd on g.game_date = dd.date
                where (home_team = :team or away_team = :team)
+               and dd.season_phase = 'regular'
                )
                select d.season
                , sum(2*W+OTL+SOL) as 'Points'
