@@ -2,13 +2,12 @@ from django.db import models
 
 
 class Conference(models.Model):
-    name = models.TextField(blank=True, null=True)
+    name = models.CharField(blank=True, null=True, max_length=16)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        managed = False
         db_table = "conference"
 
 
@@ -22,7 +21,6 @@ class DimDate(models.Model):
         return display_date
 
     class Meta:
-        managed = False
         db_table = "dim_date"
         ordering = ["-date"]
         verbose_name = "Date"
@@ -30,7 +28,7 @@ class DimDate(models.Model):
 
 
 class Division(models.Model):
-    name = models.TextField(blank=True, null=True)
+    name = models.CharField(blank=True, null=True, max_length=16)
     conference = models.ForeignKey(Conference, models.DO_NOTHING, blank=True, null=True)
 
     def __str__(self):
@@ -38,7 +36,6 @@ class Division(models.Model):
         return display_name
 
     class Meta:
-        managed = False
         db_table = "division"
         ordering = ["conference", "name"]
 
@@ -51,12 +48,11 @@ class Season(models.Model):
         return self.season
 
     class Meta:
-        managed = False
         db_table = "season"
 
 
 class Team(models.Model):
-    name = models.TextField(blank=True, null=True)
+    name = models.CharField(blank=True, null=True, max_length=32)
     division = models.ForeignKey(Division, models.DO_NOTHING, blank=True, null=True)
     year_founded = models.IntegerField(blank=True, null=True)
 
@@ -64,13 +60,12 @@ class Team(models.Model):
         return self.name
 
     class Meta:
-        managed = False
         db_table = "team"
         ordering = ["name"]
 
 
 class Arena(models.Model):
-    arena = models.TextField(db_column="Arena", primary_key=True)
+    arena = models.CharField(db_column="Arena", max_length=64)
     latitude = models.IntegerField(db_column="Latitude", blank=True, null=True)
     longitude = models.IntegerField(db_column="Longitude", blank=True, null=True)
     team = models.ForeignKey(Team, models.DO_NOTHING, blank=True, null=True, db_column="Team")
@@ -82,5 +77,4 @@ class Arena(models.Model):
         return self.arena
 
     class Meta:
-        managed = False
         db_table = "arena"

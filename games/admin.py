@@ -8,6 +8,7 @@ from .models import Arena, Conference, DimDate, Division, Season, Team
 class ArenaAdmin(admin.ModelAdmin):
     list_display = ("arena", "team")
     list_filter = ("team",)
+    ordering = ("arena",)
 
 
 admin.site.register(Conference)
