@@ -55,6 +55,7 @@ class Team(models.Model):
     name = models.CharField(blank=True, null=True, max_length=32)
     division = models.ForeignKey(Division, models.DO_NOTHING, blank=True, null=True)
     year_founded = models.IntegerField(blank=True, null=True)
+    franchise = models.ForeignKey("Franchise", models.DO_NOTHING, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -78,3 +79,17 @@ class Arena(models.Model):
 
     class Meta:
         db_table = "arena"
+
+
+class Franchise(models.Model):
+    franchise = models.CharField(db_column="Franchise", max_length=64)
+    year_founded = models.IntegerField(db_column="Year_Founded", blank=True, null=True)
+
+    def __str__(self):
+        return self.franchise
+
+    class Meta:
+        db_table = "franchise"
+        ordering = ["franchise"]
+        verbose_name = "Franchise"
+        verbose_name_plural = "Franchises"

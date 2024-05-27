@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Arena, Conference, DimDate, Division, Season, Team
+from .models import Arena, Conference, DimDate, Division, Season, Team, Franchise
 
 
 # Register your models here.
@@ -12,6 +12,7 @@ class ArenaAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Conference)
+admin.site.register(Franchise)
 
 
 @admin.register(DimDate)
@@ -27,6 +28,9 @@ admin.site.register(Season)
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
     list_display = ("name", "division", "year_founded")
-    list_filter = ("division",)
+    list_filter = (
+        "division",
+        "franchise",
+    )
     search_fields = ("name",)
     ordering = ("name",)
