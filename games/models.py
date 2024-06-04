@@ -67,8 +67,8 @@ class Team(models.Model):
 
 class Arena(models.Model):
     arena = models.CharField(db_column="Arena", max_length=64)
-    latitude = models.IntegerField(db_column="Latitude", blank=True, null=True)
-    longitude = models.IntegerField(db_column="Longitude", blank=True, null=True)
+    latitude = models.FloatField(db_column="Latitude", blank=True, null=True)
+    longitude = models.FloatField(db_column="Longitude", blank=True, null=True)
     team = models.ForeignKey(Team, models.DO_NOTHING, blank=True, null=True, db_column="Team")
     capacity = models.IntegerField(db_column="Capacity", blank=True, null=True)
     opened = models.IntegerField(db_column="Opened", blank=True, null=True)
