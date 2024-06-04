@@ -9,3 +9,7 @@
 
 @recent:
     python manage.py most_recent
+
+@django:
+    pip-compile django-requirements.in
+    pip install -r django-requirements.txt
