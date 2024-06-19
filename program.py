@@ -81,6 +81,22 @@ def get_attendance(game_details):
     return attendance
 
 
+def get_shots_on_goal(game_details):
+    shots_on_goal = game_details[-2].split(" - ")
+    away_shots_on_goal = int(shots_on_goal[0].replace("SOG-A: ", ""))
+    home_shots_on_goal = int(shots_on_goal[1].replace("SOG-H: ", ""))
+    return away_shots_on_goal, home_shots_on_goal
+
+
+def get_shots_on_goal(game_details, home_or_away):
+    shots = game_details[-6].replace("Shots on Goal-", "").split(".")
+    if home_or_away == "home":
+        team_details = shots[0].split("-")[-1]
+    else:
+        team_details = shots[1].split("-")[-1]
+    return team_details
+
+
 def get_game_details(response: str):
     for i in response.text.split("\n"):
         line_item = i.strip()
@@ -168,6 +184,8 @@ def write_game_data(game_id: int, full_load: bool = False):
                     get_game_status(game_details),
                     get_date(game_details),
                     get_attendance(game_details),
+                    get_shots_on_goal(game_details, "home"),
+                    get_shots_on_goal(game_details, "away"),
                 ]
 
                 conn = sqlite3.connect("games.db")
@@ -183,15 +201,17 @@ def write_game_data(game_id: int, full_load: bool = False):
                         home_team_score INTEGER,
                         game_status TEXT,
                         game_date TEXT,
-                        game_attendance INTEGER
+                        game_attendance INTEGER,
+                        home_team_shots INTEGER,
+                        away_team_shots INTEGER
                     )
                 """
                 )
                 try:
                     cursor.execute(
                         """
-                        INSERT INTO games (game_id, away_team, away_team_score, home_team, home_team_score, game_status, game_date, game_attendance)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO games (game_id, away_team, away_team_score, home_team, home_team_score, game_status, game_date, game_attendance, home_team_shots, away_team_shots)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                         data,
                     )
