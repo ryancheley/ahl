@@ -1,7 +1,7 @@
 import sqlite3
 import time
 
-from program import get_game_details
+from program import get_game_details, get_shots_on_goal
 
 import requests
 
@@ -78,5 +78,8 @@ if __name__ == "__main__":
             print("Waiting 2 seconds ...")
             time.sleep(2)
         game_details = get_game_details(response)
-        # Add code for the updates that need to be made
+        home_team_shots = get_shots_on_goal(game_details, "home")
+        away_team_shots = get_shots_on_goal(game_details, "away")
+        # print(f"Game {game_id} has {home_team_shots} shots for the home team and {away_team_shots} shots for the away team")
+        update_game_data(game_id, home_team_shots, away_team_shots)
         print(f"Updated game {game_id} with shots on goal")

@@ -81,19 +81,12 @@ def get_attendance(game_details):
     return attendance
 
 
-def get_shots_on_goal(game_details):
-    shots_on_goal = game_details[-2].split(" - ")
-    away_shots_on_goal = int(shots_on_goal[0].replace("SOG-A: ", ""))
-    home_shots_on_goal = int(shots_on_goal[1].replace("SOG-H: ", ""))
-    return away_shots_on_goal, home_shots_on_goal
-
-
 def get_shots_on_goal(game_details, home_or_away):
     shots = game_details[-6].replace("Shots on Goal-", "").split(".")
     if home_or_away == "home":
-        team_details = shots[0].split("-")[-1]
-    else:
         team_details = shots[1].split("-")[-1]
+    else:
+        team_details = shots[0].split("-")[-1]
     return team_details
 
 
