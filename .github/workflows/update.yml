@@ -2,8 +2,8 @@ name: Python Script and Publish to Vercel
 
 on:
     workflow_dispatch:
-    # schedule:
-    #   - cron: 13 12 * * *
+    schedule:
+      - cron: 13 12 * * *
 
 jobs:
   scheduled:
