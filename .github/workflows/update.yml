@@ -2,8 +2,8 @@ name: Python Script and Publish to Vercel
 
 on:
     workflow_dispatch:
-    # schedule:
-    #   - cron: 13 12 * * *
+    schedule:
+      - cron: 13 12 * * *
 
 jobs:
   scheduled:
@@ -34,8 +34,4 @@ jobs:
         timestamp=$(date -u)
         git commit -m "🗃️ Latest data: ${timestamp}" || exit 0
         git push
-
-    - name: Publish database to Vercel
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       run: datasette publish vercel games.db --project=ahl-data --token $VERCEL_TOKEN --metadata metadata.yaml
