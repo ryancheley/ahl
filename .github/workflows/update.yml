@@ -34,4 +34,3 @@ jobs:
         timestamp=$(date -u)
         git commit -m "🗃️ Latest data: ${timestamp}" || exit 0
         git push
-      run: datasette publish vercel games.db --project=ahl-data --token $VERCEL_TOKEN --metadata metadata.yaml
