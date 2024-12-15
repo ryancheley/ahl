@@ -59,7 +59,7 @@ databases:
                from data d
                INNER join season s on d.season = s.season
                where game_date <= date(date('now'), '-1 year')
-               and current_yn = 'N'
+               and current_yn = 0
                group by d.season
                union 
                select d.season
@@ -67,9 +67,10 @@ databases:
                , count(*) as 'Games'
                from data d
                INNER join season s on d.season = s.season
-               where s.current_yn = 'Y'
+               where s.current_yn = 1
                group by d.season
                order by d.season desc
+               limit 2
                
             title: "Year over Year Performance"
             hide_sql: true
