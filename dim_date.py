@@ -78,6 +78,10 @@ season_dictionary = {
         "regular": {"start_date": "2023-10-13", "end_date": "2024-04-21"},
         "post": {"start_date": "2024-04-22", "end_date": "2024-06-30"},
     },
+    "2024-25": {
+        "regular": {"start_date": "2024-10-11", "end_date": "2025-04-20"},
+        "post": {"start_date": "2025-04-21", "end_date": "2025-06-30"},
+    },
 }
 
 # Connect to your SQLite database
@@ -127,8 +131,8 @@ def find_season(given_date):
 
 
 # Generate dates and insert into the database
-start_date = date(2005, 10, 5)
-end_date = date(2024, 6, 30)
+start_date = date(2024, 10, 1)
+end_date = date(2025, 6, 30)
 # Assuming start_date and end_date are already defined
 current_date = start_date
 

@@ -1,7 +1,6 @@
 black
 chardet
-datasette==1.0a3
-datasette-publish-vercel
+datasette
 datasette-write-ui
 faker
 pip-tools
