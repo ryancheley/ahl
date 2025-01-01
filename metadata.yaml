@@ -56,6 +56,10 @@ databases:
                select d.season
                , sum(2*W+OTL+SOL) as 'Points'
                , count(*) as 'Games'
+               , sum(W) as 'Wins'
+               , sum(L) as 'Loses'
+               , sum(OTL) as 'OTL'
+               , sum(SOL) as 'SOL'
                from data d
                INNER join season s on d.season = s.season
                where game_date <= date(date('now'), '-1 year')
@@ -65,6 +69,10 @@ databases:
                select d.season
                , sum(2*W+OTL+SOL) as 'Points'
                , count(*) as 'Games'
+               , sum(W) as 'Wins'
+               , sum(L) as 'Loses'
+               , sum(OTL) as 'OTL'
+               , sum(SOL) as 'SOL'
                from data d
                INNER join season s on d.season = s.season
                where s.current_yn = 1
