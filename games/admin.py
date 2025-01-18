@@ -1,9 +1,8 @@
 from django.contrib import admin
 
-from .models import Arena, Conference, DimDate, Division, Season, Team, Franchise
+from .models import Arena, Conference, DimDate, Division, Season, Team, Franchise, TeamDatePoint
 
 
-# Register your models here.
 @admin.register(Arena)
 class ArenaAdmin(admin.ModelAdmin):
     list_display = ("arena", "team")
@@ -23,6 +22,7 @@ class DimDateAdmin(admin.ModelAdmin):
 
 admin.site.register(Division)
 admin.site.register(Season)
+admin.site.register(TeamDatePoint)
 
 
 @admin.register(Team)
