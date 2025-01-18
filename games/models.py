@@ -93,3 +93,22 @@ class Franchise(models.Model):
         ordering = ["franchise"]
         verbose_name = "Franchise"
         verbose_name_plural = "Franchises"
+
+
+class TeamDatePoint(models.Model):
+    team = models.ForeignKey(Team, models.DO_NOTHING, blank=True, null=True)
+    date = models.DateTimeField()
+    wins = models.IntegerField(blank=True, null=True)
+    loses = models.IntegerField(blank=True, null=True)
+    otl = models.IntegerField(blank=True, null=True)
+    sol = models.IntegerField(blank=True, null=True)
+    total_points = models.IntegerField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.date} - {self.team}"
+
+    class Meta:
+        db_table = "team_date_point"
+        ordering = ["date", "team_id"]
+        verbose_name = "Team Date Point"
+        verbose_name_plural = "Team Date Points"
