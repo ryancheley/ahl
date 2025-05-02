@@ -15,6 +15,7 @@ class DimDate(models.Model):
     date = models.DateTimeField(primary_key=True)
     season = models.CharField(blank=True, null=True, max_length=16)
     season_phase = models.CharField(blank=True, null=True, max_length=16)
+    day_of_season = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         display_date = self.date.strftime("%Y-%m-%d")
@@ -97,7 +98,7 @@ class Franchise(models.Model):
 
 class TeamDatePoint(models.Model):
     team = models.ForeignKey(Team, models.DO_NOTHING, blank=True, null=True)
-    date = models.DateTimeField()
+    date = models.ForeignKey(DimDate, models.DO_NOTHING, blank=True, null=True)
     wins = models.IntegerField(blank=True, null=True)
     loses = models.IntegerField(blank=True, null=True)
     otl = models.IntegerField(blank=True, null=True)
@@ -109,6 +110,6 @@ class TeamDatePoint(models.Model):
 
     class Meta:
         db_table = "team_date_point"
-        ordering = ["date", "team_id"]
+        ordering = ["date", "team"]
         verbose_name = "Team Date Point"
         verbose_name_plural = "Team Date Points"
