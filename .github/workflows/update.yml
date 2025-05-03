@@ -24,7 +24,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run Python script to generate SQLite database
-      run: python program.py --lookback 100 --range 100
+      run: python program.py --lookback 50 --range 100
 
     - name: Commit and push if it changed
       run: |-
