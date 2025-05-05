@@ -1,4 +1,4 @@
-name: Python Script and Publish to Vercel
+name: Get Single Game
 
 on:
     workflow_dispatch:
