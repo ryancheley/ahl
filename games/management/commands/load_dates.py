@@ -20,8 +20,9 @@ class Command(BaseCommand):
         naive_end_date = options["end_date"]
         aware_start_date = datetime.strptime(naive_start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         aware_end_date = datetime.strptime(naive_end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        season = f'{aware_start_date.year}-{aware_end_date.year % 100}'
         phase = options["phase"]
         for i in range((aware_end_date - aware_start_date).days + 1):
             current_date = aware_start_date + timedelta(days=i)
             print(f"Processing date: {current_date}")
-            DimDate.objects.get_or_create(date=current_date, season=current_date.year, season_phase=phase)
+            DimDate.objects.get_or_create(date=current_date, season=season, season_phase=phase)
