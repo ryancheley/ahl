@@ -63,6 +63,8 @@ faker==18.10.1
     # via -r requirements.in
 filelock==3.12.2
     # via virtualenv
+gunicorn==23.0.0
+    # via -r requirements.in
 h11==0.14.0
     # via
     #   httpcore
@@ -102,6 +104,7 @@ packaging==23.1
     # via
     #   black
     #   build
+    #   gunicorn
     #   pytest
 pathspec==0.11.1
     # via black
