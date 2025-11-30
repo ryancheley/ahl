@@ -1,9 +1,14 @@
+beautifulsoup4
 black
 chardet
 datasette
 datasette-write-ui
+django
+django-environ
+django-extensions
 faker
 pip-tools
 pre-commit
 pytest
 requests
+ruff
