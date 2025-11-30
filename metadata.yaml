@@ -3,6 +3,8 @@ databases:
    games:
       queries:
          yoy_performance:
+            params:
+              - team
             sql: |-
                with data as (
                select 
@@ -62,8 +64,8 @@ databases:
                , sum(SOL) as 'SOL'
                from data d
                INNER join season s on d.season = s.season
-               where game_date <= date(date('now'), '-1 year')
-               and current_yn = 0
+               where d.game_date <= date(date('now'), '-1 year')
+               and s.current_yn = 0
                group by d.season
                union 
                select d.season
@@ -85,6 +87,10 @@ databases:
             
             description: "This query returns the year over year performance of a team"
          team_performance_by_day:
+            params:
+              - team
+              - season
+              - year_modifier
             sql: |-
                with data as (
                    select g.home_team
