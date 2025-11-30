@@ -118,7 +118,7 @@ databases:
                    dim_date d
                left join games g on g.game_date = d.date and (g.home_team = :team or g.away_team = :team)
                where d.season = :season
-               and d.date <= DATE('NOW', :years || ' years')
+               and d.date <= DATE('NOW', :year_modifier)
                and d.season_phase = 'regular')
                
                select 
