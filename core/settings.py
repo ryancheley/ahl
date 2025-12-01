@@ -3,6 +3,7 @@ import environ
 
 env = environ.Env(
     DEBUG=(bool, False),
+    SECURE_PROXY_SSL_HEADER=(str, None),
 )
 
 
@@ -129,3 +130,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Trust proxy headers from Coolify/Caddy
+if proxy_header := env("SECURE_PROXY_SSL_HEADER"):
+    header, value = proxy_header.split(",")
+    SECURE_PROXY_SSL_HEADER = (header, value)
