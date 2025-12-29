@@ -8,15 +8,14 @@ services:
     environment:
       - DEBUG=off
       - SECRET_KEY=${SECRET_KEY}
-      - ALLOWED_HOSTS=${PUBLIC_URL}
-      - CSRF_TRUSTED_ORIGINS=${PUBLIC_URL}
+      - ALLOWED_HOSTS=${SERVICE_FQDN_DJANGO}
+      - CSRF_TRUSTED_ORIGINS=${SERVICE_URL_DJANGO}
       - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
       - DATABASE_NAME=/app/db.sqlite3
-      - GAMES_DATABASE_NAME=/app/games.db
-    volumes:
-      - ./data:/app/data
+    ports:
+      - "8000:8000"
     networks:
-      - default
+      - coolify
     restart: unless-stopped
     command: gunicorn --bind 0.0.0.0:8000 core.wsgi:application
 
@@ -25,13 +24,15 @@ services:
       context: .
       dockerfile: Dockerfile.datasette.coolify
     environment:
-      - PUBLIC_URL=${PUBLIC_URL}
+      - PUBLIC_URL=${SERVICE_URL_DATASETTE}
+    ports:
+      - "8001:8001"
     networks:
-      - default
+      - coolify
     restart: unless-stopped
     command: datasette --host 0.0.0.0 --port 8001
 
 networks:
-  default:
+  coolify:
     external: true
     name: coolify
