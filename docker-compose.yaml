@@ -20,7 +20,7 @@ services:
     depends_on:
       - datasette
     networks:
-      - coolify-network
+      - default
     restart: unless-stopped
     command: >
       sh -c "python manage.py migrate &&
@@ -38,7 +38,7 @@ services:
       - ./games.db:/app/games.db
       - ./metadata.yaml:/app/metadata.yaml
     networks:
-      - coolify-network
+      - default
     restart: unless-stopped
     command: datasette games.db --host 0.0.0.0 --port 8001 --metadata metadata.yaml
 
@@ -54,9 +54,10 @@ services:
       - django
       - datasette
     networks:
-      - coolify-network
+      - default
     restart: unless-stopped
 
 networks:
-  coolify-network:
+  default:
     external: true
+    name: coolify
