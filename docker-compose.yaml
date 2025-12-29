@@ -11,8 +11,6 @@ services:
       - ALLOWED_HOSTS=${SERVICE_FQDN_DJANGO}
       - CSRF_TRUSTED_ORIGINS=${SERVICE_URL_DJANGO}
       - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
-      - DATABASE_NAME=/app/db.sqlite3
-      - GAMES_DATABASE_NAME=/app/games.db
     ports:
       - "8000:8000"
     networks:
@@ -26,7 +24,6 @@ services:
       dockerfile: Dockerfile.datasette.coolify
     environment:
       - PUBLIC_URL=${SERVICE_URL_DATASETTE}
-      - GAMES_DATABASE_NAME=/app/games.db
     networks:
       - coolify
     restart: unless-stopped

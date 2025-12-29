@@ -12,9 +12,11 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --no-cache-dir uv \
     && uv pip install --system --prerelease=allow datasette datasette-write-ui sqlite-utils
 
-# Copy files
+# Copy metadata file
 COPY metadata.yaml .
-COPY games.db .
+
+# Create empty games.db if it doesn't exist (Coolify will mount the real one)
+RUN touch games.db
 
 # Default command for production
 CMD ["datasette", "--host", "0.0.0.0", "--port", "8001", "--metadata", "metadata.yaml"]
