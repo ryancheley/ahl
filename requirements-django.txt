@@ -1,0 +1,42 @@
+# This file contains Django application dependencies
+# Generated from requirements.txt
+asgiref==3.11.0
+    # via django
+beautifulsoup4==4.14.3
+    # via -r requirements.in
+chardet==5.1.0
+    # via -r requirements.in
+charset-normalizer==3.1.0
+    # via requests
+certifi==2023.5.7
+    # via
+    #   httpcore
+    #   requests
+django==5.2.8
+    # via
+    #   -r requirements.in
+    #   django-extensions
+django-environ==0.12.0
+    # via -r requirements.in
+django-extensions==4.1
+    # via -r requirements.in
+gunicorn==23.0.0
+    # via -r requirements.in
+httpcore==1.0.2
+    # via httpx
+httpx==0.25.1
+    # via requests
+idna==3.4
+    # via
+    #   httpcore
+    #   requests
+requests==2.31.0
+    # via -r requirements.in
+soupsieve==2.8
+    # via beautifulsoup4
+sqlparse==0.5.4
+    # via django
+urllib3==2.0.3
+    # via requests
+whitenoise==6.11.0
+    # via -r requirements.in
