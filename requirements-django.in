@@ -1,0 +1,14 @@
+beautifulsoup4
+black
+chardet
+django
+django-environ
+django-extensions
+faker
+gunicorn
+pip-tools
+pre-commit
+pytest
+requests
+ruff
+whitenoise

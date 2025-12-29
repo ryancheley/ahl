@@ -1,0 +1,6 @@
+datasette
+datasette-write-ui
+black
+pip-tools
+pre-commit
+ruff
