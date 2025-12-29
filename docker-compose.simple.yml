@@ -1,0 +1,43 @@
+services:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile.django.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./games.db:/app/games.db
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      - DEBUG=${DEBUG:-off}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
+      - DATABASE_NAME=/app/db.sqlite3
+      - GAMES_DATABASE_NAME=/app/games.db
+    depends_on:
+      - datasette
+    networks:
+      - ahl-network
+    command: python manage.py runserver 0.0.0.0:8000
+
+  datasette:
+    build:
+      context: .
+      dockerfile: Dockerfile.datasette.dev
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./games.db:/app/games.db
+      - ./metadata.yaml:/app/metadata.yaml
+    networks:
+      - ahl-network
+    environment:
+      - DEBUG=${DEBUG:-off}
+    command: datasette games.db --host 0.0.0.0 --port 8001 --reload
+
+networks:
+  ahl-network:
+    driver: bridge

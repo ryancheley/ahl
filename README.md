@@ -1,8 +1,85 @@
 # AHL Scraper
 
-A small script to scrape the AHL site to get details about games played. It runs on a schedule and posts the games.db to a vercel project. 
+A small script to scrape the AHL site to get details about games played. It runs on a schedule and posts the games.db to a vercel project.
 
 The project leverages the great library [datasette](https://datasette.io/)
+
+## Docker Development Setup
+
+The project includes Docker support for running both Django and Datasette simultaneously.
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+
+### Quick Start
+
+1. Copy the environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Start the services:
+   ```bash
+   # Development with hot reloading
+   docker-compose -f docker-compose.dev.yml up --build
+
+   # Production deployment
+   docker-compose up --build
+   ```
+
+### Accessing Services
+
+- **Django App**: http://localhost:8000
+- **Datasette**: http://localhost:8001
+- **Both services via nginx**: http://localhost (Django) and http://localhost/datasette (Datasette)
+
+### Commands
+
+#### Development
+```bash
+# Start development environment
+docker-compose -f docker-compose.dev.yml up
+
+# Run in background
+docker-compose -f docker-compose.dev.yml up -d
+
+# Stop and remove containers
+docker-compose -f docker-compose.dev.yml down
+
+# View logs
+docker-compose -f docker-compose.dev.yml logs -f django
+docker-compose -f docker-compose.dev.yml logs -f datasette
+```
+
+#### Production
+```bash
+# Start production environment
+docker-compose up --build -d
+
+# Stop production environment
+docker-compose down
+```
+
+#### Running Management Commands
+```bash
+# Run Django management commands
+docker-compose -f docker-compose.dev.yml exec django python manage.py get_game --game_id=123
+
+# Update recent games
+docker-compose -f docker-compose.dev.yml exec django python manage.py most_recent
+```
+
+### Data Persistence
+
+The `games.db` and `db.sqlite3` files are mounted as volumes and will persist between container restarts. The database files are stored in the project root directory.
+
+### Configuration
+
+- **Environment Variables**: Configure in `.env` file
+- **Datasette Metadata**: `metadata.yaml` contains predefined SQL queries
+- **Nginx Configuration**: Routes requests appropriately between services
 
 
 ## Helpful links
