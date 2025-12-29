@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: ahl-datasette
     ports:
-      - "8000:8000"
+      - "8001:8001"
     volumes:
       - ./games.db:/app/games.db
       - ./metadata.yaml:/app/metadata.yaml
@@ -13,7 +13,9 @@ services:
       - DATASETTE_SETTINGS_METADATA=/app/metadata.yaml
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8001/"]
+    labels:
+      - traefik.http.services.datasette.loadbalancer.server.port=8001
       interval: 30s
       timeout: 10s
       retries: 3
