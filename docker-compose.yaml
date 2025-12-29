@@ -9,8 +9,8 @@ services:
     ports:
       - "8001:8001"
     volumes:
-      - ./games.db:/app/games.db:ro
-      - ./metadata.yaml:/app/metadata.yaml:ro
+      - ./games.db:/app/games.db
+      - ./metadata.yaml:/app/metadata.yaml
     environment:
       - DATASETTE_SETTINGS_METADATA=/app/metadata.yaml
     restart: unless-stopped
