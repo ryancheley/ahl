@@ -2,35 +2,44 @@ version: '3.8'
 
 services:
   django:
-    build:
-      context: .
-      dockerfile: Dockerfile.coolify
+    image: python:3.11-slim
+    working_dir: /app
+    command: >
+      sh -c "pip install --no-cache-dir gunicorn django &&
+             pip install --no-cache-dir django-extensions &&
+             pip install --no-cache-dir -r requirements.txt &&
+             python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --bind 0.0.0.0:8000 core.wsgi:application"
     environment:
       - DEBUG=off
       - SECRET_KEY=${SECRET_KEY}
       - ALLOWED_HOSTS=${SERVICE_FQDN_DJANGO}
       - CSRF_TRUSTED_ORIGINS=${SERVICE_URL_DJANGO}
       - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
+      - DATABASE_URL=sqlite:///app/db.sqlite3
     volumes:
-      - ./db.sqlite3:/app/db.sqlite3
-    ports:
-      - "8000:8000"
+      - .:/app
     networks:
       - coolify
     restart: unless-stopped
-    command: gunicorn --bind 0.0.0.0:8000 core.wsgi:application
+    expose:
+      - "8000"
 
   datasette:
-    build:
-      context: .
-      dockerfile: Dockerfile.datasette.coolify
+    image: datasettepro/datasette:latest
+    command: >
+      sh -c "datasette --host 0.0.0.0 --port 8001 --metadata /app/metadata.yaml /app/games.db"
     environment:
       - PUBLIC_URL=${SERVICE_URL_DATASETTE}
+    volumes:
+      - ./games.db:/app/games.db
+      - ./metadata.yaml:/app/metadata.yaml
     networks:
       - coolify
     restart: unless-stopped
-    command: >
-      sh -c "datasette --host 0.0.0.0 --port 8001 --metadata metadata.yaml"
+    expose:
+      - "8001"
 
 networks:
   coolify:
