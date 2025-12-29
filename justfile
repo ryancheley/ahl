@@ -52,22 +52,22 @@
 # Coolify Deployment
 
 @coolify-build:
-    docker-compose -f docker-compose.coolify.yml build
+    docker-compose -f docker-compose.yaml build
 
 @coolify-up:
-    docker-compose -f docker-compose.coolify.yml up -d
+    docker-compose -f docker-compose.yaml up -d
 
 @coolify-down:
-    docker-compose -f docker-compose.coolify.yml down
+    docker-compose -f docker-compose.yaml down
 
 @coolify-logs:
-    docker-compose -f docker-compose.coolify.yml logs -f
+    docker-compose -f docker-compose.yaml logs -f
 
 @coolify-logs-django:
-    docker-compose -f docker-compose.coolify.yml logs -f django
+    docker-compose -f docker-compose.yaml logs -f django
 
 @coolify-logs-datasette:
-    docker-compose -f docker-compose.coolify.yml logs -f datasette
+    docker-compose -f docker-compose.yaml logs -f datasette
 
 # Django Management Commands in Docker
 
