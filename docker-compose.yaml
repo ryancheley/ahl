@@ -15,8 +15,6 @@ services:
       - GAMES_DATABASE_NAME=/app/games.db
     volumes:
       - ./data:/app/data
-    depends_on:
-      - datasette
     networks:
       - default
     restart: unless-stopped
@@ -36,19 +34,6 @@ services:
       - default
     restart: unless-stopped
     command: datasette games.db --host 0.0.0.0 --port 8001 --metadata metadata.yaml
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    # Coolify will handle nginx config automatically
-    depends_on:
-      - django
-      - datasette
-    networks:
-      - default
-    restart: unless-stopped
 
 networks:
   default:
