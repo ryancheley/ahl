@@ -36,7 +36,6 @@ services:
       - PUBLIC_URL=${PUBLIC_URL}
     volumes:
       - ./games.db:/app/games.db
-      - ./metadata.yaml:/app/metadata.yaml
     networks:
       - default
     restart: unless-stopped
