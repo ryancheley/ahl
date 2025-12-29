@@ -15,8 +15,6 @@ services:
       - GAMES_DATABASE_NAME=/app/games.db
     volumes:
       - ./data:/app/data
-      - ./games.db:/app/games.db
-      - ./db.sqlite3:/app/db.sqlite3
     depends_on:
       - datasette
     networks:
@@ -35,7 +33,6 @@ services:
     environment:
       - PUBLIC_URL=${PUBLIC_URL}
     volumes:
-      - ./games.db:/app/games.db
     networks:
       - default
     restart: unless-stopped
