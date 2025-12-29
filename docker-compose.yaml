@@ -32,7 +32,6 @@ services:
       dockerfile: Dockerfile.datasette.coolify
     environment:
       - PUBLIC_URL=${PUBLIC_URL}
-    volumes:
     networks:
       - default
     restart: unless-stopped
