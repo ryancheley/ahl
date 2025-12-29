@@ -13,7 +13,14 @@ if [ -f /app/games.db ]; then
     chmod 644 /app/games.db 2>/dev/null || true
 fi
 
-# Ensure db.sqlite3 is fully writable by django user if it exists
+# Handle db.sqlite3 - if it was created as a directory, remove it
+# Docker creates non-existent mount paths as directories
+if [ -d /app/db.sqlite3 ]; then
+    echo "db.sqlite3 is a directory, removing it so Django can create the database file..."
+    rm -rf /app/db.sqlite3 2>/dev/null || true
+fi
+
+# Ensure db.sqlite3 is fully writable by django user if it exists as a file
 if [ -f /app/db.sqlite3 ]; then
     chmod 666 /app/db.sqlite3 2>/dev/null || true
 fi
