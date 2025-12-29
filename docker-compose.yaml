@@ -5,7 +5,8 @@ services:
     image: python:3.11-slim
     working_dir: /app
     command: >
-      sh -c "pip install --no-cache-dir gunicorn django django-extensions &&
+      sh -c "ls -la &&
+             pip install --no-cache-dir gunicorn django django-extensions &&
              pip install --no-cache-dir uv &&
              uv pip install --system -r requirements.txt &&
              python manage.py migrate --noinput &&
@@ -28,13 +29,9 @@ services:
 
   datasette:
     image: datasetteproject/datasette:latest
-    command: >
-      sh -c "datasette --host 0.0.0.0 --port 8001 --metadata /app/metadata.yaml /app/games.db"
+    command: datasette --host 0.0.0.0 --port 8001 --metadata metadata.yaml games.db
     environment:
       - PUBLIC_URL=${SERVICE_URL_DATASETTE}
-    volumes:
-      - ./games.db:/app/games.db
-      - ./metadata.yaml:/app/metadata.yaml
     networks:
       - coolify
     restart: unless-stopped
