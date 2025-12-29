@@ -29,6 +29,8 @@ services:
       dockerfile: Dockerfile.datasette.coolify
     environment:
       - PUBLIC_URL=${PUBLIC_URL}
+    volumes:
+      - ./games.db:/app/games.db
     networks:
       - default
     restart: unless-stopped
