@@ -31,7 +31,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./games.db:/app/games.db:ro
+      - ./games.db:/app/games.db
       - ./db.sqlite3:/app/db.sqlite3
     environment:
       - SECRET_KEY=${SECRET_KEY}
