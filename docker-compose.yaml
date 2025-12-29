@@ -14,12 +14,12 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8001/"]
-    labels:
-      - traefik.http.services.datasette.loadbalancer.server.port=8001
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    labels:
+      - traefik.http.services.datasette.loadbalancer.server.port=8001
     networks:
       - ahl-network
 
