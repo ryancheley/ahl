@@ -20,7 +20,6 @@ services:
     restart: unless-stopped
     command: >
       sh -c "python manage.py migrate &&
-             python manage.py load_dates &&
              python manage.py collectstatic --noinput &&
              gunicorn --bind 0.0.0.0:8000 core.wsgi:application"
 
