@@ -27,7 +27,7 @@ services:
       - "8000"
 
   datasette:
-    image: datasettepro/datasette:latest
+    image: datasette/datasette:latest
     command: >
       sh -c "datasette --host 0.0.0.0 --port 8001 --metadata /app/metadata.yaml /app/games.db"
     environment:
