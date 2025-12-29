@@ -18,10 +18,7 @@ services:
     networks:
       - default
     restart: unless-stopped
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             gunicorn --bind 0.0.0.0:8000 core.wsgi:application"
+    command: gunicorn --bind 0.0.0.0:8000 core.wsgi:application
 
   datasette:
     build:
@@ -32,7 +29,7 @@ services:
     networks:
       - default
     restart: unless-stopped
-    command: datasette games.db --host 0.0.0.0 --port 8001 --metadata metadata.yaml
+    command: datasette --host 0.0.0.0 --port 8001
 
 networks:
   default:
