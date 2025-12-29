@@ -33,10 +33,13 @@ COPY games/ games/
 # Collect static files (using temporary SECRET_KEY for build)
 RUN SECRET_KEY=build-key python manage.py collectstatic --noinput --clear
 
-# Create non-root user for security
+# Copy entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Create non-root user for security (but run as root for volume permission handling)
 RUN useradd --create-home --shell /bin/bash django && \
     chown -R django:django /app
-USER django
 
 # Expose port
 EXPOSE 8000
@@ -45,5 +48,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/admin/ || exit 1
 
-# Start Django with Gunicorn
+# Use entrypoint to fix permissions and start Django
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
