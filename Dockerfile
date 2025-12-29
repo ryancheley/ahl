@@ -14,6 +14,7 @@ ENV DATASETTE_SETTINGS_METADATA=/app/metadata.yaml
 RUN apt-get update && apt-get install -y \
     gcc \
     sqlite3 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
