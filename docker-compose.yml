@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  datasette:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ahl-datasette
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./games.db:/app/games.db
+      - ./metadata.yaml:/app/metadata.yaml
+    environment:
+      - DATASETTE_SETTINGS_METADATA=/app/metadata.yaml
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ahl-network
+
+networks:
+  ahl-network:
+    driver: bridge
