@@ -1,2 +1,4 @@
 title: "AHL Hockey Data"
 license: "MIT"
+plugins:
+  - datasette-write-ui
