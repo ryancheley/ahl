@@ -24,7 +24,12 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '${PUBLIC_URL:-localhost}'])
 
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=['http://localhost:8000', '${PUBLIC_URL:-http://localhost:8000}'])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
+        'http://localhost:8000',
+        'https://localhost:8000',
+        '${PUBLIC_URL:-http://localhost:8000}',
+        '${COOLIFY_DOMAIN:-https://localhost:8000}'
+    ])
 
 # Application definition
 
