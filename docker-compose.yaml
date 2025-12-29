@@ -11,6 +11,8 @@ services:
       - ALLOWED_HOSTS=${SERVICE_FQDN_DJANGO}
       - CSRF_TRUSTED_ORIGINS=${SERVICE_URL_DJANGO}
       - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
     ports:
       - "8000:8000"
     networks:
@@ -28,7 +30,7 @@ services:
       - coolify
     restart: unless-stopped
     command: >
-      sh -c "datasette --host 0.0.0.0 --port 8001 --metadata metadata.yaml :memory:"
+      sh -c "datasette --host 0.0.0.0 --port 8001 --metadata metadata.yaml"
 
 networks:
   coolify:
