@@ -9,7 +9,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `just load` - Execute main scraping script (program.py)
 - `just game <game_id>` - Get specific game data via Django management command
 - `just recent` - Show most recent game ID
-- `just django` - Compile Django requirements
+- `just django` - Compile Django requirements and install
+- `just datasette` - Compile datasette requirements
+- `just compile-all` - Compile all requirements files (full, django, datasette)
+- `just build` - Build Docker images
+- `just up` - Start Docker services
+- `just down` - Stop Docker services
+- `just logs` - View Docker service logs
+- `just docker-test` - Build, start, and test both endpoints
 
 ### Direct Python Commands
 - `python manage.py runserver` - Start Django dev server
@@ -19,7 +26,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pytest` - Run all tests
 - `pytest tests/test_utils.py` - Run specific test file
 - `black .` - Format code (line length: 130)
-- `pip-compile requirements.in` - Update dependencies
+
+### Dependency Management
+This project uses split requirements files for different environments:
+- `requirements.in` / `requirements.txt` - Full development dependencies (all tools, datasette, django)
+- `requirements-django.in` / `requirements-django.txt` - Django application dependencies
+- `requirements-datasette.in` / `requirements-datasette.txt` - Datasette application dependencies
+
+Use `just compile-all` to regenerate all `.txt` files from `.in` files after updating any `.in` file.
+Docker images use the split `requirements-django.txt` and the full `requirements.txt` (for datasette) to keep images lean.
 
 ## Architecture Overview
 
