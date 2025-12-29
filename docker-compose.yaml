@@ -27,7 +27,7 @@ services:
     networks:
       - coolify
     restart: unless-stopped
-    command: datasette --host 0.0.0.0 --port 8001
+    command: datasette --host 0.0.0.0 --port 8001 --metadata metadata.yaml :memory:
 
 networks:
   coolify:

@@ -19,4 +19,4 @@ COPY metadata.yaml .
 RUN touch games.db
 
 # Default command for production
-CMD ["datasette", "--host", "0.0.0.0", "--port", "8001", "--metadata", "metadata.yaml"]
+CMD ["datasette", "--host", "0.0.0.0", "--port", "8001", "--metadata", "metadata.yaml", ":memory:"]
