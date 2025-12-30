@@ -1,6 +1,1 @@
-datasette
-datasette-write-ui
-black
-pip-tools
-pre-commit
-ruff
+datasette>=1.0a23
