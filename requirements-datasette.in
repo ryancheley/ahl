@@ -1,4 +1,4 @@
-datasette
+datasette>=1.0a23
 datasette-write-ui
 black
 pip-tools
