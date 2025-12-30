@@ -1,5 +1,7 @@
-datasette
+datasette>=1.0a23
 datasette-write-ui
+datasette-cluster-map
+datasette-vega
 black
 pip-tools
 pre-commit
