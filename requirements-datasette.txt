@@ -35,7 +35,16 @@ click-default-group==1.2.4
 datasette==1.0a23
     # via
     #   -r requirements-datasette.in
+    #   datasette-cluster-map
+    #   datasette-leaflet
+    #   datasette-vega
     #   datasette-write-ui
+datasette-cluster-map==0.18.2
+    # via -r requirements-datasette.in
+datasette-leaflet==0.2.2
+    # via datasette-cluster-map
+datasette-vega==0.6.2
+    # via -r requirements-datasette.in
 datasette-write-ui==0.0.1a9
     # via -r requirements-datasette.in
 distlib==0.4.0
