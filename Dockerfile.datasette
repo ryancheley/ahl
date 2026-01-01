@@ -8,7 +8,6 @@ LABEL description="AHL Datasette Application"
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV DATASETTE_SETTINGS_METADATA=/app/metadata.yaml
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -27,7 +26,6 @@ COPY requirements-datasette.txt .
 RUN pip install --no-cache-dir -r requirements-datasette.txt
 
 # Copy application files
-COPY metadata.yaml .
 COPY games.db .
 
 # Create non-root user for security
@@ -43,4 +41,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/ || exit 1
 
 # Start datasette
-CMD ["datasette", "games.db", "--host", "0.0.0.0", "--port", "8001", "--setting", "allow_download", "true", "--setting", "sql_time_limit_ms", "30000", "--metadata", "metadata.yaml"]
+CMD ["datasette", "games.db", "--metadata", "metadata.yaml", "--host", "0.0.0.0"]

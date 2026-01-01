@@ -1,2 +1,1 @@
-datasette>=1.0a23
-datasette-write-ui
+datasette==0.65.1
