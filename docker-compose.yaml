@@ -10,13 +10,9 @@ services:
       - type: bind
         source: ./games.db
         target: /app/games.db
-        is_directory: false
       - type: bind
         source: ./metadata.yaml
         target: /app/metadata.yaml
-        is_directory: false
-    environment:
-      - DATASETTE_SETTINGS_METADATA=/app/metadata.yaml
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8001/"]
