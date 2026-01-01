@@ -7,8 +7,14 @@ services:
     ports:
       - "8001:8001"
     volumes:
-      - ./games.db:/app/games.db
-      - ./metadata.yaml:/app/metadata.yaml
+      - type: bind
+        source: ./games.db
+        target: /app/games.db
+        is_directory: false
+      - type: bind
+        source: ./metadata.yaml
+        target: /app/metadata.yaml
+        is_directory: false
     environment:
       - DATASETTE_SETTINGS_METADATA=/app/metadata.yaml
     restart: unless-stopped
