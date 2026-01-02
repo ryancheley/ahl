@@ -111,11 +111,11 @@ def get_game_details(response: str):
 def get_most_recent_game_id_to_check_for_data(lookback=0):
     """
     Get the most recent game ID from the database.
-    
+
     Args:
         lookback (int): Number of games to look back from the most recent game ID.
                         Default is 0, which returns the most recent game ID.
-    
+
     Returns:
         int: The most recent game ID minus the lookback value. If the database is empty,
              returns None and prints an error message.
@@ -129,15 +129,15 @@ def get_most_recent_game_id_to_check_for_data(lookback=0):
 
     # Fetch all rows returned by the query
     rows = cursor.fetchall()
-    
+
     # Close the cursor and the connection
     cursor.close()
     conn.close()
-    
+
     if not rows:
         print("Error: No games found in the database. Please add at least one game first.")
         return None
-        
+
     # Get the most recent id with data and then go back by the specified lookback amount
     most_recent_game_id = int(max(rows)[0])
     return most_recent_game_id - lookback
@@ -158,13 +158,11 @@ def write_game_data(game_id: int, full_load: bool = False):
         conn = sqlite3.connect("games.db")
         cursor = conn.cursor()
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS unplayed_games (
                 game_id TEXT PRIMARY KEY
             )
-        """
-        )
+        """)
         try:
             cursor.execute(
                 """
@@ -200,8 +198,7 @@ def write_game_data(game_id: int, full_load: bool = False):
                 conn = sqlite3.connect("games.db")
                 cursor = conn.cursor()
 
-                cursor.execute(
-                    """
+                cursor.execute("""
                     CREATE TABLE IF NOT EXISTS games (
                         game_id TEXT PRIMARY KEY,
                         away_team TEXT,
@@ -214,8 +211,7 @@ def write_game_data(game_id: int, full_load: bool = False):
                         home_team_shots INTEGER,
                         away_team_shots INTEGER
                     )
-                """
-                )
+                """)
                 try:
                     cursor.execute(
                         """
@@ -236,17 +232,17 @@ def write_game_data(game_id: int, full_load: bool = False):
 def process_game_range(start_game_id, range_count):
     """
     Process a range of game IDs starting from start_game_id.
-    
+
     Args:
         start_game_id (int): The starting game ID
         range_count (int): Number of games to process from the starting ID
     """
     if start_game_id is None:
         return
-        
+
     end_game_id = start_game_id + range_count
     print(f"Processing game range from {start_game_id} to {end_game_id-1}")
-    
+
     for i in range(start_game_id, end_game_id):
         time.sleep(1)
         write_game_data(i)
@@ -255,7 +251,7 @@ def process_game_range(start_game_id, range_count):
 def process_single_game(game_id):
     """
     Process a single game ID.
-    
+
     Args:
         game_id (int): The game ID to process
     """
@@ -264,19 +260,17 @@ def process_single_game(game_id):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Retrieve and process hockey game data.')
-    
+    parser = argparse.ArgumentParser(description="Retrieve and process hockey game data.")
+
     # Create a group for mutually exclusive options
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('--game_id', type=int, help='Specific game ID to retrieve')
-    group.add_argument('--start_id', type=int, help='Starting game ID for range processing')
-    
+    group.add_argument("--game_id", type=int, help="Specific game ID to retrieve")
+    group.add_argument("--start_id", type=int, help="Starting game ID for range processing")
+
     # Parameters for range-based processing
-    parser.add_argument('--lookback', type=int, default=16, 
-                        help='Number of games to look back from most recent (default: 16)')
-    parser.add_argument('--range', type=int, default=32, 
-                        help='Number of games to process in a range (default: 32)')
-    
+    parser.add_argument("--lookback", type=int, default=16, help="Number of games to look back from most recent (default: 16)")
+    parser.add_argument("--range", type=int, default=32, help="Number of games to process in a range (default: 32)")
+
     args = parser.parse_args()
 
     if args.game_id:
@@ -290,7 +284,7 @@ def main():
         else:
             # Use most recent ID minus lookback
             start_game_id = get_most_recent_game_id_to_check_for_data(args.lookback)
-            
+
         process_game_range(start_game_id, args.range)
 
 

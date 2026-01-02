@@ -11,11 +11,7 @@ class Command(BaseCommand):
         # Get the GitHub PAT from environment
         github_pat = os.environ.get("GITHUB_PAT")
         if not github_pat:
-            self.stderr.write(
-                self.style.ERROR(
-                    "GITHUB_PAT environment variable not set. Cannot push to GitHub."
-                )
-            )
+            self.stderr.write(self.style.ERROR("GITHUB_PAT environment variable not set. Cannot push to GitHub."))
             return
 
         try:
@@ -85,15 +81,7 @@ class Command(BaseCommand):
                 capture_output=True,
             )
 
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Successfully pushed games.db to main: {timestamp}"
-                )
-            )
+            self.stdout.write(self.style.SUCCESS(f"Successfully pushed games.db to main: {timestamp}"))
 
         except subprocess.CalledProcessError as e:
-            self.stderr.write(
-                self.style.ERROR(
-                    f"Git operation failed: {e.stderr if e.stderr else str(e)}"
-                )
-            )
+            self.stderr.write(self.style.ERROR(f"Git operation failed: {e.stderr if e.stderr else str(e)}"))
