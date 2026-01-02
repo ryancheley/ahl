@@ -89,14 +89,12 @@ conn = sqlite3.connect("games.db")
 cur = conn.cursor()
 
 # Create the dim_date table if it doesn't exist
-cur.execute(
-    """
+cur.execute("""
 CREATE TABLE IF NOT EXISTS dim_date (
     date TEXT PRIMARY KEY,
     season TEXT,
     season_phase TEXT)
-"""
-)
+""")
 
 
 # Function to determine the season for a given date
