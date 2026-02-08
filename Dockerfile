@@ -35,8 +35,8 @@ COPY games.db .
 COPY metadata.yaml .
 COPY program.py .
 
-# Set proper permissions on database files before switching user
-RUN chmod 644 games.db metadata.yaml
+# Set proper permissions on database files and app directory
+RUN chmod 666 games.db && chmod 644 metadata.yaml && chmod 755 /app
 
 # Expose port
 EXPOSE 8001
