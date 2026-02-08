@@ -30,13 +30,16 @@ RUN /bin/uv pip install --no-cache-dir --system pip setuptools wheel importlib-r
 # Install Python dependencies using pip (not uv) to ensure proper pkg_resources setup
 RUN pip install --no-cache-dir .
 
-# Copy application files
-COPY games.db .
-COPY metadata.yaml .
-COPY program.py .
+# Create non-root user early so we can use it in COPY --chown
+RUN useradd --create-home --shell /bin/bash datasette
 
-# Set proper permissions on database files and app directory
-RUN chmod 666 games.db && chmod 644 metadata.yaml && chmod 755 /app
+# Copy application files with proper ownership
+COPY --chown=datasette:datasette games.db .
+COPY --chown=datasette:datasette metadata.yaml .
+COPY --chown=datasette:datasette program.py .
+
+# Set proper permissions on database files
+RUN chmod 666 games.db metadata.yaml
 
 # Expose port
 EXPOSE 8001
@@ -45,10 +48,8 @@ EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD wget -q --spider http://localhost:8001/ || exit 1
 
-# Create non-root user for security
-RUN useradd --create-home --shell /bin/bash datasette && \
-    chown datasette:datasette /app/games.db /app/metadata.yaml /app/program.py && \
-    chown -R datasette:datasette /app
+# Set proper app ownership and switch to non-root user
+RUN chown -R datasette:datasette /app
 USER datasette
 
 # Start datasette with config for canned queries
