@@ -1,13 +1,21 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "ahl"
 version = "0.1.0"
 description = "AHL Datasette Application"
 requires-python = ">=3.11"
 dependencies = [
-    "datasette==1.0a3",
+    "datasette==1.0a24",
     "datasette-write-ui>=0.0.1a12",
     "requests",
+    "setuptools",
 ]
+
+[tool.setuptools]
+packages = []
 
 [project.optional-dependencies]
 dev = [

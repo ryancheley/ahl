@@ -26,7 +26,7 @@
     docker build -t ahl .
 
 @up:
-    docker run -p 8001:8001 ahl
+    docker run --rm -p 8001:8001 ahl
 
 @lint:
     uv run ruff check .

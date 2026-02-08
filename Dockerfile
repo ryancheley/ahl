@@ -24,8 +24,11 @@ WORKDIR /app
 # Copy project configuration
 COPY pyproject.toml .
 
-# Install Python dependencies using uv
-RUN uv pip install --no-cache-dir --system .
+# Install pip and setuptools first to ensure pkg_resources is available
+RUN /bin/uv pip install --no-cache-dir --system pip setuptools wheel importlib-resources
+
+# Install Python dependencies using pip (not uv) to ensure proper pkg_resources setup
+RUN pip install --no-cache-dir .
 
 # Copy application files
 COPY games.db .
