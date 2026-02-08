@@ -1,4 +1,16 @@
-[tool.black]
-line-length = 130
-target-version = ['py311']
-include = '\.pyi?$'
+[project]
+name = "ahl"
+version = "0.1.0"
+description = "AHL Datasette Application"
+requires-python = ">=3.11"
+dependencies = [
+    "datasette==1.0a3",
+    "requests",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "ty",
+]

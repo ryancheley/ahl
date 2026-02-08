@@ -1,3 +1,6 @@
+# Multi-stage build: Copy uv from official image
+FROM ghcr.io/astral-sh/uv:latest AS builder
+
 # Use Python 3.14 slim image
 FROM python:3.14-slim
 
@@ -9,17 +12,24 @@ LABEL description="AHL Datasette Application"
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+# Copy uv from builder stage
+COPY --from=builder /uv /bin/uv
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
 WORKDIR /app
 
-# Install Python dependencies
-RUN pip install --no-cache-dir datasette
+# Copy project configuration
+COPY pyproject.toml .
+
+# Install Python dependencies using uv
+RUN uv pip install --no-cache-dir --system .
 
 # Copy application files
 COPY games.db .
+COPY metadata.yaml .
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash datasette && \

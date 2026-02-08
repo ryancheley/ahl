@@ -23,16 +23,11 @@
     pip-compile requirements-datasette.in -o requirements-datasette.txt
 
 @build:
-    docker compose build
+    docker build -t ahl .
 
 @up:
-    docker compose up -d
+    docker run -p 8001:8001 ahl
 
-@down:
-    docker compose down
-
-@logs:
-    docker compose logs -f
-
-@docker-test:
-    docker compose up --build -d && sleep 2 && curl http://localhost:8000/admin/ && curl http://localhost:8001/
+@lint:
+    uv run ruff check .
+    uv run ty check

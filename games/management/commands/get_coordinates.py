@@ -13,11 +13,11 @@ def convert_to_float(value):
         return value
     try:
         minutes = degrees[1].split("′")
-    except:
+    except IndexError:
         return value
     try:
         seconds = minutes[1].split("″")
-    except:
+    except IndexError:
         return value
 
     return float(degrees[0]) + float(minutes[0]) / 60 + float(seconds[0]) / 3600

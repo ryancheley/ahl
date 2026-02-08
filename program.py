@@ -3,7 +3,6 @@ import re
 import sqlite3
 import time
 import argparse
-import sys
 
 import requests
 
