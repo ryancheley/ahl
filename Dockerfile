@@ -33,6 +33,7 @@ RUN pip install --no-cache-dir .
 # Copy application files
 COPY games.db .
 COPY metadata.yaml .
+COPY program.py .
 
 # Expose port
 EXPOSE 8001
