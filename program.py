@@ -3,7 +3,6 @@ import re
 import sqlite3
 import time
 import argparse
-import sys
 
 import requests
 
@@ -33,7 +32,10 @@ def get_team(game_details, home_or_away):
         team_details = re.split(" at | - ", game_details[0])[1]
     else:
         team_details = re.split(" at | - ", game_details[0])[0]
-    team_score_position = re.search(r"\d+", team_details).span()
+    match = re.search(r"\d+", team_details)
+    if match is None:
+        return ""
+    team_score_position = match.span()
     team_score_start = team_score_position[0]
     return team_details[:team_score_start].strip()
 
@@ -51,7 +53,10 @@ def get_score(game_details, home_or_away):
         team_details = re.split(" at | - ", game_details[0])[1]
     else:
         team_details = re.split(" at | - ", game_details[0])[0]
-    team_score_position = re.search(r"\d+", team_details).span()
+    match = re.search(r"\d+", team_details)
+    if match is None:
+        return ""
+    team_score_position = match.span()
     team_score_start = team_score_position[0]
     team_score_end = team_score_position[1]
     return team_details[team_score_start:team_score_end]
@@ -92,7 +97,7 @@ def get_shots_on_goal(game_details, home_or_away):
     return team_details
 
 
-def get_game_details(response: str):
+def get_game_details(response: requests.Response):
     for i in response.text.split("\n"):
         line_item = i.strip()
         try:
