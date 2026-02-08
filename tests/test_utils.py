@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import Mock
 import pytest
 import requests
 
@@ -79,7 +80,7 @@ def test_get_attendance():
     ],
 )
 def test_get_game_details(response_text, expected):
-    response = requests.models.Response
+    response = Mock(spec=requests.Response)
     response.status_code = 200
     response.text = response_text
     actual = get_game_details(response)
