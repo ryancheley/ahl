@@ -44,7 +44,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash datasette && \
-    chown -R datasette:datasette /app
+    chown -R datasette:datasette /app && \
+    chmod u+w /app/games.db
 USER datasette
 
 # Start datasette with config for canned queries
