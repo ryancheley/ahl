@@ -34,17 +34,17 @@ RUN pip install --no-cache-dir .
 COPY games.db .
 COPY metadata.yaml .
 
+# Expose port
+EXPOSE 8001
+
+# Health check (before USER to run as root)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget -q --spider http://localhost:8001/ || exit 1
+
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash datasette && \
     chown -R datasette:datasette /app
 USER datasette
-
-# Expose port
-EXPOSE 8001
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8001/ || exit 1
 
 # Start datasette with config for canned queries
 CMD ["datasette", "games.db", "-c", "metadata.yaml", "--host", "0.0.0.0", "--port", "8001"]
