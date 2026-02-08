@@ -35,6 +35,9 @@ COPY games.db .
 COPY metadata.yaml .
 COPY program.py .
 
+# Set proper permissions on database files before switching user
+RUN chmod 644 games.db metadata.yaml
+
 # Expose port
 EXPOSE 8001
 
@@ -44,8 +47,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash datasette && \
-    chown -R datasette:datasette /app && \
-    chmod u+w /app/games.db
+    chown datasette:datasette /app/games.db /app/metadata.yaml /app/program.py && \
+    chown -R datasette:datasette /app
 USER datasette
 
 # Start datasette with config for canned queries
