@@ -5,11 +5,13 @@ description = "AHL Datasette Application"
 requires-python = ">=3.11"
 dependencies = [
     "datasette==1.0a3",
+    "datasette-write-ui>=0.0.1a12",
     "requests",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "faker",
     "pytest",
     "ruff",
     "ty",
