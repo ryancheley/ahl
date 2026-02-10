@@ -93,8 +93,16 @@ cur.execute("""
 CREATE TABLE IF NOT EXISTS dim_date (
     date TEXT PRIMARY KEY,
     season TEXT,
-    season_phase TEXT)
+    season_phase TEXT,
+    day_of_season INTEGER)
 """)
+
+# Add day_of_season column if it doesn't exist (for existing tables)
+try:
+    cur.execute("ALTER TABLE dim_date ADD COLUMN day_of_season INTEGER")
+except sqlite3.OperationalError as e:
+    if "duplicate column name" not in str(e):
+        raise
 
 
 # Function to determine the season for a given date
@@ -129,10 +137,12 @@ def find_season(given_date):
 
 
 # Generate dates and insert into the database
-start_date = date(2024, 10, 1)
-end_date = date(2025, 6, 30)
+# Start from the beginning of the first season in the season_dictionary
+start_date = date(2005, 10, 5)
+end_date = date(2026, 4, 19)
 # Assuming start_date and end_date are already defined
 current_date = start_date
+season_day_counter = {}  # Track day count per season
 
 while current_date <= end_date:
     # Use the updated find_season function to get the season and phase (regular/post)
@@ -142,8 +152,16 @@ while current_date <= end_date:
         date_str = current_date.strftime("%Y-%m-%d 00:00:00")
         # Prepare the season_phase string to include whether it's regular or post-season
         season_phase = f"{phase}" if phase else "Out of season"  # Append phase if it exists or mark as out of season
-        # Insert date (formatted with time), season, and phase into the table
-        cur.execute("INSERT INTO dim_date (date, season, season_phase) VALUES (?, ?, ?)", (date_str, season, season_phase))
+
+        # Calculate day_of_season
+        if season not in season_day_counter:
+            season_day_counter[season] = 1
+        else:
+            season_day_counter[season] += 1
+        day_of_season = season_day_counter[season]
+
+        # Insert or replace date (formatted with time), season, phase, and day_of_season into the table
+        cur.execute("INSERT OR REPLACE INTO dim_date (date, season, season_phase, day_of_season) VALUES (?, ?, ?, ?)", (date_str, season, season_phase, day_of_season))
     # Move to the next day
     current_date += timedelta(days=1)
 
