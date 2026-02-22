@@ -24,6 +24,14 @@ PLAYER_API_URL = (
     "&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=skaters"
 )
 
+# API URL for game roster data
+ROSTER_API_URL = (
+    "https://lscluster.hockeytech.com/feed/index.php"
+    "?feed=statviewfeed&view=roster"
+    "&game_id={game_id}&season_id=90&site_id=3"
+    "&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1"
+)
+
 
 @dataclass
 class PlayerInfo:
@@ -44,6 +52,16 @@ class PlayerInfo:
 
     def __str__(self) -> str:
         return f"{self.first_name} {self.last_name} ({self.position})"
+
+
+@dataclass
+class RosterEntry:
+    """Container for game roster entry."""
+    game_id: str
+    player_id: int
+    team: Optional[str]
+    jersey_number: str
+    position: str
 
 
 def fetch_player_data(player_id: int) -> Optional[Dict]:
@@ -313,6 +331,237 @@ def scrape_player_id_range(
         time.sleep(delay)
 
     return results
+
+
+def fetch_game_roster(game_id: str) -> Optional[Dict]:
+    """
+    Fetch game roster data from the hockeytech API.
+
+    Args:
+        game_id: The game ID to fetch roster for
+
+    Returns:
+        Parsed JSON dict if successful, None otherwise
+    """
+    try:
+        url = ROSTER_API_URL.format(game_id=game_id)
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+        # Parse JSONP response - strip outer parentheses
+        text = response.text.strip()
+        if text.startswith('(') and text.endswith(')'):
+            text = text[1:-1]
+
+        data = json.loads(text)
+
+        if not isinstance(data, dict):
+            return None
+
+        return data
+    except (requests.exceptions.RequestException, json.JSONDecodeError, ValueError):
+        return None
+
+
+def extract_roster_entries(game_id: str, data: Dict, team: Optional[str] = None) -> List[RosterEntry]:
+    """
+    Extract roster entries from API response.
+
+    Parses Forwards, Defenders, and Goalies sections. Skips Team Personnel section.
+
+    Args:
+        game_id: The game ID
+        data: Parsed API response dict
+        team: Optional team filter (if None, processes all teams)
+
+    Returns:
+        List of RosterEntry objects
+    """
+    entries = []
+
+    try:
+        team_name = data.get('teamName')
+        roster_list = data.get('roster', [])
+
+        if not roster_list or not isinstance(roster_list, list):
+            return entries
+
+        # Roster is a list with one item containing sections
+        roster_item = roster_list[0]
+        if not isinstance(roster_item, dict):
+            return entries
+
+        sections = roster_item.get('sections', [])
+        if not isinstance(sections, list):
+            return entries
+
+        # Sections to process (skip Team Personnel)
+        for section in sections:
+            if not isinstance(section, dict):
+                continue
+
+            section_title = section.get('title', '').strip()
+            if section_title == 'Team Personnel':
+                continue
+
+            section_data = section.get('data', [])
+            if not isinstance(section_data, list):
+                continue
+
+            for player_obj in section_data:
+                if not isinstance(player_obj, dict):
+                    continue
+
+                row = player_obj.get('row')
+                if not isinstance(row, dict):
+                    continue
+
+                player_id_str = row.get('player_id')
+                if not player_id_str:
+                    continue
+
+                try:
+                    player_id = int(player_id_str)
+                except (ValueError, TypeError):
+                    continue
+
+                entry = RosterEntry(
+                    game_id=game_id,
+                    player_id=player_id,
+                    team=team_name,
+                    jersey_number=str(row.get('tp_jersey_number', '')),
+                    position=str(row.get('position', '')).strip()
+                )
+                entries.append(entry)
+
+    except (KeyError, ValueError, AttributeError):
+        pass
+
+    return entries
+
+
+def ensure_player_in_database(player_id: int, db_path: str = "games_new.db") -> bool:
+    """
+    Ensure a player exists in the database, scraping if necessary.
+
+    Args:
+        player_id: The player ID to ensure exists
+        db_path: Path to the database file
+
+    Returns:
+        True if player exists or was successfully scraped, False otherwise
+    """
+    if player_exists_in_database(player_id, db_path):
+        return True
+
+    player_info = scrape_player(player_id, db_path)
+    return player_info is not None
+
+
+def roster_exists_in_database(game_id: str, db_path: str = "games_new.db") -> bool:
+    """
+    Check if a game roster already exists in the database.
+
+    Args:
+        game_id: The game ID to check
+        db_path: Path to the database file
+
+    Returns:
+        True if roster exists, False otherwise
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM game_rosters WHERE game_id = ? LIMIT 1", (game_id,))
+        exists = cursor.fetchone() is not None
+        conn.close()
+        return exists
+    except sqlite3.Error:
+        return False
+
+
+def write_roster_to_database(entries: List[RosterEntry], db_path: str = "games_new.db") -> bool:
+    """
+    Write roster entries to the database.
+
+    Args:
+        entries: List of RosterEntry objects to write
+        db_path: Path to the database file
+
+    Returns:
+        True if successful, False otherwise
+    """
+    if not entries:
+        return True
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        # Create game_rosters table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS game_rosters (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                game_id TEXT NOT NULL,
+                player_id INTEGER NOT NULL,
+                team TEXT,
+                jersey_number TEXT,
+                position TEXT,
+                UNIQUE(game_id, player_id)
+            )
+        """)
+
+        # Insert roster entries (ignore duplicates)
+        for entry in entries:
+            cursor.execute("""
+                INSERT OR IGNORE INTO game_rosters
+                (game_id, player_id, team, jersey_number, position)
+                VALUES (?, ?, ?, ?, ?)
+            """, (entry.game_id, entry.player_id, entry.team, entry.jersey_number, entry.position))
+
+        conn.commit()
+        conn.close()
+        return True
+    except sqlite3.Error:
+        return False
+
+
+def scrape_game_roster(game_id: str, db_path: str = "games_new.db") -> List[RosterEntry]:
+    """
+    Scrape game roster and write to database.
+
+    Fetches roster, ensures all players are in the players table, and stores roster entries.
+
+    Args:
+        game_id: The game ID to scrape
+        db_path: Path to the database file
+
+    Returns:
+        List of RosterEntry objects that were written, empty list if roster already exists or fetch failed
+    """
+    # Check if roster already exists
+    if roster_exists_in_database(game_id, db_path):
+        return []
+
+    # Fetch roster data
+    data = fetch_game_roster(game_id)
+    if not data:
+        return []
+
+    # Extract entries
+    entries = extract_roster_entries(game_id, data)
+    if not entries:
+        return []
+
+    # Ensure all players are in the database
+    for entry in entries:
+        ensure_player_in_database(entry.player_id, db_path)
+
+    # Write roster to database
+    if write_roster_to_database(entries, db_path):
+        return entries
+    else:
+        return []
 
 
 if __name__ == "__main__":
