@@ -12,6 +12,9 @@ dependencies = [
     "datasette-write-ui>=0.0.1a12",
     "requests",
     "setuptools",
+    "beautifulsoup4",
+    "lxml",
+    "pyyaml",
 ]
 
 [tool.setuptools]
