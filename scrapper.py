@@ -1348,8 +1348,45 @@ def write_game_from_api_data(api_row: Dict, season_id: int, db_path: str = "game
         away_team = api_row.get("visiting_team_city")
         home_score = api_row.get("home_goal_count")
         away_score = api_row.get("visiting_goal_count")
-        game_status = api_row.get("game_status")
-        game_date = api_row.get("date_with_day")
+        game_status = "unknown"  # API returns time like "5:05 pm EST", convert to "unknown"
+
+        # Map season_id to start year of season (e.g., season 70 = 2003-04 season, start_year = 2003)
+        season_year_map = {
+            51: 2015, 54: 2016, 57: 2017, 61: 2018, 70: 2003,
+            73: 2021, 77: 2022, 81: 2023, 86: 2024, 90: 2025
+        }
+        season_start_year = season_year_map.get(season_id)
+
+        date_str = api_row.get("date_with_day")
+        if date_str and season_start_year:
+            # Parse "Sun, Nov 30" format
+            try:
+                # Extract month and day
+                parts = date_str.split()
+                if len(parts) >= 3:
+                    month_str = parts[1].rstrip(',')
+                    day_str = parts[2]
+
+                    # Convert month name to number
+                    months = {
+                        'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+                        'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+                    }
+                    month = months.get(month_str)
+
+                    if month:
+                        # Determine year: if month is Oct-Dec, use season_start_year
+                        # if month is Jan-Jun, use season_start_year + 1
+                        year = season_start_year if month >= 10 else season_start_year + 1
+                        game_date = f"{year}-{month:02d}-{int(day_str):02d} 00:00:00"
+                    else:
+                        game_date = None
+                else:
+                    game_date = None
+            except (ValueError, IndexError, KeyError):
+                game_date = None
+        else:
+            game_date = None
 
         # Update existing game record with API data
         cursor.execute(
