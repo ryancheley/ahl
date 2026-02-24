@@ -1,0 +1,95 @@
+================================================================================
+FOCUSED HOCKEYTECH API INVESTIGATION
+Test Game ID: 1027888
+================================================================================
+
+
+[PATTERN 1] StatViewFeed with various views
+--------------------------------------------------------------------------------
+Testing: StatViewFeed BoxScore
+  ✗ StatViewFeed BoxScore: 404
+Testing: StatViewFeed RosterCompare
+  ✗ StatViewFeed RosterCompare: 404
+Testing: StatViewFeed GameSummary
+  ✗ StatViewFeed GameSummary: 404
+Testing: StatViewFeed GoalSummary
+  ✗ StatViewFeed GoalSummary: 404
+Testing: StatViewFeed PenaltySummary
+  ✗ StatViewFeed PenaltySummary: 404
+Testing: StatViewFeed OfficialSummary
+  ✗ StatViewFeed OfficialSummary: 404
+
+[PATTERN 2] Different base paths with feed parameter
+--------------------------------------------------------------------------------
+Testing: Feed: StatViewFeed
+  ✓ Feed: StatViewFeed: text/html; charset=UTF-8
+Testing: Feed: goals view
+  ✓ Feed: goals view: text/html; charset=UTF-8
+Testing: Feed: penalties view
+  ✓ Feed: penalties view: text/html; charset=UTF-8
+Testing: API: BoxScore
+  ✗ API: BoxScore: 404
+Testing: API: game endpoint
+  ✗ API: game endpoint: 404
+
+[PATTERN 3] REST-style endpoints
+--------------------------------------------------------------------------------
+Testing: API v1: /games/{id}
+  ✗ API v1: /games/{id}: 404
+Testing: API v1: /games/{id}/goals
+  ✗ API v1: /games/{id}/goals: 404
+Testing: API v1: /games/{id}/penalties
+  ✗ API v1: /games/{id}/penalties: 404
+Testing: API v1: /games/{id}/officials
+  ✗ API v1: /games/{id}/officials: 404
+Testing: AHL API v1: /games/{id}
+  ✗ AHL API v1: /games/{id}: 403
+Testing: AHL API v1: /games/{id}/goals
+  ✗ AHL API v1: /games/{id}/goals: 403
+
+[PATTERN 4] Query parameter variations on known endpoint
+--------------------------------------------------------------------------------
+Testing: Add format=json
+  ✓ Add format=json: text/html; charset=UTF-8
+Testing: Add details=full
+  ✓ Add details=full: text/html; charset=UTF-8
+Testing: Add view=goals
+  ✓ Add view=goals: text/html; charset=UTF-8
+Testing: Add include=goals,penalties,officials
+  ✓ Add include=goals,penalties,officials: text/html; charset=UTF-8
+Testing: Add api=true
+  ✓ Add api=true: text/html; charset=UTF-8
+
+[PATTERN 5] TheAHL.com specific endpoints
+--------------------------------------------------------------------------------
+Testing: Game Center page
+  ✓ Game Center page: text/html; charset=UTF-8
+Testing: API: game-center
+  ✗ API: game-center: 404
+Testing: API: game
+  ✓ API: game: text/html; charset=UTF-8
+Testing: API: game details
+  ✗ API: game details: 404
+Testing: API: game goals
+  ✗ API: game goals: 404
+
+[PATTERN 6] Different client codes and league parameters
+--------------------------------------------------------------------------------
+Testing: Client code: nhl
+  ✗ Client code: nhl: 404
+Testing: League ID: 86
+  ✗ League ID: 86: 404
+Testing: Site ID: 4629
+  ✗ Site ID: 4629: 404
+Testing: Client code + League ID
+  ✗ Client code + League ID: 404
+
+================================================================================
+SUMMARY
+================================================================================
+
+Total endpoints tested: 31
+Successful (200 OK): 10
+JSON responses: 0
+
+Full results saved to focused_api_results.json

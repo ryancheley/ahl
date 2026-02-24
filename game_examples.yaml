@@ -1,0 +1,12 @@
+regular:
+  regulation: "https://lscluster.hockeytech.com/game_reports/official-game-report.php?lang_id=1&client_code=ahl&game_id=1028556"
+  overtime: "https://lscluster.hockeytech.com/game_reports/official-game-report.php?lang_id=1&client_code=ahl&game_id=1028561"
+  shootout: "https://lscluster.hockeytech.com/game_reports/official-game-report.php?lang_id=1&client_code=ahl&game_id=1028553"
+post:
+  regulation: "https://lscluster.hockeytech.com/game_reports/official-game-report.php?client_code=ahl&game_id=1027668&lang_id=1"
+  overtime:  "https://lscluster.hockeytech.com/game_reports/official-game-report.php?lang_id=1&client_code=ahl&game_id=1027696"
+all-star:
+  regulation: "https://lscluster.hockeytech.com/game_reports/official-game-report.php?client_code=ahl&game_id=1028962&lang_id=1"
+  shootout: "https://lscluster.hockeytech.com/game_reports/official-game-report.php?lang_id=1&client_code=ahl&game_id=1028961"
+not-played:
+  game: "https://lscluster.hockeytech.com/game_reports/official-game-report.php?lang_id=1&client_code=ahl&game_id=1028573"
