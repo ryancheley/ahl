@@ -1472,8 +1472,12 @@ def scrape_game_id_range(
                     if season_id:
                         api_data = get_game_data_from_schedule_api(game_id, season_id)
                         if api_data and api_data.get("home_team_city"):
-                            write_game_from_api_data(api_data, season_id, db_path)
-                            print(f"✓ (API fallback) {api_data.get('visiting_team_city')} vs {api_data.get('home_team_city')}")
+                            # Skip unplayed games (both scores are '-')
+                            if api_data.get("home_goal_count") == "-" and api_data.get("visiting_goal_count") == "-":
+                                print("⊘ Game not yet played")
+                            else:
+                                write_game_from_api_data(api_data, season_id, db_path)
+                                print(f"✓ (API fallback) {api_data.get('visiting_team_city')} vs {api_data.get('home_team_city')}")
                         else:
                             print("⊘ Game not available")
                     else:
@@ -1491,8 +1495,12 @@ def scrape_game_id_range(
             if season_id:
                 api_data = get_game_data_from_schedule_api(game_id, season_id)
                 if api_data and api_data.get("home_team_city"):
-                    write_game_from_api_data(api_data, season_id, db_path)
-                    print(f"✓ (API fallback) {api_data.get('visiting_team_city')} vs {api_data.get('home_team_city')}")
+                    # Skip unplayed games (both scores are '-')
+                    if api_data.get("home_goal_count") == "-" and api_data.get("visiting_goal_count") == "-":
+                        print("⊘ Game not yet played")
+                    else:
+                        write_game_from_api_data(api_data, season_id, db_path)
+                        print(f"✓ (API fallback) {api_data.get('visiting_team_city')} vs {api_data.get('home_team_city')}")
                 else:
                     print(f"✗ Error: {e}")
             else:
