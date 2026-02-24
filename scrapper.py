@@ -12,6 +12,7 @@ Supports:
 """
 
 import re
+import json
 import yaml
 import sqlite3
 import time
@@ -394,14 +395,15 @@ def extract_teams_from_html(soup: BeautifulSoup) -> Dict:
     all_text = soup.get_text()
 
     # Look for pattern like "Team1 at Team2" in the text
-    match = re.search(r"Gamesheet:\s*(\w+[\w\s]*?)\s+at\s+(\w+[\w\s]*?)\s*-", all_text)
+    # Updated regex to handle apostrophes, hyphens, and periods in team names (e.g., St. John's)
+    match = re.search(r"Gamesheet:\s*([\w\s'.-]+?)\s+at\s+([\w\s'.-]+?)\s*-", all_text)
     if match:
         teams["away"] = match.group(1).strip()
         teams["home"] = match.group(2).strip()
         return teams
 
     # Fallback: Look for score line like "Team1 # at Team2 #"
-    score_match = re.search(r"(\w+[\w\s]*?)\s+\d+\s+at\s+(\w+[\w\s]*?)\s+\d+", all_text)
+    score_match = re.search(r"([\w\s'.-]+?)\s+\d+\s+at\s+([\w\s'.-]+?)\s+\d+", all_text)
     if score_match:
         teams["away"] = score_match.group(1).strip()
         teams["home"] = score_match.group(2).strip()
@@ -416,7 +418,8 @@ def extract_scores_from_html(soup: BeautifulSoup) -> Dict:
     all_text = soup.get_text()
 
     # Look for pattern like "Team1 # at Team2 #"
-    match = re.search(r"(\w+[\w\s]*?)\s+(\d+)\s+at\s+(\w+[\w\s]*?)\s+(\d+)", all_text)
+    # Updated regex to handle apostrophes, hyphens, and periods in team names (e.g., St. John's)
+    match = re.search(r"([\w\s'.-]+?)\s+(\d+)\s+at\s+([\w\s'.-]+?)\s+(\d+)", all_text)
     if match:
         scores["away"] = int(match.group(2))
         scores["home"] = int(match.group(4))
@@ -1071,14 +1074,15 @@ def write_game_to_database(game_info: GameInfo, db_path: str = "games.db") -> bo
             )
         """)
 
+        # Use UPDATE if game exists, INSERT if new (preserves season_id)
         cursor.execute("""
-            INSERT OR REPLACE INTO games_extended
-            (game_id, game_type, game_format, away_team, home_team, away_score,
-             home_score, game_status, game_date, attendance, home_shots,
-             away_shots, overtime_periods, decided_by_shootout)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            UPDATE games_extended SET
+            game_type = ?, game_format = ?, away_team = ?, home_team = ?,
+            away_score = ?, home_score = ?, game_status = ?, game_date = ?,
+            attendance = ?, home_shots = ?, away_shots = ?, overtime_periods = ?,
+            decided_by_shootout = ?
+            WHERE game_id = ?
         """, (
-            game_info.game_id,
             game_info.game_type.value,
             game_info.game_format.value,
             game_info.away_team,
@@ -1092,7 +1096,33 @@ def write_game_to_database(game_info: GameInfo, db_path: str = "games.db") -> bo
             game_info.away_shots,
             game_info.overtime_periods,
             int(game_info.decided_by_shootout),
+            game_info.game_id,
         ))
+
+        # If no rows were updated, insert as new game
+        if cursor.rowcount == 0:
+            cursor.execute("""
+                INSERT INTO games_extended
+                (game_id, game_type, game_format, away_team, home_team, away_score,
+                 home_score, game_status, game_date, attendance, home_shots,
+                 away_shots, overtime_periods, decided_by_shootout)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                game_info.game_id,
+                game_info.game_type.value,
+                game_info.game_format.value,
+                game_info.away_team,
+                game_info.home_team,
+                game_info.away_score,
+                game_info.home_score,
+                game_info.game_status,
+                game_info.game_date,
+                game_info.attendance,
+                game_info.home_shots,
+                game_info.away_shots,
+                game_info.overtime_periods,
+                int(game_info.decided_by_shootout),
+            ))
 
         # Create and populate goals table
         cursor.execute("""
@@ -1207,22 +1237,146 @@ def write_game_to_database(game_info: GameInfo, db_path: str = "games.db") -> bo
 
 def game_exists_in_database(game_id: int, db_path: str = "games.db") -> bool:
     """
-    Check if a game already exists in the database.
+    Check if a game already has been scraped and populated with data.
 
     Args:
         game_id: The game ID to check
         db_path: Path to the database file
 
     Returns:
-        True if game exists, False otherwise
+        True if game has been scraped with data, False otherwise
     """
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM games_extended WHERE game_id = ? LIMIT 1", (game_id,))
+        # Check if game has actual data (home_team, away_team populated)
+        # Just checking for game_id existence isn't enough - need to verify data was scraped
+        cursor.execute(
+            "SELECT 1 FROM games_extended WHERE game_id = ? AND home_team IS NOT NULL LIMIT 1",
+            (game_id,)
+        )
         exists = cursor.fetchone() is not None
         conn.close()
         return exists
+    except sqlite3.Error:
+        return False
+
+
+def get_season_for_game(game_id: int, db_path: str = "games.db") -> Optional[int]:
+    """
+    Get the season_id for a given game_id from the database.
+
+    Args:
+        game_id: The game ID
+        db_path: Path to the database file
+
+    Returns:
+        Season ID if found, None otherwise
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT season_id FROM games_extended WHERE game_id = ? LIMIT 1", (game_id,))
+        row = cursor.fetchone()
+        conn.close()
+        return row[0] if row else None
+    except sqlite3.Error:
+        return None
+
+
+def get_game_data_from_schedule_api(game_id: int, season_id: int) -> Optional[Dict]:
+    """
+    Get basic game data from the schedule API as a fallback.
+
+    Args:
+        game_id: The game ID to look up
+        season_id: The season ID for this game
+
+    Returns:
+        Dict with game data if found, None otherwise
+    """
+    try:
+        url = (
+            f"https://lscluster.hockeytech.com/feed/index.php"
+            f"?feed=statviewfeed&view=schedule"
+            f"&season_id={season_id}&site_id=3"
+            f"&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1"
+        )
+
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+        text = response.text.strip()
+        if text.startswith("(") and text.endswith(")"):
+            text = text[1:-1]
+
+        data = json.loads(text)
+
+        # Find the game in the schedule
+        if isinstance(data, list) and data:
+            sections = data[0].get("sections", [])
+            for section in sections:
+                for game_row in section.get("data", []):
+                    row = game_row.get("row", {})
+                    if str(row.get("game_id")) == str(game_id):
+                        return row
+
+        return None
+    except Exception as e:
+        print(f"DEBUG: get_game_data_from_schedule_api failed: {type(e).__name__}: {e}")
+        return None
+
+
+def write_game_from_api_data(api_row: Dict, season_id: int, db_path: str = "games.db") -> bool:
+    """
+    Write basic game data from schedule API to database.
+
+    Args:
+        api_row: Game data from schedule API
+        season_id: The season ID
+        db_path: Path to the database file
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        game_id = api_row.get("game_id")
+        home_team = api_row.get("home_team_city")
+        away_team = api_row.get("visiting_team_city")
+        home_score = api_row.get("home_goal_count")
+        away_score = api_row.get("visiting_goal_count")
+        game_status = api_row.get("game_status")
+        game_date = api_row.get("date_with_day")
+
+        # Update existing game record with API data
+        cursor.execute(
+            """
+            UPDATE games_extended SET
+            home_team = ?, away_team = ?,
+            home_score = ?, away_score = ?,
+            game_status = ?, game_date = ?
+            WHERE game_id = ?
+            """,
+            (home_team, away_team, home_score, away_score, game_status, game_date, game_id),
+        )
+
+        if cursor.rowcount == 0:
+            # Insert if doesn't exist
+            cursor.execute(
+                """
+                INSERT INTO games_extended
+                (game_id, season_id, home_team, away_team, home_score, away_score, game_status, game_date)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (game_id, season_id, home_team, away_team, home_score, away_score, game_status, game_date),
+            )
+
+        conn.commit()
+        conn.close()
+        return True
     except sqlite3.Error:
         return False
 
@@ -1276,7 +1430,17 @@ def scrape_game_id_range(
             if game_info:
                 # Skip games that haven't been played yet (both teams would be None)
                 if game_info.away_team is None or game_info.home_team is None:
-                    print("⊘ Game not yet played")
+                    # Try API fallback if HTML scraping didn't work
+                    season_id = get_season_for_game(game_id, db_path)
+                    if season_id:
+                        api_data = get_game_data_from_schedule_api(game_id, season_id)
+                        if api_data and api_data.get("home_team_city"):
+                            write_game_from_api_data(api_data, season_id, db_path)
+                            print(f"✓ (API fallback) {api_data.get('visiting_team_city')} vs {api_data.get('home_team_city')}")
+                        else:
+                            print("⊘ Game not available")
+                    else:
+                        print("⊘ Game not yet played")
                 else:
                     results.append(game_info)
                     write_game_to_database(game_info, db_path)
@@ -1285,7 +1449,17 @@ def scrape_game_id_range(
                 print("✗ No data")
 
         except requests.exceptions.RequestException as e:
-            print(f"✗ Error: {e}")
+            # Try to get basic data from schedule API as fallback
+            season_id = get_season_for_game(game_id, db_path)
+            if season_id:
+                api_data = get_game_data_from_schedule_api(game_id, season_id)
+                if api_data and api_data.get("home_team_city"):
+                    write_game_from_api_data(api_data, season_id, db_path)
+                    print(f"✓ (API fallback) {api_data.get('visiting_team_city')} vs {api_data.get('home_team_city')}")
+                else:
+                    print(f"✗ Error: {e}")
+            else:
+                print(f"✗ Error: {e}")
 
         time.sleep(delay)
 
