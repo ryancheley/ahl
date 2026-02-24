@@ -1,0 +1,4240 @@
+{
+  "successful_endpoints": [
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=BoxScore&game_id=1027888",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=GameSummary&game_id=1027888",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=GameDetail&game_id=1027888",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=GameReport&game_id=1027888",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=OfficialReport&game_id=1027888",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=GoalSummary&game_id=1027888",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=GoalDetail&game_id=1027888",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=Goals&game_id=1027888",
+      "view": "Goals",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=PenaltySummary&game_id=1027888",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=PenaltyDetail&game_id=1027888",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=Penalties&game_id=1027888",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=OfficialDetail&game_id=1027888",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=Officials&game_id=1027888",
+      "view": "Officials",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=RefereeSummary&game_id=1027888",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=Referees&game_id=1027888",
+      "view": "Referees",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=GameSummary&feed=Goals&game_id=1027888",
+      "view": "GameSummary",
+      "feed": "Goals",
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=GameSummary&feed=Penalties&game_id=1027888",
+      "view": "GameSummary",
+      "feed": "Penalties",
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=GameSummary&feed=Officials&game_id=1027888",
+      "view": "GameSummary",
+      "feed": "Officials",
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=BoxScore&feed=Goals&game_id=1027888",
+      "view": "BoxScore",
+      "feed": "Goals",
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=BoxScore&feed=Penalties&game_id=1027888",
+      "view": "BoxScore",
+      "feed": "Penalties",
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=BoxScore&feed=Officials&game_id=1027888",
+      "view": "BoxScore",
+      "feed": "Officials",
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=OfficialReport&feed=Goals&game_id=1027888",
+      "view": "OfficialReport",
+      "feed": "Goals",
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://lscluster.hockeytech.com/feed?view=OfficialReport&feed=Penalties&game_id=1027888",
+      "view": "OfficialReport",
+      "feed": "Penalties",
+      "path": "/feed",
+      "domain": "https://lscluster.hockeytech.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=GameSummary",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=GameSummary",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=GameDetail",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=GameDetail",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=GoalDetail",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=GoalDetail",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=Goals",
+      "view": "Goals",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=Goals",
+      "view": "Goals",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/games/1027888?view=Penalties",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=Penalties",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeed/game/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/statviewfeed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeeds/games/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/statviewfeeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/statviewfeeds/game/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/statviewfeeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feed/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feed?view=PenaltyDetail&game_id=1027888",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://theahl.com",
+      "content_type": "application/rss+xml; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feed/game/1027888?view=Officials",
+      "view": "Officials",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feed?view=RefereeSummary&game_id=1027888",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://theahl.com",
+      "content_type": "application/rss+xml; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feed/game/1027888?view=Referees",
+      "view": "Referees",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feeds/games/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/feeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feeds/game/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/feeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feeds/game/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/feeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feeds/game/1027888?view=GoalDetail",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/feeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feeds/games/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/feeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feeds/game/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/feeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feeds/game/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/feeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feeds/games/1027888?view=Referees",
+      "view": "Referees",
+      "feed": null,
+      "path": "/feeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feeds/game/1027888?view=Referees",
+      "view": "Referees",
+      "feed": null,
+      "path": "/feeds",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v1/games/1027888?view=GameDetail",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/api/v1",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v1/game/1027888?view=GameDetail",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/api/v1",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v1/games/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/api/v1",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v1/game/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/api/v1",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v1/game/1027888?view=Penalties",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/api/v1",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v1/games/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/api/v1",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v1/game/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/api/v1",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v2/game/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/api/v2",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v2/games/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/api/v2",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v2/game/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/api/v2",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v2/games/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/api/v2",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v2/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/api/v2",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v2/game/1027888?view=Penalties",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/api/v2",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v2/game/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/api/v2",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/game/1027888?view=GameSummary",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/api",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/game/1027888?view=GameDetail",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/api",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/games/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/api",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/game/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/api",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/game/1027888?view=Goals",
+      "view": "Goals",
+      "feed": null,
+      "path": "/api",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/api",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/games/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/api",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/game/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/api",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game/games/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/game",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game/game/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/game",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game/games/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/game",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/game",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game/games/1027888?view=Officials",
+      "view": "Officials",
+      "feed": null,
+      "path": "/game",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game/game/1027888?view=Officials",
+      "view": "Officials",
+      "feed": null,
+      "path": "/game",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/games/games/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/games",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/games/game/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/games",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/games/game/1027888?view=GameDetail",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/games",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/games/games/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/games",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/games/game/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/games",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/games/game/1027888?view=Goals",
+      "view": "Goals",
+      "feed": null,
+      "path": "/games",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/games/game/1027888?view=Penalties",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/games",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/games/games/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/games",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/games/game/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/games",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-detail/games/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/game-detail",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-detail/game/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/game-detail",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-detail/game/1027888?view=GameDetail",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/game-detail",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-detail/game/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/game-detail",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-detail/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/game-detail",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-detail/games/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/game-detail",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-detail/game/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/game-detail",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-report/games/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/game-report",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-report/game/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/game-report",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-report/games/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/game-report",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-report/game/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/game-report",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-report/game/1027888?view=GoalDetail",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/game-report",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-report/games/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/game-report",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-report/game/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/game-report",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-report/games/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/game-report",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game-report/game/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/game-report",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game_reports/game/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/game_reports",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game_reports/game/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/game_reports",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game_reports/game/1027888?view=GoalDetail",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/game_reports",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game_reports/games/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/game_reports",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game_reports/game/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/game_reports",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game_reports/games/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/game_reports",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/game_reports/game/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/game_reports",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goal/game/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/goal",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goal/game/1027888?view=GameSummary",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/goal",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goal/games/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/goal",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goal/game/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/goal",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goal/games/1027888?view=Goals",
+      "view": "Goals",
+      "feed": null,
+      "path": "/goal",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goal/game/1027888?view=Goals",
+      "view": "Goals",
+      "feed": null,
+      "path": "/goal",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goal/game/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/goal",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goal/game/1027888?view=Officials",
+      "view": "Officials",
+      "feed": null,
+      "path": "/goal",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goals/games/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/goals",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goals/game/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/goals",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goals/game/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/goals",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goals/games/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/goals",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goals/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/goals",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goals/game/1027888?view=Penalties",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/goals",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goals/game/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/goals",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/goals/game/1027888?view=Referees",
+      "view": "Referees",
+      "feed": null,
+      "path": "/goals",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalty/game/1027888?view=GameSummary",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/penalty",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalty/game/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/penalty",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalty/game/1027888?view=Goals",
+      "view": "Goals",
+      "feed": null,
+      "path": "/penalty",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalty/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/penalty",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalty/game/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/penalty",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalty/game/1027888?view=Officials",
+      "view": "Officials",
+      "feed": null,
+      "path": "/penalty",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalties/game/1027888?view=GameSummary",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/penalties",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalties/game/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/penalties",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalties/game/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/penalties",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalties/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/penalties",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalties/game/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/penalties",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/penalties/game/1027888?view=Officials",
+      "view": "Officials",
+      "feed": null,
+      "path": "/penalties",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/official/game/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/official",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/official/game/1027888?view=GoalDetail",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/official",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/official/game/1027888?view=Goals",
+      "view": "Goals",
+      "feed": null,
+      "path": "/official",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/official/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/official",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/official/games/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/official",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/official/game/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/official",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/official/games/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/official",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/official/game/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/official",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/officials/game/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/officials",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/officials/games/1027888?view=GoalDetail",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/officials",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/officials/game/1027888?view=GoalDetail",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/officials",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/officials/game/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/officials",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/officials/games/1027888?view=Officials",
+      "view": "Officials",
+      "feed": null,
+      "path": "/officials",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/officials/game/1027888?view=Officials",
+      "view": "Officials",
+      "feed": null,
+      "path": "/officials",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=BoxScore",
+      "view": "BoxScore",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=GameSummary&game_id=1027888",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/GameSummary?game_id=1027888",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=GameSummary&game_id=1027888",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=GameSummary",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=GameSummary",
+      "view": "GameSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=GameDetail&game_id=1027888",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/GameDetail?game_id=1027888",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=GameDetail&game_id=1027888",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=GameDetail",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=GameDetail",
+      "view": "GameDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=GameReport&game_id=1027888",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/GameReport?game_id=1027888",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=GameReport&game_id=1027888",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=GameReport",
+      "view": "GameReport",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=OfficialReport&game_id=1027888",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/OfficialReport?game_id=1027888",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=OfficialReport&game_id=1027888",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=OfficialReport",
+      "view": "OfficialReport",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=GoalSummary&game_id=1027888",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/GoalSummary?game_id=1027888",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=GoalSummary&game_id=1027888",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=GoalSummary",
+      "view": "GoalSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=GoalDetail&game_id=1027888",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/GoalDetail?game_id=1027888",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=GoalDetail&game_id=1027888",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=GoalDetail",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=GoalDetail",
+      "view": "GoalDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=Goals&game_id=1027888",
+      "view": "Goals",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/Goals?game_id=1027888",
+      "view": "Goals",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=Goals&game_id=1027888",
+      "view": "Goals",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=Goals",
+      "view": "Goals",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=Goals",
+      "view": "Goals",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=PenaltySummary&game_id=1027888",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/PenaltySummary?game_id=1027888",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=PenaltySummary&game_id=1027888",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=PenaltySummary",
+      "view": "PenaltySummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=PenaltyDetail&game_id=1027888",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/PenaltyDetail?game_id=1027888",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=PenaltyDetail&game_id=1027888",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=PenaltyDetail",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=Penalties&game_id=1027888",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/Penalties?game_id=1027888",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=Penalties&game_id=1027888",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=Penalties",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=Penalties",
+      "view": "Penalties",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=OfficialDetail&game_id=1027888",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/OfficialDetail?game_id=1027888",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=OfficialDetail&game_id=1027888",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=OfficialDetail",
+      "view": "OfficialDetail",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=Officials&game_id=1027888",
+      "view": "Officials",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/Officials?game_id=1027888",
+      "view": "Officials",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=Officials&game_id=1027888",
+      "view": "Officials",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=Officials",
+      "view": "Officials",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=Officials",
+      "view": "Officials",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=RefereeSummary&game_id=1027888",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/RefereeSummary?game_id=1027888",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=RefereeSummary&game_id=1027888",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=RefereeSummary",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=Referees&game_id=1027888",
+      "view": "Referees",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/Referees?game_id=1027888",
+      "view": "Referees",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/stats?view=Referees&game_id=1027888",
+      "view": "Referees",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888?view=Referees",
+      "view": "Referees",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888?view=Referees",
+      "view": "Referees",
+      "feed": null,
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=GameSummary&feed=Goals&game_id=1027888",
+      "view": "GameSummary",
+      "feed": "Goals",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/GameSummary/Goals?game_id=1027888",
+      "view": "GameSummary",
+      "feed": "Goals",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=GameSummary&feed=Penalties&game_id=1027888",
+      "view": "GameSummary",
+      "feed": "Penalties",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/GameSummary/Penalties?game_id=1027888",
+      "view": "GameSummary",
+      "feed": "Penalties",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=GameSummary&feed=Officials&game_id=1027888",
+      "view": "GameSummary",
+      "feed": "Officials",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/GameSummary/Officials?game_id=1027888",
+      "view": "GameSummary",
+      "feed": "Officials",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=BoxScore&feed=Goals&game_id=1027888",
+      "view": "BoxScore",
+      "feed": "Goals",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/BoxScore/Goals?game_id=1027888",
+      "view": "BoxScore",
+      "feed": "Goals",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=BoxScore&feed=Penalties&game_id=1027888",
+      "view": "BoxScore",
+      "feed": "Penalties",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/BoxScore/Penalties?game_id=1027888",
+      "view": "BoxScore",
+      "feed": "Penalties",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=BoxScore&feed=Officials&game_id=1027888",
+      "view": "BoxScore",
+      "feed": "Officials",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/BoxScore/Officials?game_id=1027888",
+      "view": "BoxScore",
+      "feed": "Officials",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=OfficialReport&feed=Goals&game_id=1027888",
+      "view": "OfficialReport",
+      "feed": "Goals",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/OfficialReport/Goals?game_id=1027888",
+      "view": "OfficialReport",
+      "feed": "Goals",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats?view=OfficialReport&feed=Penalties&game_id=1027888",
+      "view": "OfficialReport",
+      "feed": "Penalties",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/OfficialReport/Penalties?game_id=1027888",
+      "view": "OfficialReport",
+      "feed": "Penalties",
+      "path": "/stats",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/v2/games/1027888",
+      "pattern": "/api/v2/games/1027888",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/games/1027888",
+      "pattern": "/api/games/1027888",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/game/1027888",
+      "pattern": "/api/game/1027888",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game/1027888",
+      "pattern": "/stats/game/1027888",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game-detail/1027888",
+      "pattern": "/stats/game-detail/1027888",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/data/games/1027888",
+      "pattern": "/data/games/1027888",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/data/game/1027888",
+      "pattern": "/data/game/1027888",
+      "domain": "https://theahl.com",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/game-center/1027888",
+      "pattern": "/stats/game-center/1027888",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/api/stats/game/1027888",
+      "pattern": "/api/stats/game/1027888",
+      "content_type": "text/html; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/stats/games/1027888",
+      "pattern": "/stats/games/1027888",
+      "content_type": "text/html; charset=UTF-8"
+    }
+  ],
+  "endpoints_with_data": [
+    {
+      "url": "https://theahl.com/feed?view=PenaltyDetail&game_id=1027888",
+      "view": "PenaltyDetail",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://theahl.com",
+      "content_type": "application/rss+xml; charset=UTF-8"
+    },
+    {
+      "url": "https://theahl.com/feed?view=RefereeSummary&game_id=1027888",
+      "view": "RefereeSummary",
+      "feed": null,
+      "path": "/feed",
+      "domain": "https://theahl.com",
+      "content_type": "application/rss+xml; charset=UTF-8"
+    }
+  ],
+  "parameter_findings": {
+    "{'game_id': 1027888, 'season_id': 20252026}": {
+      "url": "https://lscluster.hockeytech.com/feed?game_id=1027888&season_id=20252026",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'game_id': 1027888, 'league_id': 86}": {
+      "url": "https://lscluster.hockeytech.com/feed?game_id=1027888&league_id=86",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'game_id': 1027888, 'site_id': 4629}": {
+      "url": "https://lscluster.hockeytech.com/feed?game_id=1027888&site_id=4629",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'game_id': 1027888, 'season_id': 20252026, 'league_id': 86}": {
+      "url": "https://lscluster.hockeytech.com/feed?game_id=1027888&season_id=20252026&league_id=86",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'game_id': 1027888, 'season_id': 20252026, 'site_id': 4629}": {
+      "url": "https://lscluster.hockeytech.com/feed?game_id=1027888&season_id=20252026&site_id=4629",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'game_id': 1027888, 'league_id': 86, 'site_id': 4629}": {
+      "url": "https://lscluster.hockeytech.com/feed?game_id=1027888&league_id=86&site_id=4629",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'gameId': 1027888}": {
+      "url": "https://lscluster.hockeytech.com/feed?gameId=1027888",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'id': 1027888}": {
+      "url": "https://lscluster.hockeytech.com/feed?id=1027888",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'game': 1027888}": {
+      "url": "https://lscluster.hockeytech.com/feed?game=1027888",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'game_id': 1027888, 'fmt': 'json'}": {
+      "url": "https://lscluster.hockeytech.com/feed?game_id=1027888&fmt=json",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'game_id': 1027888, 'format': 'json'}": {
+      "url": "https://lscluster.hockeytech.com/feed?game_id=1027888&format=json",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'client_code': 'ahl', 'game_id': 1027888}": {
+      "url": "https://lscluster.hockeytech.com/feed?client_code=ahl&game_id=1027888",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'game_id': 1027888, 'lang_id': 1}": {
+      "url": "https://lscluster.hockeytech.com/feed?game_id=1027888&lang_id=1",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'game_id': 1027888, 'lang': 'en'}": {
+      "url": "https://lscluster.hockeytech.com/feed?game_id=1027888&lang=en",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8"
+    },
+    "{'client_code': 'ahl', 'game_id': 1027888, 'lang_id': 1}": {
+      "url": "https://lscluster.hockeytech.com/game_reports/official-game-report.php?client_code=ahl&game_id=1027888&lang_id=1",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8",
+      "data_preview": "<!-- MEDIA LEFT 20 -->\n<!-- MEDIA RIGHT 20 -->\n<!-- MEDIA TOP 20 -->\n<!-- MEDIA BOTTOM 20 -->\n<html>"
+    },
+    "{'client_code': 'ahl', 'game_id': 1027888, 'format': 'json'}": {
+      "url": "https://lscluster.hockeytech.com/game_reports/official-game-report.php?client_code=ahl&game_id=1027888&format=json",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8",
+      "data_preview": "<!-- MEDIA LEFT 20 -->\n<!-- MEDIA RIGHT 20 -->\n<!-- MEDIA TOP 20 -->\n<!-- MEDIA BOTTOM 20 -->\n<html>"
+    },
+    "{'client_code': 'ahl', 'game_id': 1027888, 'view': 'goals'}": {
+      "url": "https://lscluster.hockeytech.com/game_reports/official-game-report.php?client_code=ahl&game_id=1027888&view=goals",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8",
+      "data_preview": "<!-- MEDIA LEFT 20 -->\n<!-- MEDIA RIGHT 20 -->\n<!-- MEDIA TOP 20 -->\n<!-- MEDIA BOTTOM 20 -->\n<html>"
+    },
+    "{'client_code': 'ahl', 'game_id': 1027888, 'view': 'penalties'}": {
+      "url": "https://lscluster.hockeytech.com/game_reports/official-game-report.php?client_code=ahl&game_id=1027888&view=penalties",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8",
+      "data_preview": "<!-- MEDIA LEFT 20 -->\n<!-- MEDIA RIGHT 20 -->\n<!-- MEDIA TOP 20 -->\n<!-- MEDIA BOTTOM 20 -->\n<html>"
+    },
+    "{'client_code': 'ahl', 'game_id': 1027888, 'view': 'officials'}": {
+      "url": "https://lscluster.hockeytech.com/game_reports/official-game-report.php?client_code=ahl&game_id=1027888&view=officials",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8",
+      "data_preview": "<!-- MEDIA LEFT 20 -->\n<!-- MEDIA RIGHT 20 -->\n<!-- MEDIA TOP 20 -->\n<!-- MEDIA BOTTOM 20 -->\n<html>"
+    },
+    "{'client_code': 'ahl', 'game_id': 1027888, 'details': 'true'}": {
+      "url": "https://lscluster.hockeytech.com/game_reports/official-game-report.php?client_code=ahl&game_id=1027888&details=true",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8",
+      "data_preview": "<!-- MEDIA LEFT 20 -->\n<!-- MEDIA RIGHT 20 -->\n<!-- MEDIA TOP 20 -->\n<!-- MEDIA BOTTOM 20 -->\n<html>"
+    },
+    "{'client_code': 'ahl', 'game_id': 1027888, 'full': 'true'}": {
+      "url": "https://lscluster.hockeytech.com/game_reports/official-game-report.php?client_code=ahl&game_id=1027888&full=true",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8",
+      "data_preview": "<!-- MEDIA LEFT 20 -->\n<!-- MEDIA RIGHT 20 -->\n<!-- MEDIA TOP 20 -->\n<!-- MEDIA BOTTOM 20 -->\n<html>"
+    },
+    "{'client_code': 'ahl', 'game_id': 1027888, 'extended': 'true'}": {
+      "url": "https://lscluster.hockeytech.com/game_reports/official-game-report.php?client_code=ahl&game_id=1027888&extended=true",
+      "success": true,
+      "content_type": "text/html; charset=UTF-8",
+      "data_preview": "<!-- MEDIA LEFT 20 -->\n<!-- MEDIA RIGHT 20 -->\n<!-- MEDIA TOP 20 -->\n<!-- MEDIA BOTTOM 20 -->\n<html>"
+    }
+  },
+  "domain_findings": {
+    "https://lscluster.hockeytech.com": [
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=BoxScore&game_id=1027888",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=GameSummary&game_id=1027888",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=GameDetail&game_id=1027888",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=GameReport&game_id=1027888",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=OfficialReport&game_id=1027888",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=GoalSummary&game_id=1027888",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=GoalDetail&game_id=1027888",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=Goals&game_id=1027888",
+        "view": "Goals",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=PenaltySummary&game_id=1027888",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=PenaltyDetail&game_id=1027888",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=Penalties&game_id=1027888",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=OfficialDetail&game_id=1027888",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=Officials&game_id=1027888",
+        "view": "Officials",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=RefereeSummary&game_id=1027888",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=Referees&game_id=1027888",
+        "view": "Referees",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=GameSummary&feed=Goals&game_id=1027888",
+        "view": "GameSummary",
+        "feed": "Goals",
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=GameSummary&feed=Penalties&game_id=1027888",
+        "view": "GameSummary",
+        "feed": "Penalties",
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=GameSummary&feed=Officials&game_id=1027888",
+        "view": "GameSummary",
+        "feed": "Officials",
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=BoxScore&feed=Goals&game_id=1027888",
+        "view": "BoxScore",
+        "feed": "Goals",
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=BoxScore&feed=Penalties&game_id=1027888",
+        "view": "BoxScore",
+        "feed": "Penalties",
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=BoxScore&feed=Officials&game_id=1027888",
+        "view": "BoxScore",
+        "feed": "Officials",
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=OfficialReport&feed=Goals&game_id=1027888",
+        "view": "OfficialReport",
+        "feed": "Goals",
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://lscluster.hockeytech.com/feed?view=OfficialReport&feed=Penalties&game_id=1027888",
+        "view": "OfficialReport",
+        "feed": "Penalties",
+        "path": "/feed",
+        "domain": "https://lscluster.hockeytech.com",
+        "content_type": "text/html; charset=UTF-8"
+      }
+    ],
+    "https://theahl.com": [
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=GameSummary",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=GameSummary",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=GameDetail",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=GameDetail",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=GoalDetail",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=GoalDetail",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=Goals",
+        "view": "Goals",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=Goals",
+        "view": "Goals",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/games/1027888?view=Penalties",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=Penalties",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeed/game/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/statviewfeed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeeds/games/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/statviewfeeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/statviewfeeds/game/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/statviewfeeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feed/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feed?view=PenaltyDetail&game_id=1027888",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://theahl.com",
+        "content_type": "application/rss+xml; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feed/game/1027888?view=Officials",
+        "view": "Officials",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feed?view=RefereeSummary&game_id=1027888",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://theahl.com",
+        "content_type": "application/rss+xml; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feed/game/1027888?view=Referees",
+        "view": "Referees",
+        "feed": null,
+        "path": "/feed",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feeds/games/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/feeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feeds/game/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/feeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feeds/game/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/feeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feeds/game/1027888?view=GoalDetail",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/feeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feeds/games/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/feeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feeds/game/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/feeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feeds/game/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/feeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feeds/games/1027888?view=Referees",
+        "view": "Referees",
+        "feed": null,
+        "path": "/feeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/feeds/game/1027888?view=Referees",
+        "view": "Referees",
+        "feed": null,
+        "path": "/feeds",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v1/games/1027888?view=GameDetail",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/api/v1",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v1/game/1027888?view=GameDetail",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/api/v1",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v1/games/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/api/v1",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v1/game/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/api/v1",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v1/game/1027888?view=Penalties",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/api/v1",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v1/games/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/api/v1",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v1/game/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/api/v1",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v2/game/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/api/v2",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v2/games/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/api/v2",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v2/game/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/api/v2",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v2/games/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/api/v2",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v2/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/api/v2",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v2/game/1027888?view=Penalties",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/api/v2",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/v2/game/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/api/v2",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/game/1027888?view=GameSummary",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/api",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/game/1027888?view=GameDetail",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/api",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/games/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/api",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/game/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/api",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/game/1027888?view=Goals",
+        "view": "Goals",
+        "feed": null,
+        "path": "/api",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/api",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/games/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/api",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/api/game/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/api",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game/games/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/game",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game/game/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/game",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game/games/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/game",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/game",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game/games/1027888?view=Officials",
+        "view": "Officials",
+        "feed": null,
+        "path": "/game",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game/game/1027888?view=Officials",
+        "view": "Officials",
+        "feed": null,
+        "path": "/game",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/games/games/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/games",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/games/game/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/games",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/games/game/1027888?view=GameDetail",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/games",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/games/games/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/games",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/games/game/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/games",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/games/game/1027888?view=Goals",
+        "view": "Goals",
+        "feed": null,
+        "path": "/games",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/games/game/1027888?view=Penalties",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/games",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/games/games/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/games",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/games/game/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/games",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-detail/games/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/game-detail",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-detail/game/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/game-detail",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-detail/game/1027888?view=GameDetail",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/game-detail",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-detail/game/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/game-detail",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-detail/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/game-detail",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-detail/games/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/game-detail",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-detail/game/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/game-detail",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-report/games/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/game-report",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-report/game/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/game-report",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-report/games/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/game-report",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-report/game/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/game-report",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-report/game/1027888?view=GoalDetail",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/game-report",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-report/games/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/game-report",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-report/game/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/game-report",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-report/games/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/game-report",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game-report/game/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/game-report",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game_reports/game/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/game_reports",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game_reports/game/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/game_reports",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game_reports/game/1027888?view=GoalDetail",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/game_reports",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game_reports/games/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/game_reports",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game_reports/game/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/game_reports",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game_reports/games/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/game_reports",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/game_reports/game/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/game_reports",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goal/game/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/goal",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goal/game/1027888?view=GameSummary",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/goal",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goal/games/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/goal",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goal/game/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/goal",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goal/games/1027888?view=Goals",
+        "view": "Goals",
+        "feed": null,
+        "path": "/goal",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goal/game/1027888?view=Goals",
+        "view": "Goals",
+        "feed": null,
+        "path": "/goal",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goal/game/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/goal",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goal/game/1027888?view=Officials",
+        "view": "Officials",
+        "feed": null,
+        "path": "/goal",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goals/games/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/goals",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goals/game/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/goals",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goals/game/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/goals",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goals/games/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/goals",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goals/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/goals",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goals/game/1027888?view=Penalties",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/goals",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goals/game/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/goals",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/goals/game/1027888?view=Referees",
+        "view": "Referees",
+        "feed": null,
+        "path": "/goals",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalty/game/1027888?view=GameSummary",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/penalty",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalty/game/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/penalty",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalty/game/1027888?view=Goals",
+        "view": "Goals",
+        "feed": null,
+        "path": "/penalty",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalty/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/penalty",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalty/game/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/penalty",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalty/game/1027888?view=Officials",
+        "view": "Officials",
+        "feed": null,
+        "path": "/penalty",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalties/game/1027888?view=GameSummary",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/penalties",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalties/game/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/penalties",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalties/game/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/penalties",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalties/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/penalties",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalties/game/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/penalties",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/penalties/game/1027888?view=Officials",
+        "view": "Officials",
+        "feed": null,
+        "path": "/penalties",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/official/game/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/official",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/official/game/1027888?view=GoalDetail",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/official",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/official/game/1027888?view=Goals",
+        "view": "Goals",
+        "feed": null,
+        "path": "/official",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/official/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/official",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/official/games/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/official",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/official/game/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/official",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/official/games/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/official",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/official/game/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/official",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/officials/game/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/officials",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/officials/games/1027888?view=GoalDetail",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/officials",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/officials/game/1027888?view=GoalDetail",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/officials",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/officials/game/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/officials",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/officials/games/1027888?view=Officials",
+        "view": "Officials",
+        "feed": null,
+        "path": "/officials",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/officials/game/1027888?view=Officials",
+        "view": "Officials",
+        "feed": null,
+        "path": "/officials",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=BoxScore",
+        "view": "BoxScore",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=GameSummary&game_id=1027888",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/GameSummary?game_id=1027888",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=GameSummary&game_id=1027888",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=GameSummary",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=GameSummary",
+        "view": "GameSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=GameDetail&game_id=1027888",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/GameDetail?game_id=1027888",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=GameDetail&game_id=1027888",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=GameDetail",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=GameDetail",
+        "view": "GameDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=GameReport&game_id=1027888",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/GameReport?game_id=1027888",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=GameReport&game_id=1027888",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=GameReport",
+        "view": "GameReport",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=OfficialReport&game_id=1027888",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/OfficialReport?game_id=1027888",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=OfficialReport&game_id=1027888",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=OfficialReport",
+        "view": "OfficialReport",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=GoalSummary&game_id=1027888",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/GoalSummary?game_id=1027888",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=GoalSummary&game_id=1027888",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=GoalSummary",
+        "view": "GoalSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=GoalDetail&game_id=1027888",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/GoalDetail?game_id=1027888",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=GoalDetail&game_id=1027888",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=GoalDetail",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=GoalDetail",
+        "view": "GoalDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=Goals&game_id=1027888",
+        "view": "Goals",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/Goals?game_id=1027888",
+        "view": "Goals",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=Goals&game_id=1027888",
+        "view": "Goals",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=Goals",
+        "view": "Goals",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=Goals",
+        "view": "Goals",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=PenaltySummary&game_id=1027888",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/PenaltySummary?game_id=1027888",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=PenaltySummary&game_id=1027888",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=PenaltySummary",
+        "view": "PenaltySummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=PenaltyDetail&game_id=1027888",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/PenaltyDetail?game_id=1027888",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=PenaltyDetail&game_id=1027888",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=PenaltyDetail",
+        "view": "PenaltyDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=Penalties&game_id=1027888",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/Penalties?game_id=1027888",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=Penalties&game_id=1027888",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=Penalties",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=Penalties",
+        "view": "Penalties",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=OfficialDetail&game_id=1027888",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/OfficialDetail?game_id=1027888",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=OfficialDetail&game_id=1027888",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=OfficialDetail",
+        "view": "OfficialDetail",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=Officials&game_id=1027888",
+        "view": "Officials",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/Officials?game_id=1027888",
+        "view": "Officials",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=Officials&game_id=1027888",
+        "view": "Officials",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=Officials",
+        "view": "Officials",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=Officials",
+        "view": "Officials",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=RefereeSummary&game_id=1027888",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/RefereeSummary?game_id=1027888",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=RefereeSummary&game_id=1027888",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=RefereeSummary",
+        "view": "RefereeSummary",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=Referees&game_id=1027888",
+        "view": "Referees",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/Referees?game_id=1027888",
+        "view": "Referees",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/stats?view=Referees&game_id=1027888",
+        "view": "Referees",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/games/1027888?view=Referees",
+        "view": "Referees",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/game/1027888?view=Referees",
+        "view": "Referees",
+        "feed": null,
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=GameSummary&feed=Goals&game_id=1027888",
+        "view": "GameSummary",
+        "feed": "Goals",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/GameSummary/Goals?game_id=1027888",
+        "view": "GameSummary",
+        "feed": "Goals",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=GameSummary&feed=Penalties&game_id=1027888",
+        "view": "GameSummary",
+        "feed": "Penalties",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/GameSummary/Penalties?game_id=1027888",
+        "view": "GameSummary",
+        "feed": "Penalties",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=GameSummary&feed=Officials&game_id=1027888",
+        "view": "GameSummary",
+        "feed": "Officials",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/GameSummary/Officials?game_id=1027888",
+        "view": "GameSummary",
+        "feed": "Officials",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=BoxScore&feed=Goals&game_id=1027888",
+        "view": "BoxScore",
+        "feed": "Goals",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/BoxScore/Goals?game_id=1027888",
+        "view": "BoxScore",
+        "feed": "Goals",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=BoxScore&feed=Penalties&game_id=1027888",
+        "view": "BoxScore",
+        "feed": "Penalties",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/BoxScore/Penalties?game_id=1027888",
+        "view": "BoxScore",
+        "feed": "Penalties",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=BoxScore&feed=Officials&game_id=1027888",
+        "view": "BoxScore",
+        "feed": "Officials",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/BoxScore/Officials?game_id=1027888",
+        "view": "BoxScore",
+        "feed": "Officials",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=OfficialReport&feed=Goals&game_id=1027888",
+        "view": "OfficialReport",
+        "feed": "Goals",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/OfficialReport/Goals?game_id=1027888",
+        "view": "OfficialReport",
+        "feed": "Goals",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats?view=OfficialReport&feed=Penalties&game_id=1027888",
+        "view": "OfficialReport",
+        "feed": "Penalties",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      },
+      {
+        "url": "https://theahl.com/stats/OfficialReport/Penalties?game_id=1027888",
+        "view": "OfficialReport",
+        "feed": "Penalties",
+        "path": "/stats",
+        "domain": "https://theahl.com",
+        "content_type": "text/html; charset=UTF-8"
+      }
+    ],
+    "https://api.theahl.com": [],
+    "https://statsapi.nhl.com": []
+  },
+  "view_findings": {}
+}

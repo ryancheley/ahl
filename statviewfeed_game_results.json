@@ -1,0 +1,784 @@
+[
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=game",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamestats&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=gamestats",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamestats\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamedetails&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=gamedetails",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 42,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamedetails\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamescore&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=gamescore",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamescore\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamereport&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=gamereport",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 41,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamereport\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=boxscore&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=boxscore",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 39,
+    "response_preview": "{\n  \"error\": \"InvalidView error: boxscore\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=summary&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=summary",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 38,
+    "response_preview": "{\n  \"error\": \"InvalidView error: summary\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=goals&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=goals",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 36,
+    "response_preview": "{\n  \"error\": \"InvalidView error: goals\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=penalties&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=penalties",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: penalties\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=officials&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=officials",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: officials\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=scoresheet&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=scoresheet",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 41,
+    "response_preview": "{\n  \"error\": \"InvalidView error: scoresheet\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=roster&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=roster",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": true,
+    "has_data": true,
+    "data_keys": [
+      "teamName",
+      "teamLogo",
+      "seasonName",
+      "divisionName",
+      "roster"
+    ],
+    "response_length": 13676,
+    "response_preview": "{\n  \"teamName\": null,\n  \"teamLogo\": \"https://lscluster.hockeytech.com/download.php?file_path=img/logos/0_90.jpg&liaf=1&client_code=ahl\",\n  \"seasonName\": \"2025-26 Regular Season\",\n  \"divisionName\": \"\",\n  \"roster\": [\n    {\n      \"sections\": [\n        {\n          \"title\": \"Forwards\",\n          \"headers",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=officialsummary&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=officialsummary",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 46,
+    "response_preview": "{\n  \"error\": \"InvalidView error: officialsummary\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=goalssummary&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=goalssummary",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 43,
+    "response_preview": "{\n  \"error\": \"InvalidView error: goalssummary\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=penaltiesummary&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "view=penaltiesummary",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 46,
+    "response_preview": "{\n  \"error\": \"InvalidView error: penaltiesummary\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=goals",
+    "description": "view=game + statsType=goals",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=penalties",
+    "description": "view=game + statsType=penalties",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=officials",
+    "description": "view=game + statsType=officials",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=boxscore",
+    "description": "view=game + statsType=boxscore",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=detailed",
+    "description": "view=game + statsType=detailed",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=summary",
+    "description": "view=game + statsType=summary",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=gamedetails",
+    "description": "view=game + statsType=gamedetails",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamestats&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=goals",
+    "description": "view=gamestats + statsType=goals",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamestats\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamestats&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=penalties",
+    "description": "view=gamestats + statsType=penalties",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamestats\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamestats&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=officials",
+    "description": "view=gamestats + statsType=officials",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamestats\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamestats&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=boxscore",
+    "description": "view=gamestats + statsType=boxscore",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamestats\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamestats&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=detailed",
+    "description": "view=gamestats + statsType=detailed",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamestats\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamestats&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=summary",
+    "description": "view=gamestats + statsType=summary",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamestats\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamestats&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=gamedetails",
+    "description": "view=gamestats + statsType=gamedetails",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamestats\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamedetails&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=goals",
+    "description": "view=gamedetails + statsType=goals",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 42,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamedetails\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamedetails&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=penalties",
+    "description": "view=gamedetails + statsType=penalties",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 42,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamedetails\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamedetails&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=officials",
+    "description": "view=gamedetails + statsType=officials",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 42,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamedetails\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamedetails&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=boxscore",
+    "description": "view=gamedetails + statsType=boxscore",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 42,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamedetails\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamedetails&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=detailed",
+    "description": "view=gamedetails + statsType=detailed",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 42,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamedetails\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamedetails&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=summary",
+    "description": "view=gamedetails + statsType=summary",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 42,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamedetails\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gamedetails&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=gamedetails",
+    "description": "view=gamedetails + statsType=gamedetails",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 42,
+    "response_preview": "{\n  \"error\": \"InvalidView error: gamedetails\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&key=ccb91f29d6744675&client_code=ahl",
+    "description": "Minimal params (no season/site/league/lang)",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&key=ccb91f29d6744675&league_id=4",
+    "description": "League ID only",
+    "status": 200,
+    "content_type": "text/html; charset=UTF-8",
+    "is_json": false,
+    "is_jsonp": false,
+    "has_data": false,
+    "data_keys": [],
+    "response_length": 22,
+    "response_preview": "Client access denied.",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&key=ccb91f29d6744675&site_id=3",
+    "description": "Site ID only",
+    "status": 200,
+    "content_type": "text/html; charset=UTF-8",
+    "is_json": false,
+    "is_jsonp": false,
+    "has_data": false,
+    "data_keys": [],
+    "response_length": 22,
+    "response_preview": "Client access denied.",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&season_id=90&site_id=3&client_code=ahl&league_id=4&lang=1",
+    "description": "Without API key",
+    "status": 200,
+    "content_type": "text/html; charset=UTF-8",
+    "is_json": false,
+    "is_jsonp": false,
+    "has_data": false,
+    "data_keys": [],
+    "response_length": 12,
+    "response_preview": "Invalid key.",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&season_id=90",
+    "description": "season_id=90",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&season_id=89",
+    "description": "season_id=89",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&season_id=88",
+    "description": "season_id=88",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=game&game_id=1027888&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "No season_id",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 35,
+    "response_preview": "{\n  \"error\": \"InvalidView error: game\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=boxscore&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "Component: view=boxscore",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 39,
+    "response_preview": "{\n  \"error\": \"InvalidView error: boxscore\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=roster&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "Component: view=roster",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": true,
+    "has_data": true,
+    "data_keys": [
+      "teamName",
+      "teamLogo",
+      "seasonName",
+      "divisionName",
+      "roster"
+    ],
+    "response_length": 13676,
+    "response_preview": "{\n  \"teamName\": null,\n  \"teamLogo\": \"https://lscluster.hockeytech.com/download.php?file_path=img/logos/0_90.jpg&liaf=1&client_code=ahl\",\n  \"seasonName\": \"2025-26 Regular Season\",\n  \"divisionName\": \"\",\n  \"roster\": [\n    {\n      \"sections\": [\n        {\n          \"title\": \"Forwards\",\n          \"headers",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=goals&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "Component: view=goals",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 36,
+    "response_preview": "{\n  \"error\": \"InvalidView error: goals\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=penalties&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "Component: view=penalties",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: penalties\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=officials&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "Component: view=officials",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: officials\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=shots&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "Component: view=shots",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 36,
+    "response_preview": "{\n  \"error\": \"InvalidView error: shots\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=teamstats&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "Component: view=teamstats",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 40,
+    "response_preview": "{\n  \"error\": \"InvalidView error: teamstats\"\n}",
+    "error": null
+  },
+  {
+    "url": "https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=playerstats&game_id=1027888&season_id=90&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1",
+    "description": "Component: view=playerstats",
+    "status": 200,
+    "content_type": "application/json",
+    "is_json": true,
+    "is_jsonp": false,
+    "has_data": true,
+    "data_keys": [
+      "error"
+    ],
+    "response_length": 42,
+    "response_preview": "{\n  \"error\": \"InvalidView error: playerstats\"\n}",
+    "error": null
+  }
+]
