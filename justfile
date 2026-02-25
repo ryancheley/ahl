@@ -7,7 +7,7 @@
 @load:
     python scrape_games.py season 90
 
-@rosters season="90":
+rosters season="90":
     python load_rosters.py --season {{season}}
 
 @recent:
