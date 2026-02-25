@@ -1,0 +1,12 @@
+{
+  "total_events": 91,
+  "goals": 3,
+  "penalties": 9,
+  "officials": 0,
+  "event_types": {
+    "goalie_change": 9,
+    "shot": 70,
+    "penalty": 9,
+    "goal": 3
+  }
+}

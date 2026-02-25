@@ -1,0 +1,32 @@
+{
+  "gc_pxpverbose": {
+    "status": "failed"
+  },
+  "gc_pxp": {
+    "status": "failed"
+  },
+  "gc_gamesummary": {
+    "status": "failed"
+  },
+  "gc_clock": {
+    "status": "failed"
+  },
+  "gc_preview": {
+    "status": "failed"
+  },
+  "modulekit_schedule": {
+    "status": "failed"
+  },
+  "modulekit_gamesperday": {
+    "status": "failed"
+  },
+  "modulekit_standings": {
+    "status": "failed"
+  },
+  "modulekit_topscorers": {
+    "status": "failed"
+  },
+  "modulekit_seasons": {
+    "status": "failed"
+  }
+}
