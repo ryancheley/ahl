@@ -13,7 +13,6 @@ Supports:
 
 import re
 import json
-import yaml
 import sqlite3
 import time
 from typing import Optional, Dict, List, Tuple
@@ -113,24 +112,6 @@ class GameInfo:
     linespersons: List[Official] = field(default_factory=list)
     goals: List[Goal] = field(default_factory=list)
     penalties: List[Penalty] = field(default_factory=list)
-
-
-def load_game_examples(yaml_path: str = "game_examples.yaml") -> Dict:
-    """
-    Load game examples from YAML file.
-
-    Args:
-        yaml_path: Path to the game_examples.yaml file
-
-    Returns:
-        Dictionary with game type keys containing game format URLs
-    """
-    try:
-        with open(yaml_path, "r") as f:
-            return yaml.safe_load(f)
-    except FileNotFoundError:
-        print(f"Error: {yaml_path} not found")
-        return {}
 
 
 def detect_overtime_periods(game_status: str) -> int:
@@ -1519,108 +1500,3 @@ def scrape_game_id_range(
     return results
 
 
-def scrape_examples_from_yaml(
-    yaml_path: str = "game_examples.yaml",
-    game_id_base: int = 1000000,
-    db_path: str = "games.db"
-) -> List[GameInfo]:
-    """
-    Scrape all game examples from the YAML file.
-
-    Args:
-        yaml_path: Path to the game_examples.yaml file
-        game_id_base: Base game ID to use for examples (incremented for each game)
-        db_path: Path to the database file
-
-    Returns:
-        List of GameInfo objects for successful scrapes
-    """
-    examples = load_game_examples(yaml_path)
-    results = []
-
-    if not examples:
-        return results
-
-    for game_type_name, formats in examples.items():
-        try:
-            game_type = GameType(game_type_name)
-        except ValueError:
-            print(f"Unknown game type: {game_type_name}")
-            continue
-
-        for format_name, url in formats.items():
-            if not isinstance(url, str):
-                continue
-
-            game_id = game_id_base
-            game_id_base += 1
-
-            print(f"Scraping {game_type_name}.{format_name} from {url}")
-
-            game_info = scrape_game_from_url(game_id, url, game_type)
-
-            if game_info:
-                results.append(game_info)
-                write_game_to_database(game_info, db_path)
-
-            time.sleep(1)
-
-    return results
-
-
-def print_game_summary(game_info: GameInfo) -> None:
-    """
-    Print a comprehensive summary of game information.
-
-    Args:
-        game_info: GameInfo object to print
-    """
-    print(f"\n{'='*70}")
-    print(f"Game ID: {game_info.game_id}")
-    print(f"Type: {game_info.game_type.value.upper()} | Format: {game_info.game_format.value.upper()}")
-    if game_info.overtime_periods > 0:
-        print(f"Overtime Periods: {game_info.overtime_periods}")
-    if game_info.decided_by_shootout:
-        print(f"Decided by: Shootout")
-
-    print(f"\n{game_info.away_team} ({game_info.away_shots} shots) vs {game_info.home_team} ({game_info.home_shots} shots)")
-    print(f"Final Score: {game_info.away_score} - {game_info.home_score}")
-    print(f"Date: {game_info.game_date} | Attendance: {game_info.attendance:,}")
-
-    if game_info.referees:
-        refs = ", ".join(str(r) for r in game_info.referees)
-        print(f"\nReferees: {refs}")
-
-    if game_info.linespersons:
-        lines = ", ".join(str(l) for l in game_info.linespersons)
-        print(f"Linespersons: {lines}")
-
-    if game_info.goals:
-        print(f"\nGoals ({len(game_info.goals)} total):")
-        for goal in game_info.goals:
-            special_flags = []
-            if goal.power_play:
-                special_flags.append("PP")
-            if goal.empty_net:
-                special_flags.append("EN")
-            if goal.short_handed:
-                special_flags.append("SH")
-            flag_str = f" ({', '.join(special_flags)})" if special_flags else ""
-
-            assists_str = f" (Assists: {', '.join(goal.assists)})" if goal.assists else ""
-            print(f"  {goal.goal_number}. {goal.player_name} #{goal.player_number} ({goal.team}) at {goal.time} in {goal.period} period{assists_str}{flag_str}")
-
-    if game_info.penalties:
-        print(f"\nPenalties ({len(game_info.penalties)} total):")
-        for penalty in game_info.penalties:
-            print(f"  {penalty.player_name} ({penalty.team}): {penalty.penalty_type} at {penalty.time} in {penalty.period} period")
-
-    print(f"{'='*70}")
-
-
-if __name__ == "__main__":
-    games = scrape_examples_from_yaml()
-
-    print(f"\n\nSuccessfully scraped {len(games)} games")
-    for game in games:
-        print_game_summary(game)
