@@ -161,6 +161,10 @@ class GameData:
     game_letter: str
     game_number: int
     overtime_periods: int
+    game_type: str
+    game_format: str
+    home_shots: int
+    away_shots: int
     goals: List[Goal]
     penalties: List[Penalty]
     officials: List[Official]
@@ -324,9 +328,23 @@ class GameSummaryParser:
         }
         game_status = status_map.get(str(status_code), 'Unknown')
 
-        # Calculate overtime periods
+        # Calculate overtime periods and game format
         period = int(meta.get('period', 0))
         overtime_periods = max(0, period - 3)  # Regular season has 3 periods
+        shootout = int(meta.get('shootout', 0))
+
+        # Determine game format
+        if shootout:
+            game_format = 'shootout'
+        elif overtime_periods > 0:
+            game_format = 'overtime'
+        else:
+            game_format = 'regulation'
+
+        # Extract shots data
+        total_shots = summary.get('totalShots', {})
+        home_shots = int(total_shots.get('home', 0)) if total_shots else 0
+        away_shots = int(total_shots.get('visitor', 0)) if total_shots else 0
 
         return {
             'game_id': game_id,
@@ -345,10 +363,14 @@ class GameSummaryParser:
             'referee2': meta.get('referee2', ''),
             'linesman1': meta.get('linesman1', ''),
             'linesman2': meta.get('linesman2', ''),
-            'shootout': int(meta.get('shootout', 0)),
+            'shootout': shootout,
             'game_letter': meta.get('game_letter', ''),
             'game_number': int(meta.get('game_number', 0)),
             'overtime_periods': overtime_periods,
+            'game_type': 'regular',  # All current data is regular season
+            'game_format': game_format,
+            'home_shots': home_shots,
+            'away_shots': away_shots,
         }
 
     @staticmethod
@@ -440,6 +462,10 @@ class APIGameScraper:
             game_letter=game_dict['game_letter'],
             game_number=game_dict['game_number'],
             overtime_periods=game_dict['overtime_periods'],
+            game_type=game_dict['game_type'],
+            game_format=game_dict['game_format'],
+            home_shots=game_dict['home_shots'],
+            away_shots=game_dict['away_shots'],
             goals=goals,
             penalties=penalties,
             officials=officials,
@@ -460,8 +486,9 @@ class APIGameScraper:
                 INSERT OR REPLACE INTO games_extended (
                     game_id, game_date, home_team, away_team,
                     home_score, away_score, attendance, season_id,
-                    game_status, overtime_periods, decided_by_shootout
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    game_status, overtime_periods, decided_by_shootout,
+                    game_type, game_format, home_shots, away_shots
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 game_data.game_id,
                 game_data.date_played,
@@ -474,6 +501,10 @@ class APIGameScraper:
                 game_data.status,
                 game_data.overtime_periods,
                 game_data.shootout,
+                game_data.game_type,
+                game_data.game_format,
+                game_data.home_shots,
+                game_data.away_shots,
             ))
 
             # Insert goals
