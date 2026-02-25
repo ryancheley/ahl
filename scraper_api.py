@@ -235,6 +235,16 @@ class PXPVerboseParser:
     """Parser for gc/pxpverbose endpoint responses."""
 
     @staticmethod
+    def _safe_int(value: Any, default: int = 0) -> int:
+        """Safely convert value to int, handling empty strings and None."""
+        if not value or value == '':
+            return default
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return default
+
+    @staticmethod
     def extract_goals(game_id: int, pxp_data: Dict[Any, Any]) -> List[Goal]:
         """Extract goal data from pxpverbose response."""
         goals = []
@@ -253,20 +263,20 @@ class PXPVerboseParser:
                 goal_id=event.get('id', ''),
                 scorer_id=goal_scorer.get('player_id', event.get('goal_player_id', '')),
                 scorer_name=f"{goal_scorer.get('first_name', '')} {goal_scorer.get('last_name', '')}".strip(),
-                player_number=int(goal_scorer.get('jersey_number', 0)),
+                player_number=PXPVerboseParser._safe_int(goal_scorer.get('jersey_number', 0)),
                 assist1_id=assist1.get('player_id') if assist1 else None,
                 assist1_name=f"{assist1.get('first_name', '')} {assist1.get('last_name', '')}".strip() if assist1 else None,
                 assist2_id=assist2.get('player_id') if assist2 else None,
                 assist2_name=f"{assist2.get('first_name', '')} {assist2.get('last_name', '')}".strip() if assist2 else None,
-                period=int(event.get('period_id', 0)),
+                period=PXPVerboseParser._safe_int(event.get('period_id', 0)),
                 time=event.get('time_formatted', ''),
                 team_id=event.get('team_id', ''),
-                power_play=bool(int(event.get('power_play', 0))),
-                empty_net=bool(int(event.get('empty_net', 0))),
-                short_handed=bool(int(event.get('short_handed', 0))),
-                penalty_shot=bool(int(event.get('penalty_shot', 0))),
-                game_winning=bool(int(event.get('game_winning', 0))),
-                game_tying=bool(int(event.get('game_tieing', 0))),
+                power_play=bool(PXPVerboseParser._safe_int(event.get('power_play', 0))),
+                empty_net=bool(PXPVerboseParser._safe_int(event.get('empty_net', 0))),
+                short_handed=bool(PXPVerboseParser._safe_int(event.get('short_handed', 0))),
+                penalty_shot=bool(PXPVerboseParser._safe_int(event.get('penalty_shot', 0))),
+                game_winning=bool(PXPVerboseParser._safe_int(event.get('game_winning', 0))),
+                game_tying=bool(PXPVerboseParser._safe_int(event.get('game_tieing', 0))),
             )
             goals.append(goal)
 
@@ -293,10 +303,10 @@ class PXPVerboseParser:
                 offense=event.get('offence', ''),
                 offense_description=event.get('lang_penalty_description', ''),
                 penalty_class=event.get('penalty_class', ''),
-                minutes=float(event.get('minutes', 0)),
-                period=int(event.get('period_id', 0)),
+                minutes=float(PXPVerboseParser._safe_int(event.get('minutes', 0))),
+                period=PXPVerboseParser._safe_int(event.get('period_id', 0)),
                 time=event.get('time_off_formatted', ''),
-                power_play=bool(int(event.get('pp', 0))),
+                power_play=bool(PXPVerboseParser._safe_int(event.get('pp', 0))),
             )
             penalties.append(penalty)
 
@@ -305,6 +315,16 @@ class PXPVerboseParser:
 
 class GameSummaryParser:
     """Parser for gc/gamesummary endpoint responses."""
+
+    @staticmethod
+    def _safe_int(value: Any, default: int = 0) -> int:
+        """Safely convert value to int, handling empty strings and None."""
+        if not value or value == '':
+            return default
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return default
 
     @staticmethod
     def extract_game_data(game_id: int, summary_data: Dict[Any, Any]) -> Optional[Dict[str, Any]]:
@@ -329,9 +349,9 @@ class GameSummaryParser:
         game_status = status_map.get(str(status_code), 'Unknown')
 
         # Calculate overtime periods and game format
-        period = int(meta.get('period', 0))
+        period = GameSummaryParser._safe_int(meta.get('period', 0))
         overtime_periods = max(0, period - 3)  # Regular season has 3 periods
-        shootout = int(meta.get('shootout', 0))
+        shootout = GameSummaryParser._safe_int(meta.get('shootout', 0))
 
         # Determine game format
         if shootout:
@@ -343,19 +363,19 @@ class GameSummaryParser:
 
         # Extract shots data
         total_shots = summary.get('totalShots', {})
-        home_shots = int(total_shots.get('home', 0)) if total_shots else 0
-        away_shots = int(total_shots.get('visitor', 0)) if total_shots else 0
+        home_shots = GameSummaryParser._safe_int(total_shots.get('home', 0)) if total_shots else 0
+        away_shots = GameSummaryParser._safe_int(total_shots.get('visitor', 0)) if total_shots else 0
 
         return {
             'game_id': game_id,
             'date_played': meta.get('date_played', ''),
             'home_team_id': meta.get('home_team', ''),
             'visiting_team_id': meta.get('visiting_team', ''),
-            'home_goals': int(meta.get('home_goal_count', 0)),
-            'visiting_goals': int(meta.get('visiting_goal_count', 0)),
+            'home_goals': GameSummaryParser._safe_int(meta.get('home_goal_count', 0)),
+            'visiting_goals': GameSummaryParser._safe_int(meta.get('visiting_goal_count', 0)),
             'period': period,
             'status': game_status,
-            'attendance': int(meta.get('attendance', 0)),
+            'attendance': GameSummaryParser._safe_int(meta.get('attendance', 0)),
             'start_time': meta.get('start_time', ''),
             'end_time': meta.get('end_time', ''),
             'timezone': meta.get('timezone', ''),
@@ -365,7 +385,7 @@ class GameSummaryParser:
             'linesman2': meta.get('linesman2', ''),
             'shootout': shootout,
             'game_letter': meta.get('game_letter', ''),
-            'game_number': int(meta.get('game_number', 0)),
+            'game_number': GameSummaryParser._safe_int(meta.get('game_number', 0)),
             'overtime_periods': overtime_periods,
             'game_type': 'regular',  # All current data is regular season
             'game_format': game_format,
