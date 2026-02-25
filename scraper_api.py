@@ -41,6 +41,7 @@ class Goal:
     goal_id: str
     scorer_id: str
     scorer_name: str
+    player_number: int
     assist1_id: Optional[str]
     assist1_name: Optional[str]
     assist2_id: Optional[str]
@@ -62,6 +63,7 @@ class Goal:
             'goal_id': self.goal_id,
             'scorer_id': self.scorer_id,
             'scorer_name': self.scorer_name,
+            'player_number': self.player_number,
             'assist1_id': self.assist1_id,
             'assist1_name': self.assist1_name,
             'assist2_id': self.assist2_id,
@@ -243,6 +245,7 @@ class PXPVerboseParser:
                 goal_id=event.get('id', ''),
                 scorer_id=goal_scorer.get('player_id', event.get('goal_player_id', '')),
                 scorer_name=f"{goal_scorer.get('first_name', '')} {goal_scorer.get('last_name', '')}".strip(),
+                player_number=int(goal_scorer.get('jersey_number', 0)),
                 assist1_id=assist1.get('player_id') if assist1 else None,
                 assist1_name=f"{assist1.get('first_name', '')} {assist1.get('last_name', '')}".strip() if assist1 else None,
                 assist2_id=assist2.get('player_id') if assist2 else None,
@@ -420,14 +423,15 @@ class APIGameScraper:
     def write_game_to_database(self, game_data: GameData) -> bool:
         """Write game data to database."""
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self.db_path, timeout=30.0)
+            conn.isolation_level = None  # Autocommit mode
             cursor = conn.cursor()
 
             # Insert game (update if exists)
             cursor.execute('''
                 INSERT OR REPLACE INTO games_extended (
-                    game_id, date_played, home_team_id, visiting_team_id,
-                    home_goals, visiting_goals, attendance, timezone
+                    game_id, game_date, home_team, away_team,
+                    home_score, away_score, attendance, season_id
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 game_data.game_id,
@@ -437,42 +441,69 @@ class APIGameScraper:
                 game_data.home_goals,
                 game_data.visiting_goals,
                 game_data.attendance,
-                game_data.timezone,
+                SEASON_ID,
             ))
 
             # Insert goals
-            for goal in game_data.goals:
+            for goal_number, goal in enumerate(game_data.goals, 1):
+                assists_text = ''
+                if goal.assist1_name:
+                    assists_text = goal.assist1_name
+                    if goal.assist2_name:
+                        assists_text += f", {goal.assist2_name}"
+
                 cursor.execute('''
-                    INSERT OR REPLACE INTO goals (
-                        game_id, goal_id, scorer_id, scorer_name,
-                        assist1_id, assist1_name, assist2_id, assist2_name,
-                        period, time, team_id, power_play, empty_net,
-                        short_handed, penalty_shot, game_winning, game_tying
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', tuple(goal.to_dict().values()))
+                    INSERT INTO goals (
+                        game_id, goal_number, player_name, player_number, team, assists,
+                        period, time, power_play, empty_net, short_handed
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    game_data.game_id,
+                    goal_number,
+                    goal.scorer_name,
+                    goal.player_number,
+                    goal.team_id,
+                    assists_text,
+                    goal.period,
+                    goal.time,
+                    int(goal.power_play),
+                    int(goal.empty_net),
+                    int(goal.short_handed),
+                ))
 
             # Insert penalties
             for penalty in game_data.penalties:
                 cursor.execute('''
-                    INSERT OR REPLACE INTO penalties (
-                        game_id, penalty_id, player_id, player_name, team_id,
-                        offense, offense_description, penalty_class, minutes,
-                        period, time, power_play
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', tuple(penalty.to_dict().values()))
+                    INSERT INTO penalties (
+                        game_id, player_name, team, penalty_type,
+                        period, time, duration_minutes
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    game_data.game_id,
+                    penalty.player_name,
+                    penalty.team_id,
+                    penalty.offense_description,
+                    penalty.period,
+                    penalty.time,
+                    int(penalty.minutes),
+                ))
 
             # Insert officials
             for official in game_data.officials:
+                full_name = f"{official.first_name} {official.last_name}".strip()
                 cursor.execute('''
-                    INSERT OR REPLACE INTO officials (
-                        game_id, official_id, official_type_id, official_type,
-                        first_name, last_name, jersey_number
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', tuple(official.to_dict().values()))
+                    INSERT INTO officials (
+                        game_id, official_type, name, number
+                    ) VALUES (?, ?, ?, ?)
+                ''', (
+                    game_data.game_id,
+                    official.official_type,
+                    full_name,
+                    int(official.jersey_number) if official.jersey_number.isdigit() else 0,
+                ))
 
             conn.commit()
             conn.close()
-            print("  ✓ Wrote to database")
             return True
 
         except Exception as e:
