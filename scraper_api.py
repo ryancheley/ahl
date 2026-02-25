@@ -157,6 +157,10 @@ class GameData:
     referee2: str
     linesman1: str
     linesman2: str
+    shootout: int
+    game_letter: str
+    game_number: int
+    overtime_periods: int
     goals: List[Goal]
     penalties: List[Penalty]
     officials: List[Official]
@@ -308,6 +312,22 @@ class GameSummaryParser:
         if not meta:
             return None
 
+        # Map status code to meaningful text
+        status_code = meta.get('status', '')
+        status_map = {
+            '1': 'Scheduled',
+            '2': 'In Progress',
+            '3': 'Completed',
+            '4': 'Final',
+            '5': 'Final/OT',
+            '6': 'Final/SO',
+        }
+        game_status = status_map.get(str(status_code), 'Unknown')
+
+        # Calculate overtime periods
+        period = int(meta.get('period', 0))
+        overtime_periods = max(0, period - 3)  # Regular season has 3 periods
+
         return {
             'game_id': game_id,
             'date_played': meta.get('date_played', ''),
@@ -315,8 +335,8 @@ class GameSummaryParser:
             'visiting_team_id': meta.get('visiting_team', ''),
             'home_goals': int(meta.get('home_goal_count', 0)),
             'visiting_goals': int(meta.get('visiting_goal_count', 0)),
-            'period': int(meta.get('period', 0)),
-            'status': meta.get('status', ''),
+            'period': period,
+            'status': game_status,
             'attendance': int(meta.get('attendance', 0)),
             'start_time': meta.get('start_time', ''),
             'end_time': meta.get('end_time', ''),
@@ -325,6 +345,10 @@ class GameSummaryParser:
             'referee2': meta.get('referee2', ''),
             'linesman1': meta.get('linesman1', ''),
             'linesman2': meta.get('linesman2', ''),
+            'shootout': int(meta.get('shootout', 0)),
+            'game_letter': meta.get('game_letter', ''),
+            'game_number': int(meta.get('game_number', 0)),
+            'overtime_periods': overtime_periods,
         }
 
     @staticmethod
@@ -412,6 +436,10 @@ class APIGameScraper:
             referee2=game_dict['referee2'],
             linesman1=game_dict['linesman1'],
             linesman2=game_dict['linesman2'],
+            shootout=game_dict['shootout'],
+            game_letter=game_dict['game_letter'],
+            game_number=game_dict['game_number'],
+            overtime_periods=game_dict['overtime_periods'],
             goals=goals,
             penalties=penalties,
             officials=officials,
@@ -431,8 +459,9 @@ class APIGameScraper:
             cursor.execute('''
                 INSERT OR REPLACE INTO games_extended (
                     game_id, game_date, home_team, away_team,
-                    home_score, away_score, attendance, season_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    home_score, away_score, attendance, season_id,
+                    game_status, overtime_periods, decided_by_shootout
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 game_data.game_id,
                 game_data.date_played,
@@ -442,6 +471,9 @@ class APIGameScraper:
                 game_data.visiting_goals,
                 game_data.attendance,
                 SEASON_ID,
+                game_data.status,
+                game_data.overtime_periods,
+                game_data.shootout,
             ))
 
             # Insert goals
