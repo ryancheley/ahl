@@ -5,7 +5,7 @@
     python manage.py get_game --game_id={{game_id}}
 
 @load:
-    python program.py
+    python scrape_games.py season 90
 
 @recent:
     python manage.py most_recent

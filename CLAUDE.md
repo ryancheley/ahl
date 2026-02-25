@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Using Just (Recommended)
 - `just run` - Start Django development server
-- `just load` - Execute main scraping script (program.py)
+- `just load` - Execute main scraping script (scrape_games.py season 90)
 - `just game <game_id>` - Get specific game data via Django management command
 - `just recent` - Show most recent game ID
 - `just django` - Compile Django requirements and install
@@ -20,12 +20,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Direct Python Commands
 - `python manage.py runserver` - Start Django dev server
-- `python program.py` - Run scraping script (update games.db)
+- `python scrape_games.py season 90` - Scrape all Season 90 games (main usage)
+- `python scrape_games.py single <game_id>` - Scrape a specific game
+- `python scrape_games.py range <start_id> <num_games>` - Scrape a range of games
+- `python scrape_games.py list <game_id1> <game_id2> ...` - Scrape specific games
 - `python manage.py get_game --game_id=<id>` - Get specific game data
 - `python manage.py most_recent` - Show most recent game ID
 - `pytest` - Run all tests
 - `pytest tests/test_utils.py` - Run specific test file
-- `black .` - Format code (line length: 130)
+- `ruff check .` - Check code style
+- `ty check` - Run type checker
 
 ### Dependency Management
 This project uses split requirements files for different environments:
@@ -52,10 +56,12 @@ Database operations are routed by `core.dbrouters.GamesRouter` - models in the `
 - **core** - Project configuration with multi-database router and settings
 
 ### Data Flow
-1. `program.py` scrapes AHL website (lscluster.hockeytech.com) directly
-2. Updates `games.db` using SQLite (not Django migrations)
-3. Django models provide ORM access to existing tables
-4. Data served via datasette at ahl-data.ryancheley.com
+1. `scrape_games.py` CLI calls `scrapper.py` to scrape AHL website (lscluster.hockeytech.com)
+2. `scrapper.py` parses HTML game reports and extracts game details
+3. `player_scrapper.py` scrapes player data from hockeytech statviewfeed API
+4. Both update `games_new.db` using direct SQLite (not Django migrations)
+5. Django models provide ORM access to existing tables
+6. Data served via datasette at ahl-data.ryancheley.com
 
 ## Development Workflow
 
@@ -108,7 +114,13 @@ To test a specific game:
 3. Verify in datasette or Django admin
 
 ## File Structure Notes
-- `program.py` - Main scraper (imports directly from games.models)
-- `dim_date.py` - Season date definitions loaded via Django management command
-- `data-to-update.py` - Database update utilities
+
+### Core Scraping Files
+- `scrapper.py` - Main game scraper with HTML parsing for game details
+- `player_scrapper.py` - Player and game roster data scraper
+- `scrape_games.py` - CLI wrapper for scraping (single, range, list, season modes)
+- `program.py` - HTML parsing utility functions (used by scrapper.py)
+
+### Supporting Files
 - `games/management/` - Custom management commands for data access
+- `API_INVESTIGATION_NOTES.md` - Reference documentation for hockeytech API
