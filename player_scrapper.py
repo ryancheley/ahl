@@ -32,6 +32,14 @@ ROSTER_API_URL = (
     "&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1"
 )
 
+# API URL for game roster data with team_id parameter
+ROSTER_TEAM_API_URL = (
+    "https://lscluster.hockeytech.com/feed/index.php"
+    "?feed=statviewfeed&view=roster"
+    "&game_id={game_id}&team_id={team_id}&season_id=90&site_id=3"
+    "&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1"
+)
+
 
 @dataclass
 class PlayerInfo:
@@ -333,18 +341,23 @@ def scrape_player_id_range(
     return results
 
 
-def fetch_game_roster(game_id: str) -> Optional[Dict]:
+def fetch_game_roster(game_id: str, team_id: Optional[int] = None) -> Optional[Dict]:
     """
     Fetch game roster data from the hockeytech API.
 
     Args:
         game_id: The game ID to fetch roster for
+        team_id: Optional team ID to fetch roster for specific team
 
     Returns:
         Parsed JSON dict if successful, None otherwise
     """
     try:
-        url = ROSTER_API_URL.format(game_id=game_id)
+        if team_id:
+            url = ROSTER_TEAM_API_URL.format(game_id=game_id, team_id=team_id)
+        else:
+            url = ROSTER_API_URL.format(game_id=game_id)
+
         response = requests.get(url, timeout=10)
         response.raise_for_status()
 
@@ -458,6 +471,34 @@ def ensure_player_in_database(player_id: int, db_path: str = "games_new.db") -> 
     return player_info is not None
 
 
+def get_game_team_ids(game_id: str, db_path: str = "games_new.db") -> tuple:
+    """
+    Get home and away team IDs for a game from the database.
+
+    Args:
+        game_id: The game ID to look up
+        db_path: Path to the database file
+
+    Returns:
+        Tuple of (home_team_id, away_team_id) as integers, or (None, None) if not found
+    """
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT CAST(home_team AS INTEGER), CAST(away_team AS INTEGER) FROM games_extended WHERE game_id = ?",
+            (game_id,)
+        )
+        result = cursor.fetchone()
+        conn.close()
+
+        if result:
+            return result
+        return (None, None)
+    except sqlite3.Error:
+        return (None, None)
+
+
 def roster_exists_in_database(game_id: str, db_path: str = "games_new.db") -> bool:
     """
     Check if a game roster already exists in the database.
@@ -467,15 +508,15 @@ def roster_exists_in_database(game_id: str, db_path: str = "games_new.db") -> bo
         db_path: Path to the database file
 
     Returns:
-        True if roster exists, False otherwise
+        True if roster exists for both teams, False otherwise
     """
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM game_rosters WHERE game_id = ? LIMIT 1", (game_id,))
-        exists = cursor.fetchone() is not None
+        cursor.execute("SELECT COUNT(DISTINCT team) FROM game_rosters WHERE game_id = ?", (game_id,))
+        team_count = cursor.fetchone()[0]
         conn.close()
-        return exists
+        return team_count >= 2
     except sqlite3.Error:
         return False
 
@@ -530,7 +571,8 @@ def scrape_game_roster(game_id: str, db_path: str = "games_new.db") -> List[Rost
     """
     Scrape game roster and write to database.
 
-    Fetches roster, ensures all players are in the players table, and stores roster entries.
+    Fetches rosters for BOTH home and away teams, ensures all players are in the
+    players table, and stores roster entries with team information.
 
     Args:
         game_id: The game ID to scrape
@@ -539,27 +581,38 @@ def scrape_game_roster(game_id: str, db_path: str = "games_new.db") -> List[Rost
     Returns:
         List of RosterEntry objects that were written, empty list if roster already exists or fetch failed
     """
-    # Check if roster already exists
+    # Check if roster already exists (both teams)
     if roster_exists_in_database(game_id, db_path):
         return []
 
-    # Fetch roster data
-    data = fetch_game_roster(game_id)
-    if not data:
+    # Get team IDs from database
+    home_team_id, away_team_id = get_game_team_ids(game_id, db_path)
+    if not home_team_id or not away_team_id:
         return []
 
-    # Extract entries
-    entries = extract_roster_entries(game_id, data)
-    if not entries:
+    all_entries = []
+
+    # Fetch rosters for both teams
+    for team_id in [home_team_id, away_team_id]:
+        data = fetch_game_roster(game_id, team_id=team_id)
+        if not data:
+            continue
+
+        # Extract entries
+        entries = extract_roster_entries(game_id, data)
+        if entries:
+            all_entries.extend(entries)
+
+    if not all_entries:
         return []
 
     # Ensure all players are in the database
-    for entry in entries:
+    for entry in all_entries:
         ensure_player_in_database(entry.player_id, db_path)
 
     # Write roster to database
-    if write_roster_to_database(entries, db_path):
-        return entries
+    if write_roster_to_database(all_entries, db_path):
+        return all_entries
     else:
         return []
 
