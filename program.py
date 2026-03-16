@@ -403,7 +403,7 @@ def get_games_by_date(target_date: date) -> list[int]:
     """Fetch game IDs for a specific date from all seasons efficiently."""
     game_ids = []
 
-    # Get all seasons with their years upfront (single API call)
+    # Get all seasons with their year ranges upfront (single API call)
     seasons_with_years = {}
     try:
         url = 'https://lscluster.hockeytech.com/feed/index.php?feed=modulekit&view=seasons&key=ccb91f29d6744675&client_code=ahl'
@@ -413,14 +413,29 @@ def get_games_by_date(target_date: date) -> list[int]:
         for season in seasons:
             season_id = int(season.get('season_id', 0))
             season_name = season.get('season_name', '')
-            if season_name and '-' in season_name:
-                year = int(season_name.split('-')[0])
-                seasons_with_years[season_id] = year
+            if season_name:
+                # Extract years from season name (e.g., "2025-26" or just "2025")
+                import re
+                year_range_match = re.search(r'(\d{4})-(\d{2})', season_name)
+                if year_range_match:
+                    start_year = int(year_range_match.group(1))
+                    end_year_suffix = int(year_range_match.group(2))
+                    # Handle "2025-26" format: 26 -> 2026 (2000 + 26)
+                    century = (start_year // 100) * 100
+                    end_year = century + end_year_suffix
+                    # Store both years to handle mid-season date transitions
+                    seasons_with_years[season_id] = (start_year, end_year)
+                else:
+                    # Single year season (like all-star)
+                    year_match = re.search(r'^(\d{4})', season_name)
+                    if year_match:
+                        year = int(year_match.group(1))
+                        seasons_with_years[season_id] = (year, year)
     except Exception:
         return []
 
     # Now fetch schedules and filter by date
-    for season_id, year in seasons_with_years.items():
+    for season_id, (start_year, end_year) in seasons_with_years.items():
         url = f'https://lscluster.hockeytech.com/feed/index.php?feed=modulekit&view=schedule&season_id={season_id}&key=ccb91f29d6744675&client_code=ahl'
         try:
             data = httpx.get(url, timeout=10).json()
@@ -433,7 +448,13 @@ def get_games_by_date(target_date: date) -> list[int]:
                     game_date_str = item.get('date')
                     if game_date_str:
                         try:
-                            parsed_date = datetime.strptime(f"{game_date_str} {year}", '%b. %d %Y').date()
+                            # Try with end_year first (for March-April games), then start_year
+                            parsed_date = None
+                            try:
+                                parsed_date = datetime.strptime(f"{game_date_str} {end_year}", '%b. %d %Y').date()
+                            except ValueError:
+                                parsed_date = datetime.strptime(f"{game_date_str} {start_year}", '%b. %d %Y').date()
+
                             if parsed_date == target_date:
                                 game_ids.append(game_id)
                         except (ValueError, AttributeError):
