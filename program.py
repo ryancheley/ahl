@@ -368,6 +368,23 @@ def get_seasons_with_names() -> dict[int, str]:
         return {}
 
 
+def get_season_data(season_id: int) -> dict:
+    """Fetch season data from API including dates."""
+    url = 'https://lscluster.hockeytech.com/feed/index.php?feed=modulekit&view=seasons&key=ccb91f29d6744675&client_code=ahl'
+    try:
+        response = httpx.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        seasons = data.get('SiteKit', {}).get('Seasons', [])
+        for season in seasons:
+            if int(season.get('season_id', 0)) == season_id:
+                return season
+        return {}
+    except Exception:
+        return {}
+
+
 def get_season_game_ids(season_id: int) -> list[int]:
     """Fetch all game IDs for a given season from the API."""
     game_ids = []
@@ -517,9 +534,18 @@ def save_season(conn: sqlite3.Connection, game_id: int) -> bool:
         if cursor.fetchone():
             return True
 
+        # Fetch full season data from API
+        season_data = get_season_data(season_id)
+        season_name = season_data.get('season_name', f"Season {season_id}")
+        shortname = season_data.get('shortname', f"S{season_id}")
+        career = season_data.get('career', '0') == '1'
+        playoff = season_data.get('playoff', '0') == '1'
+        start_date = season_data.get('start_date')
+        end_date = season_data.get('end_date')
+
         cursor.execute(
             'INSERT OR IGNORE INTO season (season_id, season_name, shortname, career, playoff, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            (season_id, f"Season {season_id}", f"S{season_id}", False, False, None, None)
+            (season_id, season_name, shortname, career, playoff, start_date, end_date)
         )
         conn.commit()
         return True
