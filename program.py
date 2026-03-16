@@ -399,6 +399,51 @@ def get_season_game_ids(season_id: int) -> list[int]:
     return game_ids
 
 
+def get_games_by_date(target_date: date) -> list[int]:
+    """Fetch game IDs for a specific date from all seasons efficiently."""
+    game_ids = []
+
+    # Get all seasons with their years upfront (single API call)
+    seasons_with_years = {}
+    try:
+        url = 'https://lscluster.hockeytech.com/feed/index.php?feed=modulekit&view=seasons&key=ccb91f29d6744675&client_code=ahl'
+        response = httpx.get(url, timeout=10)
+        data = response.json()
+        seasons = data.get('SiteKit', {}).get('Seasons', [])
+        for season in seasons:
+            season_id = int(season.get('season_id', 0))
+            season_name = season.get('season_name', '')
+            if season_name and '-' in season_name:
+                year = int(season_name.split('-')[0])
+                seasons_with_years[season_id] = year
+    except Exception:
+        return []
+
+    # Now fetch schedules and filter by date
+    for season_id, year in seasons_with_years.items():
+        url = f'https://lscluster.hockeytech.com/feed/index.php?feed=modulekit&view=schedule&season_id={season_id}&key=ccb91f29d6744675&client_code=ahl'
+        try:
+            data = httpx.get(url, timeout=10).json()
+            schedule = data.get('SiteKit', {}).get('Schedule', [])
+
+            for item in schedule:
+                game_id = item.get('id')
+                if game_id:
+                    # Parse game date from schedule - format is "Oct. 10" or similar
+                    game_date_str = item.get('date')
+                    if game_date_str:
+                        try:
+                            parsed_date = datetime.strptime(f"{game_date_str} {year}", '%b. %d %Y').date()
+                            if parsed_date == target_date:
+                                game_ids.append(game_id)
+                        except (ValueError, AttributeError):
+                            continue
+        except Exception:
+            continue
+
+    return game_ids
+
+
 def get_game_data(game_id: int) -> dict:
     url: str = f'https://lscluster.hockeytech.com/feed/index.php?feed=gc&tab=gamesummary&game_id={game_id}&key=ccb91f29d6744675&client_code=ahl'
     game_data = httpx.get(url).json()
@@ -834,51 +879,46 @@ def today():
     error_count = 0
     games_data = []
 
-    season_ids = get_season_ids()
-    if not season_ids:
-        console.print("[red]✗ No seasons found[/red]")
-        return
-
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
         console=console
     ) as progress:
-        task = progress.add_task("Scanning all seasons...", total=None)
-
-        for season_id in season_ids:
-            game_ids = get_season_game_ids(season_id)
-
-            for game_id in game_ids:
-                try:
-                    game = get_game_instance(game_id)
-                    game_check_date = game.game_date if isinstance(game.game_date, date) else game.game_date.date()
-
-                    if game_check_date == today_date:
-                        away_team = get_game_team_instance(game_id, "visitor")
-                        home_team = get_game_team_instance(game_id, "home")
-
-                        insert_model(conn, game, 'gamedata')
-                        insert_model(conn, away_team, 'team', replace=True)
-                        insert_model(conn, home_team, 'team', replace=True)
-
-                        penalties = get_penalties(game_id)
-                        for penalty in penalties:
-                            insert_model(conn, penalty, 'gamepenalties', replace=True)
-
-                        games_data.append({
-                            "Game ID": game_id,
-                            "Away": away_team.name,
-                            "Home": home_team.name,
-                            "Score": f"{game.away_team_score}-{game.home_team_score}",
-                            "Status": game.game_status,
-                        })
-                        saved_count += 1
-                except Exception:
-                    error_count += 1
-                    continue
-
+        task = progress.add_task("Finding today's games...", total=None)
+        # Efficiently fetch only today's game IDs
+        game_ids = get_games_by_date(today_date)
         progress.stop()
+
+    if not game_ids:
+        console.print("[yellow]⊘ No games found for today[/yellow]")
+        return
+
+    console.print(f"[yellow]Found {len(game_ids)} games for today\n[/yellow]")
+
+    with Progress(console=console) as progress:
+        task = progress.add_task("[cyan]Loading games...", total=len(game_ids))
+
+        for game_id in game_ids:
+            try:
+                success, message = save_game_data(conn, game_id)
+                if success:
+                    game = get_game_instance(game_id)
+                    away_team = get_game_team_instance(game_id, "visitor")
+                    home_team = get_game_team_instance(game_id, "home")
+                    games_data.append({
+                        "Game ID": game_id,
+                        "Away": away_team.name,
+                        "Home": home_team.name,
+                        "Score": f"{game.away_team_score}-{game.home_team_score}",
+                        "Status": game.game_status,
+                    })
+                    saved_count += 1
+                else:
+                    error_count += 1
+            except Exception:
+                error_count += 1
+            finally:
+                progress.advance(task)
 
     # Display results
     if games_data:
@@ -900,8 +940,6 @@ def today():
 
         console.print(table)
         console.print(f"\n[green]✓ Loaded {saved_count} games[/green]")
-    else:
-        console.print("[yellow]⊘ No games found for today[/yellow]")
 
     if error_count > 0:
         console.print(f"[yellow]⚠ {error_count} games skipped due to errors[/yellow]")
