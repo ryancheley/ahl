@@ -168,7 +168,7 @@ https://lscluster.hockeytech.com/feed/index.php?feed=gc&tab=gamesummary&game_id=
 https://lscluster.hockeytech.com/feed/index.php?feed=gc&tab=gamesummary&game_id=1027888&season_id=90&key=ccb91f29d6744675&client_code=ahl
 ```
 
----
+--- 
 
 ## 4. ModuleKit APIs
 

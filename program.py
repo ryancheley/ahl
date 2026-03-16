@@ -527,6 +527,90 @@ def save_season(conn: sqlite3.Connection, game_id: int) -> bool:
         return False
 
 
+def save_players_and_rosters(conn: sqlite3.Connection, game_id: int) -> bool:
+    """Extract and save player and game roster data from game."""
+    try:
+        cursor = conn.cursor()
+
+        # Get home and away team lineups
+        home_lineup = _get_game_game_summary_data(game_id, 'home_team_lineup')
+        away_lineup = _get_game_game_summary_data(game_id, 'away_team_lineup')
+        goalies = _get_game_game_summary_data(game_id, 'goalies')
+
+        # Process home team roster
+        if home_lineup and isinstance(home_lineup, dict):
+            for position_group, players_list in home_lineup.items():
+                if isinstance(players_list, list):
+                    for player in players_list:
+                        if isinstance(player, dict):
+                            player_id = int(player.get('player_id', 0))
+                            if player_id > 0:
+                                # Save player
+                                first_name = player.get('first_name', '')
+                                last_name = player.get('last_name', '')
+                                position = player.get('position_str', '')
+                                cursor.execute(
+                                    'INSERT OR IGNORE INTO player (id, first_name, last_name, position, height, weight, shoots, birth, birth_place, draft_team, draft_round, draft_pick) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                    (player_id, first_name, last_name, position, '', '', '', None, '', '', 0, 0)
+                                )
+                                # Save game roster entry
+                                starter = int(player.get('start', 0)) == 1
+                                cursor.execute(
+                                    'INSERT OR IGNORE INTO gameroster (game_id, player_id, starter) VALUES (?, ?, ?)',
+                                    (game_id, player_id, starter)
+                                )
+
+        # Process away team roster
+        if away_lineup and isinstance(away_lineup, dict):
+            for position_group, players_list in away_lineup.items():
+                if isinstance(players_list, list):
+                    for player in players_list:
+                        if isinstance(player, dict):
+                            player_id = int(player.get('player_id', 0))
+                            if player_id > 0:
+                                # Save player
+                                first_name = player.get('first_name', '')
+                                last_name = player.get('last_name', '')
+                                position = player.get('position_str', '')
+                                cursor.execute(
+                                    'INSERT OR IGNORE INTO player (id, first_name, last_name, position, height, weight, shoots, birth, birth_place, draft_team, draft_round, draft_pick) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                    (player_id, first_name, last_name, position, '', '', '', None, '', '', 0, 0)
+                                )
+                                # Save game roster entry
+                                starter = int(player.get('start', 0)) == 1
+                                cursor.execute(
+                                    'INSERT OR IGNORE INTO gameroster (game_id, player_id, starter) VALUES (?, ?, ?)',
+                                    (game_id, player_id, starter)
+                                )
+
+        # Process goalies separately (they're in a different structure)
+        if goalies and isinstance(goalies, dict):
+            for team_type, goalie_list in goalies.items():
+                if isinstance(goalie_list, list):
+                    for goalie in goalie_list:
+                        if isinstance(goalie, dict):
+                            player_id = int(goalie.get('player_id', 0))
+                            if player_id > 0:
+                                # Save player if not already saved
+                                first_name = goalie.get('first_name', '')
+                                last_name = goalie.get('last_name', '')
+                                cursor.execute(
+                                    'INSERT OR IGNORE INTO player (id, first_name, last_name, position, height, weight, shoots, birth, birth_place, draft_team, draft_round, draft_pick) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                    (player_id, first_name, last_name, 'G', '', '', '', None, '', '', 0, 0)
+                                )
+                                # Save game roster entry (starter based on period_end)
+                                cursor.execute(
+                                    'INSERT OR IGNORE INTO gameroster (game_id, player_id, starter) VALUES (?, ?, ?)',
+                                    (game_id, player_id, True)
+                                )
+
+        conn.commit()
+        return True
+    except Exception as e:
+        console.print(f"[red]Error saving players and rosters: {e}[/red]")
+        return False
+
+
 def save_penalty_classes(conn: sqlite3.Connection, game_id: int) -> bool:
     """Extract and save penalty class data from game penalties."""
     try:
@@ -625,11 +709,12 @@ def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
         for penalty in penalties:
             insert_model(conn, penalty, 'gamepenalties', replace=True)
 
-        # Save venue, season, officials, and penalty classes
+        # Save venue, season, officials, penalty classes, and rosters
         save_venue(conn, game_id)
         save_season(conn, game_id)
         save_officials(conn, game_id)
         save_penalty_classes(conn, game_id)
+        save_players_and_rosters(conn, game_id)
 
         return True, f"{away_team.name} vs {home_team.name} ({game.away_team_score}-{game.home_team_score})"
     except Exception as e:
