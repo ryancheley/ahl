@@ -488,8 +488,9 @@ def save_venue(conn: sqlite3.Connection, game_id: int) -> bool:
         if venue_id == 0:
             return True
 
-        location = _get_game_game_summary_data(game_id, 'location')
-        venue_name = location if isinstance(location, str) else f"Venue {venue_id}"
+        venue_name = _get_game_game_summary_data(game_id, 'venue')
+        if not venue_name or not isinstance(venue_name, str):
+            venue_name = f"Venue {venue_id}"
 
         # Create and insert venue record
         cursor = conn.cursor()
