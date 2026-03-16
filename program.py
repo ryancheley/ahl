@@ -130,7 +130,7 @@ class GamePenalties(BaseModel):
     bench: bool
     penalty_shot: bool
     minutes: int
-    penalty: str = Field(validation_alias="lang_penalty_description")
+    penalty: int
     time_of_penalty_seconds: int = Field(validation_alias="s")
     player_penalized: int = Field(validation_alias="player_penalized_info")
     player_server: int = Field(validation_alias="player_served_info")
@@ -266,11 +266,12 @@ def init_database() -> sqlite3.Connection:
                 bench BOOLEAN,
                 penalty_shot BOOLEAN,
                 minutes INTEGER,
-                penalty TEXT,
+                penalty INTEGER,
                 time_of_penalty_seconds INTEGER,
                 player_penalized INTEGER,
                 player_server INTEGER,
-                PRIMARY KEY (game_id, home, period_id, player_penalized)
+                PRIMARY KEY (game_id, home, period_id, player_penalized),
+                FOREIGN KEY (penalty) REFERENCES penalty(penalty_id)
             )
         ''',
     }
@@ -419,7 +420,6 @@ def _get_game_game_summary_data(game_id: int, item: str):
 
 def get_penalties(game_id):
     penalties = []
-    keys_to_use = ["home", "period_id", "pp", "bench", "penalty_shot", "minutes", "lang_penalty_description", "s", "player_penalized_info", "player_served_info"]
 
     penalty_data_list = _get_game_game_summary_data(game_id, 'penalties')
     if not penalty_data_list:
@@ -427,30 +427,56 @@ def get_penalties(game_id):
 
     for penalty_data in penalty_data_list:
         try:
-            filtered_penalty_data = {k: penalty_data[k] for k in keys_to_use if k in penalty_data}
-            filtered_penalty_data = {"game_id": game_id} | filtered_penalty_data
+            # Extract and convert all fields properly
+            home_val = penalty_data.get('home', 0)
+            period_val = penalty_data.get('period_id', 0)
+            pp_val = penalty_data.get('pp', 0)
+            bench_val = penalty_data.get('bench', 0)
+            penalty_shot_val = penalty_data.get('penalty_shot', 0)
+            minutes_val = penalty_data.get('minutes', 0)
+            s_val = penalty_data.get('s', 0)
 
-            # Safely extract player IDs with fallback to 0
-            player_penalized_info = filtered_penalty_data.get('player_penalized_info')
-            player_served_info = filtered_penalty_data.get('player_served_info')
+            penalty_dict = {
+                'game_id': game_id,
+                'home': bool(int(home_val) if isinstance(home_val, (str, int)) else 0),
+                'period_id': int(period_val) if isinstance(period_val, (str, int)) else 0,
+                'pp': bool(int(pp_val) if isinstance(pp_val, (str, int)) else 0),
+                'bench': bool(int(bench_val) if isinstance(bench_val, (str, int)) else 0),
+                'penalty_shot': bool(int(penalty_shot_val) if isinstance(penalty_shot_val, (str, int)) else 0),
+                'minutes': int(minutes_val) if isinstance(minutes_val, (str, int)) else 0,
+                's': int(s_val) if isinstance(s_val, (str, int)) else 0,
+            }
+
+            # Create consistent penalty_id from penalty description
+            penalty_description = penalty_data.get('lang_penalty_description', '')
+            if isinstance(penalty_description, str):
+                penalty_dict['penalty'] = abs(hash(penalty_description)) % 10000
+            else:
+                penalty_dict['penalty'] = 0
+
+            # Safely extract player IDs
+            player_penalized_info = penalty_data.get('player_penalized_info')
+            player_served_info = penalty_data.get('player_served_info')
 
             player_penalized_id = 0
             player_served_id = 0
 
             if player_penalized_info and isinstance(player_penalized_info, dict):
-                player_penalized_id = player_penalized_info.get('player_id', 0)
+                penalized_val = player_penalized_info.get('player_id', 0)
+                player_penalized_id = int(penalized_val) if isinstance(penalized_val, (str, int)) else 0
             elif isinstance(player_penalized_info, int):
                 player_penalized_id = player_penalized_info
 
             if player_served_info and isinstance(player_served_info, dict):
-                player_served_id = player_served_info.get('player_id', 0)
+                served_val = player_served_info.get('player_id', 0)
+                player_served_id = int(served_val) if isinstance(served_val, (str, int)) else 0
             elif isinstance(player_served_info, int):
                 player_served_id = player_served_info
 
-            filtered_penalty_data['player_penalized_info'] = player_penalized_id
-            filtered_penalty_data['player_served_info'] = player_served_id
+            penalty_dict['player_penalized_info'] = player_penalized_id
+            penalty_dict['player_served_info'] = player_served_id
 
-            penalties.append(GamePenalties(**filtered_penalty_data))
+            penalties.append(GamePenalties(**penalty_dict))
         except Exception as e:
             # Skip malformed penalty records
             continue
@@ -639,7 +665,7 @@ def save_players_and_rosters(conn: sqlite3.Connection, game_id: int) -> bool:
 
 
 def save_penalty_classes(conn: sqlite3.Connection, game_id: int) -> bool:
-    """Extract and save penalty class data from game penalties."""
+    """Extract and save penalty class and penalty data from game penalties."""
     try:
         penalty_data_list = _get_game_game_summary_data(game_id, 'penalties')
         if not penalty_data_list:
@@ -647,12 +673,14 @@ def save_penalty_classes(conn: sqlite3.Connection, game_id: int) -> bool:
 
         cursor = conn.cursor()
         saved_classes = set()
+        saved_penalties = set()
 
         for penalty_data in penalty_data_list:
             if isinstance(penalty_data, dict):
                 penalty_class_id = int(penalty_data.get('penalty_class_id', 0))
                 penalty_class_desc = penalty_data.get('penalty_class', '')
 
+                # Save penalty class
                 if penalty_class_id > 0 and penalty_class_id not in saved_classes:
                     cursor.execute(
                         'INSERT OR IGNORE INTO penaltyclass (penalty_class_id, penalty_class_description) VALUES (?, ?)',
@@ -660,15 +688,16 @@ def save_penalty_classes(conn: sqlite3.Connection, game_id: int) -> bool:
                     )
                     saved_classes.add(penalty_class_id)
 
-                    # Also save the specific penalty type
-                    penalty_description = penalty_data.get('lang_penalty_description', '')
-                    if penalty_description:
-                        # Use hash of description as penalty_id since API doesn't provide one
-                        penalty_id = abs(hash(penalty_description)) % 10000
+                # Save specific penalty type with consistent ID calculation
+                penalty_description = penalty_data.get('lang_penalty_description', '')
+                if penalty_description:
+                    penalty_id = abs(hash(penalty_description)) % 10000
+                    if penalty_id not in saved_penalties:
                         cursor.execute(
                             'INSERT OR IGNORE INTO penalty (penalty_id, penalty_class_id, penalty_description) VALUES (?, ?, ?)',
                             (penalty_id, penalty_class_id, penalty_description)
                         )
+                        saved_penalties.add(penalty_id)
 
         conn.commit()
         return True
