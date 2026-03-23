@@ -519,14 +519,28 @@ def get_game_data(game_id: int) -> dict:
 
 def _get_game_meta_data(game_id: int, item: str):
     json_data = get_game_data(game_id)
-    meta_data = json_data.get("GC").get("Gamesummary").get("meta")
+    gc = json_data.get("GC")
+    if gc is None:
+        return None
+    gamesummary = gc.get("Gamesummary")
+    if gamesummary is None:
+        return None
+    meta_data = gamesummary.get("meta")
+    if meta_data is None:
+        return None
     meta_data_item = meta_data.get(item)
     return meta_data_item
 
 
 def _get_game_game_summary_data(game_id: int, item: str):
     json_data = get_game_data(game_id)
-    data_item = json_data.get("GC").get("Gamesummary").get(item)
+    gc = json_data.get("GC")
+    if gc is None:
+        return None
+    gamesummary = gc.get("Gamesummary")
+    if gamesummary is None:
+        return None
+    data_item = gamesummary.get(item)
     return data_item
 
 
@@ -568,8 +582,8 @@ def get_player_details(player_id: int, season_id: int = 90) -> dict:
         return {}
 
 
-def get_penalties(game_id):
-    penalties = []
+def get_penalties(game_id: int) -> list[GamePenalties]:
+    penalties: list[GamePenalties] = []
 
     penalty_data_list = _get_game_game_summary_data(game_id, 'penalties')
     if not penalty_data_list:
@@ -586,47 +600,52 @@ def get_penalties(game_id):
             minutes_val = penalty_data.get('minutes', 0)
             s_val = penalty_data.get('s', 0)
 
-            penalty_dict = {
-                'game_id': game_id,
-                'home': bool(int(home_val) if isinstance(home_val, (str, int)) else 0),
-                'period_id': int(period_val) if isinstance(period_val, (str, int)) else 0,
-                'pp': bool(int(pp_val) if isinstance(pp_val, (str, int)) else 0),
-                'bench': bool(int(bench_val) if isinstance(bench_val, (str, int)) else 0),
-                'penalty_shot': bool(int(penalty_shot_val) if isinstance(penalty_shot_val, (str, int)) else 0),
-                'minutes': int(minutes_val) if isinstance(minutes_val, (str, int)) else 0,
-                's': int(s_val) if isinstance(s_val, (str, int)) else 0,
-            }
+            home: bool = bool(int(home_val) if isinstance(home_val, (str, int)) else 0)
+            period_id: int = int(period_val) if isinstance(period_val, (str, int)) else 0
+            pp: bool = bool(int(pp_val) if isinstance(pp_val, (str, int)) else 0)
+            bench: bool = bool(int(bench_val) if isinstance(bench_val, (str, int)) else 0)
+            penalty_shot: bool = bool(int(penalty_shot_val) if isinstance(penalty_shot_val, (str, int)) else 0)
+            minutes: int = int(minutes_val) if isinstance(minutes_val, (str, int)) else 0
+            s: int = int(s_val) if isinstance(s_val, (str, int)) else 0
 
             # Create consistent penalty_id from penalty description
             penalty_description = penalty_data.get('lang_penalty_description', '')
+            penalty: int = 0
             if isinstance(penalty_description, str):
-                penalty_dict['penalty'] = abs(hash(penalty_description)) % 10000
-            else:
-                penalty_dict['penalty'] = 0
+                penalty = abs(hash(penalty_description)) % 10000
 
             # Safely extract player IDs
             player_penalized_info = penalty_data.get('player_penalized_info')
             player_served_info = penalty_data.get('player_served_info')
 
-            player_penalized_id = 0
-            player_served_id = 0
+            player_penalized_id: int = 0
+            player_served_id: int = 0
 
             if player_penalized_info and isinstance(player_penalized_info, dict):
                 penalized_val = player_penalized_info.get('player_id', 0)
                 player_penalized_id = int(penalized_val) if isinstance(penalized_val, (str, int)) else 0
             elif isinstance(player_penalized_info, int):
-                player_penalized_id = player_penalized_info
+                player_penalized_id = int(player_penalized_info)
 
             if player_served_info and isinstance(player_served_info, dict):
                 served_val = player_served_info.get('player_id', 0)
                 player_served_id = int(served_val) if isinstance(served_val, (str, int)) else 0
             elif isinstance(player_served_info, int):
-                player_served_id = player_served_info
+                player_served_id = int(player_served_info)
 
-            penalty_dict['player_penalized_info'] = player_penalized_id
-            penalty_dict['player_served_info'] = player_served_id
-
-            penalties.append(GamePenalties(**penalty_dict))
+            penalties.append(GamePenalties(
+                game_id=game_id,
+                home=home,
+                period_id=period_id,
+                powerplay=pp,
+                bench=bench,
+                penalty_shot=penalty_shot,
+                minutes=minutes,
+                penalty=penalty,
+                time_of_penalty_seconds=s,
+                player_penalized=player_penalized_id,
+                player_server=player_served_id
+            ))
         except Exception:
             # Skip malformed penalty records
             continue
@@ -649,25 +668,59 @@ def get_game_instance(game_id: int) -> GameData:
 
     # Get shots data with safe handling
     total_shots = _get_game_game_summary_data(game_id, "totalShots")
-    home_shots = total_shots.get("home", 0) if total_shots else 0
-    away_shots = total_shots.get("visitor", 0) if total_shots else 0
+    home_shots_val = total_shots.get("home", 0) if total_shots else 0
+    away_shots_val = total_shots.get("visitor", 0) if total_shots else 0
+    home_shots: int = int(home_shots_val or 0)
+    away_shots: int = int(away_shots_val or 0)
 
-    game_dictionary = {
-        "game_id": game_id,
-        "season_id": int(_get_game_meta_data(game_id, "season_id") or 0),
-        "away_team_id": away_team.team_id,
-        "away_team_score": int(_get_game_meta_data(game_id, "visiting_goal_count") or 0),
-        "home_team_id": home_team.team_id,
-        "home_team_score": int(_get_game_meta_data(game_id, "home_goal_count") or 0),
-        "game_status": str(_get_game_game_summary_data(game_id, "status_value") or "unknown"),
-        "game_date": _get_game_meta_data(game_id, "date_played"),
-        "game_attendance": int(_get_game_meta_data(game_id, "attendance") or 0),
-        "home_team_shots": int(home_shots or 0),
-        "away_team_shots": int(away_shots or 0),
-        "game_number": int(_get_game_meta_data(game_id, "game_number") or 0),
-        "venue_id": int(_get_game_meta_data(game_id, 'location') or 0)
-    }
-    return GameData(**game_dictionary)
+    # Parse date_played string to date object
+    date_played_str = _get_game_meta_data(game_id, "date_played")
+    game_date: date
+    if isinstance(date_played_str, str):
+        try:
+            game_date = datetime.strptime(date_played_str, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            game_date = datetime.now().date()
+    else:
+        game_date = datetime.now().date()
+
+    # Extract and convert all fields with explicit types
+    season_id_val = _get_game_meta_data(game_id, "season_id")
+    season_id: int = int(season_id_val or 0) if isinstance(season_id_val, (str, int)) else 0
+
+    away_score_val = _get_game_meta_data(game_id, "visiting_goal_count")
+    away_score: int = int(away_score_val or 0) if isinstance(away_score_val, (str, int)) else 0
+
+    home_score_val = _get_game_meta_data(game_id, "home_goal_count")
+    home_score: int = int(home_score_val or 0) if isinstance(home_score_val, (str, int)) else 0
+
+    status_val = _get_game_game_summary_data(game_id, "status_value")
+    game_status: str = str(status_val or "unknown")
+
+    attendance_val = _get_game_meta_data(game_id, "attendance")
+    attendance: int = int(attendance_val or 0) if isinstance(attendance_val, (str, int)) else 0
+
+    game_number_val = _get_game_meta_data(game_id, "game_number")
+    game_number: int = int(game_number_val or 0) if isinstance(game_number_val, (str, int)) else 0
+
+    venue_id_val = _get_game_meta_data(game_id, "location")
+    venue_id: int = int(venue_id_val or 0) if isinstance(venue_id_val, (str, int)) else 0
+
+    return GameData(
+        game_id=game_id,
+        season_id=season_id,
+        away_team_id=away_team.team_id,
+        away_team_score=away_score,
+        home_team_id=home_team.team_id,
+        home_team_score=home_score,
+        game_status=game_status,
+        game_date=game_date,
+        game_attendance=attendance,
+        home_team_shots=home_shots,
+        away_team_shots=away_shots,
+        game_number=game_number,
+        venue_id=venue_id
+    )
 
 
 # ============================================================================
