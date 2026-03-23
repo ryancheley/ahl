@@ -17,16 +17,60 @@ from datetime import date, datetime
 import httpx
 import json
 import sqlite3
+import time
+from functools import wraps
 from pydantic import BaseModel, Field
-from pydantic_sqlite import DataBase
 import click
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich import print as rprint
 
 console = Console()
+
+# ============================================================================
+# Caching & Retry Optimization
+# ============================================================================
+
+# Global cache for player details (session-wide)
+_player_details_cache: dict[int, dict] = {}
+
+# Track which players exist in DB (set, much faster than repeated SELECTs)
+_existing_players: set[int] = set()
+_existing_players_loaded = False
+
+def _load_existing_players(conn: sqlite3.Connection):
+    """Load all existing player IDs into memory for fast lookups."""
+    global _existing_players, _existing_players_loaded
+    if _existing_players_loaded:
+        return
+    try:
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM player')
+        _existing_players = {row[0] for row in cursor.fetchall()}
+        _existing_players_loaded = True
+    except Exception:
+        _existing_players_loaded = True
+
+
+def retry_with_backoff(max_retries: int = 3, base_delay: float = 0.5):
+    """Decorator to retry failed network requests with exponential backoff."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except (httpx.TimeoutException, httpx.ConnectError, httpx.HTTPError) as e:
+                    last_exception = e
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)
+                        time.sleep(delay)
+                    continue
+            raise last_exception if last_exception else Exception("Unknown error")
+        return wrapper
+    return decorator
 
 # ============================================================================
 # Pydantic Models
@@ -109,6 +153,7 @@ class GameRoster(BaseModel):
     game_id: int
     player_id: int
     starter: bool
+    team_id: int
 
 
 class PenaltyClass(BaseModel):
@@ -238,10 +283,11 @@ def init_database() -> sqlite3.Connection:
         ''',
         'gameroster': '''
             CREATE TABLE IF NOT EXISTS gameroster (
-                game_id INTEGER,
-                player_id INTEGER,
+                game_id INTEGER NOT NULL,
+                player_id INTEGER NOT NULL,
+                team_id INTEGER NOT NULL,
                 starter BOOLEAN,
-                PRIMARY KEY (game_id, player_id)
+                PRIMARY KEY (game_id, player_id, team_id)
             )
         ''',
         'penaltyclass': '''
@@ -331,7 +377,7 @@ def get_season_ids() -> list[int]:
         season_ids = [int(season.get('season_id')) for season in seasons if season.get('season_id')]
         return sorted(season_ids)
     except httpx.TimeoutException:
-        console.print(f"[red]✗ Timeout: API request took too long[/red]")
+        console.print("[red]✗ Timeout: API request took too long[/red]")
         return []
     except httpx.HTTPStatusError as e:
         console.print(f"[red]✗ HTTP Error {e.response.status_code}[/red]")
@@ -484,21 +530,41 @@ def _get_game_game_summary_data(game_id: int, item: str):
     return data_item
 
 
-def get_player_details(player_id: int, season_id: int = 90) -> dict:
-    """Fetch detailed player information from statviewfeed API."""
+def is_game_played(game_id: int) -> bool:
+    """Check if a game has been played (status_title == 'End')."""
+    status_title = _get_game_game_summary_data(game_id, "status_title")
+    return status_title == "End"
+
+
+@retry_with_backoff(max_retries=3, base_delay=0.5)
+def _fetch_player_details_from_api(player_id: int, season_id: int) -> dict:
+    """Internal function to fetch player details from API (no caching)."""
     url = f'https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=player&player_id={player_id}&season_id={season_id}&site_id=3&key=ccb91f29d6744675&client_code=ahl&league_id=4&lang=1&statsType=skaters'
+    response = httpx.get(url, timeout=10)
+    response.raise_for_status()
+    text = response.text.strip()
+
+    # Handle JSONP response - strip outer parentheses if present
+    if text.startswith('(') and text.endswith(')'):
+        text = text[1:-1]
+
+    data = json.loads(text)
+    return data.get('info', {}) if isinstance(data, dict) else {}
+
+
+def get_player_details(player_id: int, season_id: int = 90) -> dict:
+    """Fetch detailed player information from statviewfeed API with caching."""
+    # Check in-memory cache first
+    if player_id in _player_details_cache:
+        return _player_details_cache[player_id]
+
+    # Try to fetch from API with retry
     try:
-        response = httpx.get(url, timeout=10)
-        response.raise_for_status()
-        text = response.text.strip()
-
-        # Handle JSONP response - strip outer parentheses if present
-        if text.startswith('(') and text.endswith(')'):
-            text = text[1:-1]
-
-        data = json.loads(text)
-        return data.get('info', {}) if isinstance(data, dict) else {}
+        details = _fetch_player_details_from_api(player_id, season_id)
+        _player_details_cache[player_id] = details
+        return details
     except Exception:
+        _player_details_cache[player_id] = {}
         return {}
 
 
@@ -561,7 +627,7 @@ def get_penalties(game_id):
             penalty_dict['player_served_info'] = player_served_id
 
             penalties.append(GamePenalties(**penalty_dict))
-        except Exception as e:
+        except Exception:
             # Skip malformed penalty records
             continue
 
@@ -667,40 +733,62 @@ def save_season(conn: sqlite3.Connection, game_id: int) -> bool:
 def save_players_and_rosters(conn: sqlite3.Connection, game_id: int) -> bool:
     """Extract and save player and game roster data from game."""
     try:
+        _load_existing_players(conn)
         cursor = conn.cursor()
         season_id = int(_get_game_meta_data(game_id, 'season_id') or 90)
 
+        # Get home and away team IDs from gamedata
+        cursor.execute('SELECT home_team_id, away_team_id FROM gamedata WHERE game_id = ?', (game_id,))
+        team_result = cursor.fetchone()
+        if not team_result:
+            return False
+        home_team_id, away_team_id = team_result
+
         # Get home and away team lineups
         home_lineup = _get_game_game_summary_data(game_id, 'home_team_lineup')
-        away_lineup = _get_game_game_summary_data(game_id, 'away_team_lineup')
+        away_lineup = _get_game_game_summary_data(game_id, 'visitor_team_lineup')
         goalies = _get_game_game_summary_data(game_id, 'goalies')
 
-        def save_player_with_details(player_id: int, first_name: str, last_name: str, position: str):
-            """Save player with enriched details from API."""
-            # Fetch detailed player info
-            player_details = get_player_details(player_id, season_id)
+        # Batch lists for efficient bulk insertion
+        players_to_insert = []
+        rosters_to_insert = []
 
-            height = player_details.get('height', '')
-            weight = player_details.get('weight', '')
-            shoots = player_details.get('shoots', '')
-            birth_date = player_details.get('birthDate')
-            birth_place = player_details.get('birthPlace', '')
+        def process_player(player_id: int, first_name: str, last_name: str, position: str, starter: bool, team_id: int):
+            """Process a player: fetch details if new, batch for insertion."""
+            nonlocal players_to_insert, rosters_to_insert
 
-            # Extract draft info if available
-            drafts = player_details.get('drafts', [])
-            draft_team = ''
-            draft_round = 0
-            draft_pick = 0
-            if drafts and isinstance(drafts, list) and len(drafts) > 0:
-                draft_info = drafts[0]
-                draft_team = draft_info.get('draftTeam', '')
-                draft_round = int(draft_info.get('round', 0))
-                draft_pick = int(draft_info.get('pick', 0))
+            if player_id <= 0:
+                return
 
-            cursor.execute(
-                'INSERT OR IGNORE INTO player (id, first_name, last_name, position, height, weight, shoots, birth, birth_place, draft_team, draft_round, draft_pick) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                (player_id, first_name, last_name, position, height, weight, shoots, birth_date, birth_place, draft_team, draft_round, draft_pick)
-            )
+            # Only fetch API details if player is new to database
+            if player_id not in _existing_players:
+                player_details = get_player_details(player_id, season_id)
+                height = player_details.get('height', '')
+                weight = player_details.get('weight', '')
+                shoots = player_details.get('shoots', '')
+                birth_date = player_details.get('birthDate')
+                birth_place = player_details.get('birthPlace', '')
+
+                # Extract draft info if available
+                drafts = player_details.get('drafts', [])
+                draft_team = ''
+                draft_round = 0
+                draft_pick = 0
+                if drafts and isinstance(drafts, list) and len(drafts) > 0:
+                    draft_info = drafts[0]
+                    draft_team = draft_info.get('draftTeam', '')
+                    draft_round = int(draft_info.get('round', 0))
+                    draft_pick = int(draft_info.get('pick', 0))
+
+                players_to_insert.append((
+                    player_id, first_name, last_name, position,
+                    height, weight, shoots, birth_date, birth_place,
+                    draft_team, draft_round, draft_pick
+                ))
+                _existing_players.add(player_id)
+
+            # Always add roster entry with team_id
+            rosters_to_insert.append((game_id, player_id, team_id, starter))
 
         # Process home team roster
         if home_lineup and isinstance(home_lineup, dict):
@@ -708,18 +796,14 @@ def save_players_and_rosters(conn: sqlite3.Connection, game_id: int) -> bool:
                 if isinstance(players_list, list):
                     for player in players_list:
                         if isinstance(player, dict):
-                            player_id = int(player.get('player_id', 0))
-                            if player_id > 0:
-                                first_name = player.get('first_name', '')
-                                last_name = player.get('last_name', '')
-                                position = player.get('position_str', '')
-                                save_player_with_details(player_id, first_name, last_name, position)
-                                # Save game roster entry
-                                starter = int(player.get('start', 0)) == 1
-                                cursor.execute(
-                                    'INSERT OR IGNORE INTO gameroster (game_id, player_id, starter) VALUES (?, ?, ?)',
-                                    (game_id, player_id, starter)
-                                )
+                            process_player(
+                                int(player.get('player_id', 0)),
+                                player.get('first_name', ''),
+                                player.get('last_name', ''),
+                                player.get('position_str', ''),
+                                int(player.get('start', 0)) == 1,
+                                home_team_id
+                            )
 
         # Process away team roster
         if away_lineup and isinstance(away_lineup, dict):
@@ -727,18 +811,14 @@ def save_players_and_rosters(conn: sqlite3.Connection, game_id: int) -> bool:
                 if isinstance(players_list, list):
                     for player in players_list:
                         if isinstance(player, dict):
-                            player_id = int(player.get('player_id', 0))
-                            if player_id > 0:
-                                first_name = player.get('first_name', '')
-                                last_name = player.get('last_name', '')
-                                position = player.get('position_str', '')
-                                save_player_with_details(player_id, first_name, last_name, position)
-                                # Save game roster entry
-                                starter = int(player.get('start', 0)) == 1
-                                cursor.execute(
-                                    'INSERT OR IGNORE INTO gameroster (game_id, player_id, starter) VALUES (?, ?, ?)',
-                                    (game_id, player_id, starter)
-                                )
+                            process_player(
+                                int(player.get('player_id', 0)),
+                                player.get('first_name', ''),
+                                player.get('last_name', ''),
+                                player.get('position_str', ''),
+                                int(player.get('start', 0)) == 1,
+                                away_team_id
+                            )
 
         # Process goalies separately
         if goalies and isinstance(goalies, dict):
@@ -746,16 +826,30 @@ def save_players_and_rosters(conn: sqlite3.Connection, game_id: int) -> bool:
                 if isinstance(goalie_list, list):
                     for goalie in goalie_list:
                         if isinstance(goalie, dict):
-                            player_id = int(goalie.get('player_id', 0))
-                            if player_id > 0:
-                                first_name = goalie.get('first_name', '')
-                                last_name = goalie.get('last_name', '')
-                                save_player_with_details(player_id, first_name, last_name, 'G')
-                                # Save game roster entry
-                                cursor.execute(
-                                    'INSERT OR IGNORE INTO gameroster (game_id, player_id, starter) VALUES (?, ?, ?)',
-                                    (game_id, player_id, True)
-                                )
+                            # Determine team_id based on team_type (home or visitor)
+                            goalie_team_id = home_team_id if team_type == 'home' else away_team_id
+                            process_player(
+                                int(goalie.get('player_id', 0)),
+                                goalie.get('first_name', ''),
+                                goalie.get('last_name', ''),
+                                'G',
+                                True,
+                                goalie_team_id
+                            )
+
+        # Batch insert players (much faster than individual inserts)
+        if players_to_insert:
+            cursor.executemany(
+                'INSERT OR IGNORE INTO player (id, first_name, last_name, position, height, weight, shoots, birth, birth_place, draft_team, draft_round, draft_pick) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                players_to_insert
+            )
+
+        # Batch insert roster entries
+        if rosters_to_insert:
+            cursor.executemany(
+                'INSERT OR IGNORE INTO gameroster (game_id, player_id, team_id, starter) VALUES (?, ?, ?, ?)',
+                rosters_to_insert
+            )
 
         conn.commit()
         return True
@@ -854,7 +948,14 @@ def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
     """Fetch and save a single game's data to database. Returns (success, message)."""
     try:
         game = get_game_instance(game_id)
-        insert_model(conn, game, 'gamedata')
+
+        # Smart update: allow overwriting only if game is in the past AND status is "End"
+        game_date = game.game_date
+        is_past = game_date < datetime.now().date() if game_date else False
+        is_ended = is_game_played(game_id)
+        should_replace = is_past and is_ended
+
+        insert_model(conn, game, 'gamedata', replace=should_replace)
 
         away_team = get_game_team_instance(game_id, "visitor")
         home_team = get_game_team_instance(game_id, "home")
@@ -889,7 +990,7 @@ def cli():
 
 @cli.command()
 def today():
-    """Load all games played today."""
+    """Load all games played today with optimizations."""
     console.print(Panel.fit("[bold cyan]Loading Today's Games[/bold cyan]", border_style="cyan"))
 
     conn = init_database()
@@ -916,11 +1017,19 @@ def today():
 
     console.print(f"[yellow]Found {len(game_ids)} games for today\n[/yellow]")
 
+    # Pre-load existing players for faster lookups
+    _load_existing_players(conn)
+
     with Progress(console=console) as progress:
         task = progress.add_task("[cyan]Loading games...", total=len(game_ids))
 
         for game_id in game_ids:
             try:
+                # Only load games that have been played
+                if not is_game_played(game_id):
+                    progress.advance(task)
+                    continue
+
                 success, message = save_game_data(conn, game_id)
                 if success:
                     game = get_game_instance(game_id)
@@ -970,7 +1079,7 @@ def today():
 @click.option('--season-id', type=int, required=True, help='Season ID (e.g., 90 for 2025-26)')
 @click.option('--limit', type=int, default=None, help='Maximum number of games to load')
 def season(season_id: int, limit: int):
-    """Load all games for a specific season."""
+    """Load all games for a specific season with checkpointing and resume capability."""
     console.print(Panel.fit(f"[bold cyan]Loading Season {season_id}[/bold cyan]", border_style="cyan"))
 
     conn = init_database()
@@ -991,11 +1100,39 @@ def season(season_id: int, limit: int):
     if limit:
         game_ids = game_ids[:limit]
 
-    console.print(f"[yellow]Found {len(game_ids)} games[/yellow]\n")
+    # Convert game_ids to integers (API returns strings, DB stores ints)
+    game_ids = [int(gid) for gid in game_ids]
+
+    # Filter out already-loaded games (skip optimization)
+    cursor = conn.cursor()
+    try:
+        # Use string-safe approach for potentially large IN clauses
+        placeholders = ','.join('?' * len(game_ids))
+        query = f'SELECT game_id FROM gamedata WHERE season_id = ? AND game_id IN ({placeholders})'
+        cursor.execute(query, [season_id] + game_ids)
+        results = cursor.fetchall()
+        loaded_game_ids = {row[0] for row in results}
+        missing_game_ids = [gid for gid in game_ids if gid not in loaded_game_ids]
+
+        if missing_game_ids:
+            console.print(f"[yellow]Found {len(game_ids)} total games[/yellow]")
+            console.print(f"[cyan]Already loaded: {len(loaded_game_ids)} games[/cyan]")
+            console.print(f"[yellow]Missing: {len(missing_game_ids)} games[/yellow]\n")
+            game_ids = missing_game_ids
+        else:
+            console.print(f"[green]✓ All {len(game_ids)} games already loaded![/green]\n")
+            return
+    except Exception as e:
+        console.print(f"[yellow]⚠ Could not check for loaded games: {e}[/yellow]")
+        console.print(f"[yellow]Proceeding to scrape all {len(game_ids)} games[/yellow]\n")
+
+    # Load existing players once at the start (optimization)
+    _load_existing_players(conn)
 
     saved_count = 0
     error_count = 0
     games_data = []
+    checkpoint_interval = 100  # Save progress every 100 games
 
     with Progress(console=console) as progress:
         task = progress.add_task(
@@ -1003,16 +1140,34 @@ def season(season_id: int, limit: int):
             total=len(game_ids)
         )
 
-        for game_id in game_ids:
-            success, message = save_game_data(conn, game_id)
+        for idx, game_id in enumerate(game_ids):
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    success, message = save_game_data(conn, game_id)
 
-            if success:
-                games_data.append({"ID": game_id, "Result": message})
-                saved_count += 1
-            else:
-                error_count += 1
+                    if success:
+                        games_data.append({"ID": game_id, "Result": message})
+                        saved_count += 1
+                    else:
+                        error_count += 1
+                    break  # Success, move to next game
+                except Exception:
+                    if attempt < max_retries - 1:
+                        time.sleep(1 * (2 ** attempt))  # Exponential backoff
+                    else:
+                        error_count += 1
+                        break
+
+            # Checkpoint: commit every 100 games to survive interruptions
+            if (idx + 1) % checkpoint_interval == 0:
+                conn.commit()
+                progress.console.print(f"[dim]✓ Checkpoint: {idx + 1} games processed[/dim]")
 
             progress.advance(task)
+
+    # Final commit
+    conn.commit()
 
     # Display results
     if games_data:
@@ -1046,15 +1201,15 @@ def game(game_id: int):
         TextColumn("[progress.description]{task.description}"),
         console=console
     ) as progress:
-        task = progress.add_task("Fetching game data...", total=None)
+        _ = progress.add_task("Fetching game data...", total=None)
         success, message = save_game_data(conn, game_id)
         progress.stop()
 
     if success:
-        console.print(f"\n[green]✓ Game saved successfully[/green]")
+        console.print("\n[green]✓ Game saved successfully[/green]")
         console.print(f"[cyan]{message}[/cyan]")
     else:
-        console.print(f"\n[red]✗ Failed to load game[/red]")
+        console.print("\n[red]✗ Failed to load game[/red]")
         console.print(f"[red]{message}[/red]")
 
 
@@ -1091,7 +1246,7 @@ def init():
         TextColumn("[progress.description]{task.description}"),
         console=console
     ) as progress:
-        task = progress.add_task("Registering models...", total=None)
+        _ = progress.add_task("Registering models...", total=None)
         init_database()
         progress.stop()
 
