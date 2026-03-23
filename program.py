@@ -1194,6 +1194,11 @@ def season(season_id: int, limit: int):
         )
 
         for idx, game_id in enumerate(game_ids):
+            # Skip games that haven't been played yet (future games)
+            if not is_game_played(game_id):
+                progress.advance(task)
+                continue
+
             max_retries = 3
             for attempt in range(max_retries):
                 try:
