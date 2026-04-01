@@ -9,9 +9,16 @@ description = "AHL Datasette Application"
 requires-python = ">=3.11"
 dependencies = [
     "datasette==1.0a24",
-    "datasette-write-ui>=0.0.1a12",
     "requests",
     "setuptools",
+    "beautifulsoup4",
+    "lxml",
+    "pyyaml",
+    "httpx>=0.28.1",
+    "pydantic>=2.12.5",
+    "pydantic-sqlite>=0.5.1",
+    "rich>=14.3.3",
+    "click>=8.0.0",
 ]
 
 [tool.setuptools]
