@@ -42,4 +42,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 ENTRYPOINT ["/entrypoint.sh"]
 
 # Start datasette with database from persistent volume
-CMD ["datasette", "/data/my_database.db", "--metadata", "metadata.yaml", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["datasette", "/data/my_database.db", "--metadata", "/app/metadata.yaml", "--host", "0.0.0.0", "--port", "8001"]
