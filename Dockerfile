@@ -1,5 +1,8 @@
 FROM python:3.14-slim
 
+# Set timezone
+ENV TZ=America/Los_Angeles
+
 # Install curl, datasette, and uv
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
