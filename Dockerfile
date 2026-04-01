@@ -19,6 +19,9 @@ RUN uv pip install --python /usr/local/bin/python --no-cache-dir -e .
 # Copy application code
 COPY . .
 
+# Ensure metadata.yaml is readable
+RUN chmod 644 /app/metadata.yaml
+
 # Create a non-root user for running the app
 RUN groupadd -r datasette && useradd -r -g datasette datasette && \
     chown -R datasette:datasette /app
@@ -28,7 +31,7 @@ RUN groupadd -r datasette && useradd -r -g datasette datasette && \
 RUN mkdir -p /data && chown -R datasette:datasette /data
 
 # Create entrypoint script to ensure database exists at runtime
-RUN printf '#!/bin/sh\nset -e\nif [ ! -f /data/my_database.db ]; then\n  echo "Creating empty database..."\n  python3 -c "import sqlite3; sqlite3.connect('\''/data/my_database.db'\'').close()"\n  chown datasette:datasette /data/my_database.db\n  chmod 666 /data/my_database.db\nfi\nexec "$@"\n' > /entrypoint.sh && \
+RUN printf '#!/bin/sh\nset -e\nif [ ! -f /data/my_database.db ]; then\n  echo "Creating empty database..."\n  python3 -c "import sqlite3; sqlite3.connect('\''/data/my_database.db'\'').close()"\n  chown datasette:datasette /data/my_database.db\n  chmod 666 /data/my_database.db\nfi\necho "Metadata file location: /app/metadata.yaml"\nls -la /app/metadata.yaml\nexec "$@"\n' > /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 # Expose port for datasette
