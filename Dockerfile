@@ -25,8 +25,13 @@ RUN groupadd -r datasette && useradd -r -g datasette datasette && \
 
 # Create data directory for persistent database storage
 # Database files are stored in /data for persistence (configured via VOLUME mount in Coolify)
-# Note: my_database.db must be manually placed in the /data volume on the Coolify host
 RUN mkdir -p /data && chown -R datasette:datasette /data
+
+# Create an empty database file so datasette can start
+# This will be overwritten when you copy my_database.db to /data
+RUN python3 -c "import sqlite3; sqlite3.connect('/data/my_database.db').close()" && \
+    chown datasette:datasette /data/my_database.db && \
+    chmod 666 /data/my_database.db
 
 # Expose port for datasette
 EXPOSE 8001
