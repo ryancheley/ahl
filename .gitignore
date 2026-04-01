@@ -157,3 +157,5 @@ secrets.txt
 
 # logs
 /logs
+
+my_database.db
