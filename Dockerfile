@@ -1,38 +1,19 @@
 FROM python:3.14-slim
 
+# Install curl and datasette
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir datasette
+
+# Copy metadata config
 WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install uv
-RUN pip install --no-cache-dir uv
-
-# Copy dependency files
-COPY pyproject.toml uv.lock ./
-
-# Install Python dependencies using uv
-RUN uv pip install --python /usr/local/bin/python --no-cache-dir -e .
-
-# Copy application code
-COPY . .
-
-# Ensure metadata.yaml is readable
-RUN chmod 644 /app/metadata.yaml
-
-# Create a non-root user for running the app
-RUN groupadd -r datasette && useradd -r -g datasette datasette && \
-    chown -R datasette:datasette /app
+COPY metadata.json .
 
 # Create data directory for persistent database storage
-# Database files are stored in /data for persistence (configured via VOLUME mount in Coolify)
-RUN mkdir -p /data && chown -R datasette:datasette /data
+WORKDIR /data
 
-# Create entrypoint script to ensure database exists at runtime
-RUN printf '#!/bin/sh\nset -e\nif [ ! -f /data/my_database.db ]; then\n  echo "Creating empty database..."\n  python3 -c "import sqlite3; sqlite3.connect('\''/data/my_database.db'\'').close()"\n  chown datasette:datasette /data/my_database.db\n  chmod 666 /data/my_database.db\nfi\necho "Metadata file location: /app/metadata.yaml"\nls -la /app/metadata.yaml\nexec "$@"\n' > /entrypoint.sh && \
-    chmod +x /entrypoint.sh
+# Create empty database if it doesn't exist (will be overwritten by actual database via SCP)
+RUN python3 -c "import sqlite3; sqlite3.connect('my_database.db').close()" || true
 
 # Expose port for datasette
 EXPOSE 8001
@@ -41,9 +22,5 @@ EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/ || exit 1
 
-# Use entrypoint script to initialize database
-ENTRYPOINT ["/entrypoint.sh"]
-
 # Start datasette with database from persistent volume
-# Note: Database is named from the filename without extension (my_database.db -> my_database)
-CMD ["datasette", "serve", "/data/my_database.db", "--metadata", "/app/metadata.yaml", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["datasette", "serve", "/data/my_database.db", "--metadata", "/app/metadata.json", "--host", "0.0.0.0", "--port", "8001"]
