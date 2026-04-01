@@ -9,11 +9,14 @@ WORKDIR /app
 
 # Copy project files
 COPY pyproject.toml uv.lock ./
-COPY metadata.json .
 COPY program.py .
 
-# Install Python dependencies using uv
-RUN uv pip install --python /usr/local/bin/python --no-cache-dir -e .
+# Download metadata from GitHub
+RUN curl -L -o /app/metadata.json https://raw.githubusercontent.com/ryancheley/ahl/refs/heads/main/metadata.json
+
+# Install Python dependencies using uv (without editable mode to avoid breaking datasette)
+RUN uv pip install --python /usr/local/bin/python --no-cache-dir \
+    beautifulsoup4 lxml pyyaml httpx pydantic pydantic-sqlite rich click
 
 # Create data directory for persistent database storage
 WORKDIR /data
