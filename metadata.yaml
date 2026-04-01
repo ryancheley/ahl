@@ -1,152 +1,149 @@
 title: "AHL Datasette"
 databases:
-   my_database:
-      queries:
-         yoy_performance:
-            params:
-              - team
-            sql: |-
-               with current_season_games as (
-               select count(*) as game_count
-               from gamedata g
-               left join team ht on g.home_team_id = ht.team_id
-               left join team at on g.away_team_id = at.team_id
-               left join season s on g.season_id = s.season_id
-               where s.end_date >= date('now')
-               and s.career = 1
-               and s.playoff = 0
-               and (ht.name = :team or at.name = :team)
-               ),
-               data as (
-               select
-               g.game_date
-               , g.game_status
-               , ht.name as home_team
-               , g.home_team_score
-               , at.name as away_team
-               , g.away_team_score
-               , s.season_name as season
-               , s.season_id
-               , s.end_date
-               , row_number() over (partition by g.season_id order by g.game_date) as game_seq
-               , case
-               when
-               (ht.name = :team and g.home_team_score > g.away_team_score) or (at.name = :team and g.home_team_score < g.away_team_score)
-               then
-                  1
-               else
-                  0
-               end as 'W'
-               , case
-                  when g.game_status like 'Final%' then
-                  case
-                     when (ht.name = :team and g.home_team_score < g.away_team_score) or (at.name = :team and g.home_team_score > g.away_team_score)
-                     then 1
-                     else 0
-                  end
+  my_database:
+    queries:
+      yoy_performance:
+        params:
+          - team
+        sql: |-
+          with current_season_games as (
+          select count(*) as game_count
+          from gamedata g
+          left join team ht on g.home_team_id = ht.team_id
+          left join team at on g.away_team_id = at.team_id
+          left join season s on g.season_id = s.season_id
+          where s.end_date >= date('now')
+          and s.career = 1
+          and s.playoff = 0
+          and (ht.name = :team or at.name = :team)
+          ),
+          data as (
+          select
+          g.game_date
+          , g.game_status
+          , ht.name as home_team
+          , g.home_team_score
+          , at.name as away_team
+          , g.away_team_score
+          , s.season_name as season
+          , s.season_id
+          , s.end_date
+          , row_number() over (partition by g.season_id order by g.game_date) as game_seq
+          , case
+          when
+          (ht.name = :team and g.home_team_score > g.away_team_score) or (at.name = :team and g.home_team_score < g.away_team_score)
+          then
+             1
+          else
+             0
+          end as 'W'
+          , case
+             when g.game_status like 'Final%' then
+             case
+                when (ht.name = :team and g.home_team_score < g.away_team_score) or (at.name = :team and g.home_team_score > g.away_team_score)
+                then 1
+                else 0
+             end
+             else 0
+          end as 'L'
+          , case
+             when g.game_status like 'Final/OT%' then
+             case
+                when (ht.name = :team and g.home_team_score < g.away_team_score) or (at.name = :team and g.home_team_score > g.away_team_score)
+                then 1
+                else 0
+             end
+             else 0
+          end as 'OTL'
+          , case
+             when g.game_status like '%SO%' then
+             case
+                when (ht.name = :team and g.home_team_score < g.away_team_score) or (at.name = :team and g.home_team_score > g.away_team_score)
+                then 1
+                else 0
+             end
+             else 0
+          end as 'SOL'
+          from gamedata g
+          left join team ht on g.home_team_id = ht.team_id
+          left join team at on g.away_team_id = at.team_id
+          left join season s on g.season_id = s.season_id
+          where (ht.name = :team or at.name = :team)
+          and s.career = 1
+          and s.playoff = 0
+          )
+          select d.season_id
+          , d.season
+          , sum(2*W+OTL+SOL) as 'Points'
+          , count(*) as 'Games'
+          , sum(W) as 'Wins'
+          , sum(L) as 'Losses'
+          , sum(OTL) as 'OTL'
+          , sum(SOL) as 'SOL'
+          from data d
+          where d.game_seq <= (select count(*) from gamedata g
+                               left join team ht on g.home_team_id = ht.team_id
+                               left join team at on g.away_team_id = at.team_id
+                               left join season s on g.season_id = s.season_id
+                               where s.end_date >= date('now')
+                               and s.career = 1
+                               and s.playoff = 0
+                               and (ht.name = :team or at.name = :team))
+          group by d.season_id, d.season
+          order by d.season_id desc
+          limit 2
+        title: "Year over Year Performance"
+        hide_sql: true
+        description: "Compares performance at same point in season - last completed season vs current/ongoing season"
+      team_performance_by_day:
+        params:
+          - team
+          - season_id
+        sql: |-
+          with data as (
+              select ht.name as home_team
+              , at.name as away_team
+              , g.game_date
+              , g.home_team_score
+              , g.away_team_score
+              , g.game_status
+              , case
+                  when ht.name = :team and g.home_team_score > g.away_team_score then 1
+                  when at.name = :team and g.home_team_score < g.away_team_score then 1
                   else 0
-               end as 'L'
-               , case
-                  when g.game_status like 'Final/OT%' then
-                  case
-                     when (ht.name = :team and g.home_team_score < g.away_team_score) or (at.name = :team and g.home_team_score > g.away_team_score)
-                     then 1
-                     else 0
-                  end
+              end as 'W'
+              , case
+                  when ht.name = :team and g.game_status like 'Final' and g.home_team_score < g.away_team_score then 1
+                  when at.name = :team and g.game_status like 'Final' and g.home_team_score > g.away_team_score then 1
                   else 0
-               end as 'OTL'
-               , case
-                  when g.game_status like '%SO%' then
-                  case
-                     when (ht.name = :team and g.home_team_score < g.away_team_score) or (at.name = :team and g.home_team_score > g.away_team_score)
-                     then 1
-                     else 0
-                  end
+              end as 'L'
+              , case
+                  when ht.name = :team and (g.game_status like 'Final OT%' and g.game_status != 'Final SO') and g.home_team_score < g.away_team_score then 1
+                  when at.name = :team and (g.game_status like 'Final OT%' and g.game_status != 'Final SO') and g.home_team_score > g.away_team_score then 1
                   else 0
-               end as 'SOL'
-               from gamedata g
-               left join team ht on g.home_team_id = ht.team_id
-               left join team at on g.away_team_id = at.team_id
-               left join season s on g.season_id = s.season_id
-               where (ht.name = :team or at.name = :team)
-               and s.career = 1
-               and s.playoff = 0
-               )
-               select d.season_id
-               , d.season
-               , sum(2*W+OTL+SOL) as 'Points'
-               , count(*) as 'Games'
-               , sum(W) as 'Wins'
-               , sum(L) as 'Losses'
-               , sum(OTL) as 'OTL'
-               , sum(SOL) as 'SOL'
-               from data d
-               where d.game_seq <= (select count(*) from gamedata g
-                                    left join team ht on g.home_team_id = ht.team_id
-                                    left join team at on g.away_team_id = at.team_id
-                                    left join season s on g.season_id = s.season_id
-                                    where s.end_date >= date('now')
-                                    and s.career = 1
-                                    and s.playoff = 0
-                                    and (ht.name = :team or at.name = :team))
-               group by d.season_id, d.season
-               order by d.season_id desc
-               limit 2
+              end as 'OTL'
+              , case
+                  when ht.name = :team and g.game_status = 'Final SO' and g.home_team_score < g.away_team_score then 1
+                  when at.name = :team and g.game_status = 'Final SO' and g.home_team_score > g.away_team_score then 1
+                  else 0
+              end as 'SOL'
+          from gamedata g
+          left join team ht on g.home_team_id = ht.team_id
+          left join team at on g.away_team_id = at.team_id
+          where (ht.name = :team or at.name = :team)
+          and g.season_id = :season_id)
 
-            title: "Year over Year Performance"
-            hide_sql: true
-
-            description: "Compares performance at same point in season - last completed season vs current/ongoing season"
-         team_performance_by_day:
-            params:
-              - team
-              - season_id
-            sql: |-
-               with data as (
-                   select ht.name as home_team
-                   , at.name as away_team
-                   , g.game_date
-                   , g.home_team_score
-                   , g.away_team_score
-                   , g.game_status
-                   , case
-                       when ht.name = :team and g.home_team_score > g.away_team_score then 1
-                       when at.name = :team and g.home_team_score < g.away_team_score then 1
-                       else 0
-                   end as 'W'
-                   , case
-                       when ht.name = :team and g.game_status like 'Final' and g.home_team_score < g.away_team_score then 1
-                       when at.name = :team and g.game_status like 'Final' and g.home_team_score > g.away_team_score then 1
-                       else 0
-                   end as 'L'
-                   , case
-                       when ht.name = :team and (g.game_status like 'Final OT%' and g.game_status != 'Final SO') and g.home_team_score < g.away_team_score then 1
-                       when at.name = :team and (g.game_status like 'Final OT%' and g.game_status != 'Final SO') and g.home_team_score > g.away_team_score then 1
-                       else 0
-                   end as 'OTL'
-                   , case
-                       when ht.name = :team and g.game_status = 'Final SO' and g.home_team_score < g.away_team_score then 1
-                       when at.name = :team and g.game_status = 'Final SO' and g.home_team_score > g.away_team_score then 1
-                       else 0
-                   end as 'SOL'
-               from gamedata g
-               left join team ht on g.home_team_id = ht.team_id
-               left join team at on g.away_team_id = at.team_id
-               where (ht.name = :team or at.name = :team)
-               and g.season_id = :season_id)
-
-               select
-                   :team as team,
-                   game_date,
-                   SUM(W) OVER (ORDER BY game_date) as wins,
-                   SUM(L) OVER (ORDER BY game_date) as losses,
-                   SUM(OTL) OVER (ORDER BY game_date) as otl,
-                   SUM(SOL) OVER (ORDER BY game_date) as sol,
-                   SUM(W + L + OTL + SOL) OVER (ORDER BY game_date) as games_played,
-                   SUM(W * 2 + OTL + SOL) OVER (ORDER BY game_date) as points
-               from data
-               order by game_date;
-            title: "Team Performance By Day"
-            hide_sql: true
-
-            description: "Returns cumulative performance of a team by day. Query the 'available_seasons' view to find the season_id for your desired season."
+          select
+              :team as team,
+              game_date,
+              SUM(W) OVER (ORDER BY game_date) as wins,
+              SUM(L) OVER (ORDER BY game_date) as losses,
+              SUM(OTL) OVER (ORDER BY game_date) as otl,
+              SUM(SOL) OVER (ORDER BY game_date) as sol,
+              SUM(W + L + OTL + SOL) OVER (ORDER BY game_date) as games_played,
+              SUM(W * 2 + OTL + SOL) OVER (ORDER BY game_date) as points
+          from data
+          order by game_date;
+        title: "Team Performance By Day"
+        hide_sql: true
+        description: "Returns cumulative performance of a team by day. Query the 'available_seasons' view to find the season_id for your desired season."
