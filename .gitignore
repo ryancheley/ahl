@@ -154,3 +154,6 @@ cython_debug/
 #.idea/
 
 secrets.txt
+
+# logs
+/logs

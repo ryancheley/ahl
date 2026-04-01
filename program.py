@@ -18,7 +18,10 @@ import httpx
 import json
 import sqlite3
 import time
+import logging
+import logging.handlers
 from functools import wraps
+from pathlib import Path
 from pydantic import BaseModel, Field
 import click
 from rich.console import Console
@@ -29,8 +32,58 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 console = Console()
 
 # ============================================================================
+# Logging Configuration
+# ============================================================================
+
+def _setup_logging(log_level: int = logging.INFO, log_file: str | None = None):
+    """Configure logging to file and console."""
+    log_dir = Path("logs")
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    if log_file is None:
+        log_file = str(log_dir / "ahl_scraper.log")
+
+    # Create logger
+    logger = logging.getLogger("ahl_scraper")
+    logger.setLevel(logging.DEBUG)  # Capture all levels, filter at handler
+
+    # Clear any existing handlers
+    logger.handlers.clear()
+
+    # File handler (respects log_level)
+    file_handler = logging.handlers.RotatingFileHandler(
+        log_file,
+        maxBytes=10 * 1024 * 1024,  # 10MB
+        backupCount=5
+    )
+    file_handler.setLevel(log_level)
+    file_format = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    file_handler.setFormatter(file_format)
+    logger.addHandler(file_handler)
+
+    # Console handler (respects log_level)
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(log_level)
+    console_format = logging.Formatter(
+        '%(levelname)s - %(funcName)s - %(message)s'
+    )
+    console_handler.setFormatter(console_format)
+    logger.addHandler(console_handler)
+
+    return logger
+
+# Initialize logger with ERROR level (can be overridden via --log-level)
+logger = _setup_logging(log_level=logging.ERROR)
+
+# ============================================================================
 # Caching & Retry Optimization
 # ============================================================================
+
+# Persistent httpx client for connection pooling and reuse
+_http_client = httpx.Client(timeout=30.0)
 
 # Global cache for player details (session-wide)
 _player_details_cache: dict[int, dict] = {}
@@ -49,7 +102,9 @@ def _load_existing_players(conn: sqlite3.Connection):
         cursor.execute('SELECT id FROM player')
         _existing_players = {row[0] for row in cursor.fetchall()}
         _existing_players_loaded = True
-    except Exception:
+        logger.debug(f"Loaded {len(_existing_players)} existing player IDs into memory")
+    except Exception as e:
+        logger.error(f"Failed to load existing players: {e}")
         _existing_players_loaded = True
 
 
@@ -61,12 +116,18 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 0.5):
             last_exception = None
             for attempt in range(max_retries):
                 try:
-                    return func(*args, **kwargs)
+                    result = func(*args, **kwargs)
+                    if attempt > 0:
+                        logger.info(f"Retry successful for {func.__name__} after {attempt} attempts")
+                    return result
                 except (httpx.TimeoutException, httpx.ConnectError, httpx.HTTPError) as e:
                     last_exception = e
                     if attempt < max_retries - 1:
                         delay = base_delay * (2 ** attempt)
+                        logger.warning(f"API request failed (attempt {attempt + 1}/{max_retries}): {type(e).__name__}. Retrying in {delay:.1f}s...")
                         time.sleep(delay)
+                    else:
+                        logger.error(f"API request failed after {max_retries} attempts: {type(e).__name__}: {e}")
                     continue
             raise last_exception if last_exception else Exception("Unknown error")
         return wrapper
@@ -306,6 +367,7 @@ def init_database() -> sqlite3.Connection:
         ''',
         'gamepenalties': '''
             CREATE TABLE IF NOT EXISTS gamepenalties (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 game_id INTEGER,
                 home BOOLEAN,
                 period_id INTEGER,
@@ -317,7 +379,6 @@ def init_database() -> sqlite3.Connection:
                 time_of_penalty_seconds INTEGER,
                 player_penalized INTEGER,
                 player_server INTEGER,
-                PRIMARY KEY (game_id, home, period_id, time_of_penalty_seconds, player_penalized),
                 FOREIGN KEY (penalty) REFERENCES penalty_type(penalty_type_id)
             )
         ''',
@@ -328,6 +389,63 @@ def init_database() -> sqlite3.Connection:
 
     conn.commit()
     return conn
+
+
+def _migrate_gamepenalties_schema(conn: sqlite3.Connection):
+    """Migrate gamepenalties table to new schema with auto-incrementing ID and penalty in UNIQUE constraint."""
+    cursor = conn.cursor()
+
+    try:
+        # Check if the table exists and has the old schema (no 'id' column)
+        cursor.execute("PRAGMA table_info(gamepenalties)")
+        columns = {col[1]: col for col in cursor.fetchall()}
+
+        if 'id' not in columns:
+            logger.info("Migrating gamepenalties table to new schema...")
+
+            # Rename old table
+            cursor.execute("ALTER TABLE gamepenalties RENAME TO gamepenalties_old")
+
+            # Create new table with correct schema
+            cursor.execute('''
+                CREATE TABLE gamepenalties (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    game_id INTEGER,
+                    home BOOLEAN,
+                    period_id INTEGER,
+                    powerplay BOOLEAN,
+                    bench BOOLEAN,
+                    penalty_shot BOOLEAN,
+                    minutes INTEGER,
+                    penalty INTEGER,
+                    time_of_penalty_seconds INTEGER,
+                    player_penalized INTEGER,
+                    player_server INTEGER,
+                    UNIQUE(game_id, home, period_id, time_of_penalty_seconds, player_penalized, penalty),
+                    FOREIGN KEY (penalty) REFERENCES penalty_type(penalty_type_id)
+                )
+            ''')
+
+            # Copy data from old table to new table
+            cursor.execute('''
+                INSERT INTO gamepenalties
+                (game_id, home, period_id, powerplay, bench, penalty_shot, minutes, penalty,
+                 time_of_penalty_seconds, player_penalized, player_server)
+                SELECT game_id, home, period_id, powerplay, bench, penalty_shot, minutes, penalty,
+                       time_of_penalty_seconds, player_penalized, player_server
+                FROM gamepenalties_old
+                ORDER BY game_id, period_id, time_of_penalty_seconds
+            ''')
+
+            # Drop old table
+            cursor.execute("DROP TABLE gamepenalties_old")
+
+            conn.commit()
+            logger.info("Migration complete: gamepenalties table updated successfully")
+    except Exception as e:
+        logger.error(f"Migration error: {e}", exc_info=True)
+        conn.rollback()
+        raise
 
 
 def insert_model(conn: sqlite3.Connection, model: BaseModel, table_name: str, replace: bool = False) -> bool:
@@ -385,33 +503,44 @@ def get_season_ids() -> list[int]:
     """Fetch season IDs from the API."""
     url = 'https://lscluster.hockeytech.com/feed/index.php?feed=modulekit&view=seasons&key=ccb91f29d6744675&client_code=ahl'
     try:
+        logger.debug(f"Fetching season IDs from API: {url}")
         response = httpx.get(url, timeout=10)
         response.raise_for_status()
         data = response.json()
+        logger.debug(f"API response status: {response.status_code}")
 
         if not data:
+            logger.warning("Empty response from seasons API")
             return []
 
         seasons = data.get('SiteKit', {}).get('Seasons', [])
         if not seasons:
+            logger.warning("No seasons found in API response")
             return []
 
         # API returns season_id as string, convert to int
         season_ids = [int(season.get('season_id')) for season in seasons if season.get('season_id')]
-        return sorted(season_ids)
+        season_ids = sorted(season_ids)
+        logger.info(f"Successfully fetched {len(season_ids)} seasons from API")
+        return season_ids
     except httpx.TimeoutException:
+        logger.error("Timeout fetching season IDs: API request took too long")
         console.print("[red]✗ Timeout: API request took too long[/red]")
         return []
     except httpx.HTTPStatusError as e:
+        logger.error(f"HTTP error fetching season IDs: {e.response.status_code} {e.response.reason_phrase}")
         console.print(f"[red]✗ HTTP Error {e.response.status_code}[/red]")
         return []
     except httpx.HTTPError as e:
+        logger.error(f"HTTP error fetching season IDs: {e}")
         console.print(f"[red]✗ HTTP Error: {e}[/red]")
         return []
     except json.JSONDecodeError as e:
+        logger.error(f"JSON decode error fetching season IDs: {e}")
         console.print(f"[red]✗ JSON Decode Error: {e}[/red]")
         return []
     except Exception as e:
+        logger.error(f"Unexpected error fetching season IDs: {type(e).__name__}: {e}")
         console.print(f"[red]✗ Error fetching season IDs: {type(e).__name__}: {e}[/red]")
         return []
 
@@ -420,21 +549,26 @@ def get_seasons_with_names() -> dict[int, str]:
     """Fetch season IDs with their names from the API."""
     url = 'https://lscluster.hockeytech.com/feed/index.php?feed=modulekit&view=seasons&key=ccb91f29d6744675&client_code=ahl'
     try:
+        logger.debug("Fetching seasons with names from API")
         response = httpx.get(url, timeout=10)
         response.raise_for_status()
         data = response.json()
 
         seasons = data.get('SiteKit', {}).get('Seasons', [])
         if not seasons:
+            logger.warning("No seasons found in API response")
             return {}
 
         # Return dict of season_id -> season_name
-        return {
+        result = {
             int(season.get('season_id')): season.get('season_name', 'Unknown')
             for season in seasons
             if season.get('season_id')
         }
-    except Exception:
+        logger.info(f"Fetched {len(result)} seasons with names")
+        return result
+    except Exception as e:
+        logger.error(f"Error fetching seasons with names: {type(e).__name__}: {e}")
         return {}
 
 
@@ -442,6 +576,7 @@ def get_season_data(season_id: int) -> dict:
     """Fetch season data from API including dates."""
     url = 'https://lscluster.hockeytech.com/feed/index.php?feed=modulekit&view=seasons&key=ccb91f29d6744675&client_code=ahl'
     try:
+        logger.debug(f"Fetching season data for season {season_id}")
         response = httpx.get(url, timeout=10)
         response.raise_for_status()
         data = response.json()
@@ -449,9 +584,12 @@ def get_season_data(season_id: int) -> dict:
         seasons = data.get('SiteKit', {}).get('Seasons', [])
         for season in seasons:
             if int(season.get('season_id', 0)) == season_id:
+                logger.debug(f"Found season {season_id} data: {season.get('season_name', 'Unknown')}")
                 return season
+        logger.warning(f"Season {season_id} not found in API response")
         return {}
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error fetching season data for season {season_id}: {type(e).__name__}: {e}")
         return {}
 
 
@@ -460,10 +598,13 @@ def get_season_game_ids(season_id: int) -> list[int]:
     game_ids = []
     url = f'https://lscluster.hockeytech.com/feed/index.php?feed=modulekit&view=schedule&season_id={season_id}&key=ccb91f29d6744675&client_code=ahl'
     try:
+        logger.debug(f"Fetching game IDs for season {season_id}")
         data = httpx.get(url).json()
         schedule = data.get('SiteKit', {}).get('Schedule', [])
         game_ids = [item.get('id') for item in schedule if item.get('id')]
+        logger.info(f"Found {len(game_ids)} games for season {season_id}")
     except Exception as e:
+        logger.error(f"Error fetching game IDs for season {season_id}: {type(e).__name__}: {e}")
         console.print(f"[red]Error fetching game IDs for season {season_id}: {e}[/red]")
     return game_ids
 
@@ -534,9 +675,10 @@ def get_games_by_date(target_date: date) -> list[int]:
     return game_ids
 
 
+@retry_with_backoff(max_retries=3, base_delay=0.5)
 def get_game_data(game_id: int) -> dict:
     url: str = f'https://lscluster.hockeytech.com/feed/index.php?feed=gc&tab=gamesummary&game_id={game_id}&key=ccb91f29d6744675&client_code=ahl'
-    game_data = httpx.get(url).json()
+    game_data = _http_client.get(url).json()
     return game_data
 
 
@@ -756,6 +898,7 @@ def save_venue(conn: sqlite3.Connection, game_id: int) -> bool:
     try:
         venue_id = int(_get_game_meta_data(game_id, 'location') or 0)
         if venue_id == 0:
+            logger.debug(f"No venue ID for game {game_id}")
             return True
 
         venue_name = _get_game_game_summary_data(game_id, 'venue')
@@ -764,13 +907,16 @@ def save_venue(conn: sqlite3.Connection, game_id: int) -> bool:
 
         # Create and insert venue record
         cursor = conn.cursor()
+        logger.debug(f"Saving venue {venue_id} ({venue_name}) for game {game_id}")
         cursor.execute(
             'INSERT OR IGNORE INTO venue (venue_id, name) VALUES (?, ?)',
             (venue_id, venue_name)
         )
         conn.commit()
+        logger.debug(f"Venue {venue_id} saved successfully")
         return True
     except Exception as e:
+        logger.error(f"Error saving venue for game {game_id}: {type(e).__name__}: {e}")
         console.print(f"[red]Error saving venue: {e}[/red]")
         return False
 
@@ -801,8 +947,10 @@ def save_season(conn: sqlite3.Connection, game_id: int) -> bool:
             (season_id, season_name, shortname, career, playoff, start_date, end_date)
         )
         conn.commit()
+        logger.debug(f"Successfully saved season {season_id}")
         return True
     except Exception as e:
+        logger.error(f"Error saving season for game {game_id}: {type(e).__name__}: {e}", exc_info=True)
         console.print(f"[red]Error saving season: {e}[/red]")
         return False
 
@@ -929,8 +1077,10 @@ def save_players_and_rosters(conn: sqlite3.Connection, game_id: int) -> bool:
             )
 
         conn.commit()
+        logger.debug(f"Successfully saved players and rosters for game {game_id}")
         return True
     except Exception as e:
+        logger.error(f"Error saving players and rosters for game {game_id}: {type(e).__name__}: {e}", exc_info=True)
         console.print(f"[red]Error saving players and rosters: {e}[/red]")
         return False
 
@@ -959,8 +1109,10 @@ def save_penalty_classes(conn: sqlite3.Connection, game_id: int) -> bool:
                     saved_classes.add(penalty_class_id)
 
         conn.commit()
+        logger.debug(f"Successfully saved penalty classes for game {game_id}")
         return True
     except Exception as e:
+        logger.error(f"Error saving penalty classes for game {game_id}: {type(e).__name__}: {e}", exc_info=True)
         console.print(f"[red]Error saving penalty classes: {e}[/red]")
         return False
 
@@ -970,21 +1122,29 @@ def save_officials(conn: sqlite3.Connection, game_id: int) -> bool:
     try:
         officials_on_ice = _get_game_game_summary_data(game_id, 'officialsOnIce')
         if not officials_on_ice:
+            logger.debug(f"No officials data for game {game_id}")
             return True
 
         cursor = conn.cursor()
+        logger.debug(f"Processing {len(officials_on_ice) if isinstance(officials_on_ice, list) else 1} officials for game {game_id}")
 
         # Handle both list and dict responses
         officials_list = officials_on_ice if isinstance(officials_on_ice, list) else [officials_on_ice]
 
         for official in officials_list:
             if isinstance(official, dict):
-                person_id = int(official.get('person_id', 0))
+                # Handle empty strings from API (convert to 0)
+                person_id_val = official.get('person_id', 0)
+                person_id = int(person_id_val) if person_id_val and person_id_val != '' else 0
                 if person_id > 0:
                     first_name = official.get('first_name', '')
                     last_name = official.get('last_name', '')
-                    jersey_number = int(official.get('jersey_number', 0))
-                    official_type_id = int(official.get('official_type_id', 0))
+
+                    jersey_num_val = official.get('jersey_number', 0)
+                    jersey_number = int(jersey_num_val) if jersey_num_val and jersey_num_val != '' else 0
+
+                    official_type_val = official.get('official_type_id', 0)
+                    official_type_id = int(official_type_val) if official_type_val and official_type_val != '' else 0
 
                     # Insert person
                     cursor.execute(
@@ -1003,8 +1163,10 @@ def save_officials(conn: sqlite3.Connection, game_id: int) -> bool:
                     )
 
         conn.commit()
+        logger.debug(f"Successfully saved officials for game {game_id}")
         return True
     except Exception as e:
+        logger.error(f"Error saving officials for game {game_id}: {type(e).__name__}: {e}", exc_info=True)
         console.print(f"[red]Error saving officials: {e}[/red]")
         return False
 
@@ -1048,18 +1210,27 @@ def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
 # ============================================================================
 
 @click.group()
-def cli():
+@click.option('--log-level',
+              type=click.Choice(['DEBUG', 'INFO', 'WARNING', 'ERROR'], case_sensitive=False),
+              default='ERROR',
+              help='Set logging level for console and file output (default: ERROR)')
+def cli(log_level: str):
     """AHL Game Data CLI - Load and manage hockey game data."""
-    pass
+    # Configure logging with the specified level
+    global logger
+    level = getattr(logging, log_level.upper())
+    logger = _setup_logging(log_level=level)
 
 
 @cli.command()
 def today():
     """Load all games played today with optimizations."""
+    logger.info("Starting 'today' command")
     console.print(Panel.fit("[bold cyan]Loading Today's Games[/bold cyan]", border_style="cyan"))
 
     conn = init_database()
     today_date = datetime.now().date()
+    logger.info(f"Fetching games for date: {today_date}")
     console.print(f"[yellow]Date:[/yellow] {today_date}\n")
 
     saved_count = 0
@@ -1077,9 +1248,11 @@ def today():
         progress.stop()
 
     if not game_ids:
+        logger.info("No games found for today")
         console.print("[yellow]⊘ No games found for today[/yellow]")
         return
 
+    logger.info(f"Found {len(game_ids)} games for today")
     console.print(f"[yellow]Found {len(game_ids)} games for today\n[/yellow]")
 
     # Pre-load existing players for faster lookups
@@ -1137,7 +1310,10 @@ def today():
         console.print(f"\n[green]✓ Loaded {saved_count} games[/green]")
 
     if error_count > 0:
+        logger.warning(f"{error_count} games skipped due to errors")
         console.print(f"[yellow]⚠ {error_count} games skipped due to errors[/yellow]")
+
+    logger.info(f"Completed 'today' command: {saved_count} games loaded, {error_count} errors")
 
 
 @cli.command()
@@ -1145,6 +1321,7 @@ def today():
 @click.option('--limit', type=int, default=None, help='Maximum number of games to load')
 def season(season_id: int, limit: int):
     """Load all games for a specific season with checkpointing and resume capability."""
+    logger.info(f"Starting 'season' command for season {season_id}" + (f" (limit: {limit})" if limit else ""))
     console.print(Panel.fit(f"[bold cyan]Loading Season {season_id}[/bold cyan]", border_style="cyan"))
 
     conn = init_database()
@@ -1159,10 +1336,12 @@ def season(season_id: int, limit: int):
         progress.stop()
 
     if not game_ids:
+        logger.warning(f"No games found for season {season_id}")
         console.print(f"[red]✗ No games found for season {season_id}[/red]")
         return
 
     if limit:
+        logger.debug(f"Limiting games to {limit}")
         game_ids = game_ids[:limit]
 
     # Convert game_ids to integers (API returns strings, DB stores ints)
@@ -1255,13 +1434,17 @@ def season(season_id: int, limit: int):
 
     console.print(f"\n[green]✓ Saved {saved_count} games[/green]")
     if error_count > 0:
+        logger.warning(f"{error_count} games failed to save for season {season_id}")
         console.print(f"[yellow]⚠ {error_count} games failed[/yellow]")
+
+    logger.info(f"Completed 'season' command for season {season_id}: {saved_count} games saved, {error_count} errors")
 
 
 @cli.command()
 @click.argument('game_id', type=int)
 def game(game_id: int):
     """Load a specific game by ID."""
+    logger.info(f"Starting 'game' command for game {game_id}")
     console.print(Panel.fit(f"[bold cyan]Loading Game {game_id}[/bold cyan]", border_style="cyan"))
 
     conn = init_database()
@@ -1276,11 +1459,177 @@ def game(game_id: int):
         progress.stop()
 
     if success:
+        logger.info(f"Successfully saved game {game_id}: {message}")
         console.print("\n[green]✓ Game saved successfully[/green]")
         console.print(f"[cyan]{message}[/cyan]")
     else:
+        logger.error(f"Failed to save game {game_id}: {message}")
         console.print("\n[red]✗ Failed to load game[/red]")
         console.print(f"[red]{message}[/red]")
+
+
+def repopulate_penalties_for_game(conn: sqlite3.Connection, game_id: int) -> bool:
+    """Directly repopulate penalties for a single game, avoiding other save operations."""
+    cursor = conn.cursor()
+    try:
+        # Delete existing penalties for this game
+        cursor.execute('DELETE FROM gamepenalties WHERE game_id = ?', (game_id,))
+
+        # Fetch fresh penalty data
+        penalty_list = get_penalties(game_id, conn)
+
+        if not penalty_list:
+            conn.commit()
+            return True
+
+        # Insert penalties
+        for penalty in penalty_list:
+            insert_model(conn, penalty, 'gamepenalties', replace=False)
+
+        conn.commit()
+        return True
+    except Exception as e:
+        console.print(f"[red]Error repopulating penalties for game {game_id}: {e}[/red]")
+        return False
+
+
+def delete_game_records(conn: sqlite3.Connection, game_id: int, tables: list[str] | None = None) -> bool:
+    """Delete a game from specified tables. If tables is None, delete from all game-related tables."""
+    if tables is None:
+        tables = ['gameofficial', 'gamepenalties', 'gameroster', 'gamedata']
+
+    cursor = conn.cursor()
+    try:
+        for table in tables:
+            cursor.execute(f'DELETE FROM {table} WHERE game_id = ?', (game_id,))
+        conn.commit()
+        return True
+    except Exception as e:
+        console.print(f"[red]Error deleting game {game_id}: {e}[/red]")
+        return False
+
+
+def delete_season_records(conn: sqlite3.Connection, season_id: int, tables: list[str] | None = None) -> int:
+    """Delete all games from a season. Returns number of games deleted."""
+    if tables is None:
+        tables = ['gameofficial', 'gamepenalties', 'gameroster', 'gamedata']
+
+    cursor = conn.cursor()
+    try:
+        # Get all game IDs for this season first
+        cursor.execute('SELECT game_id FROM gamedata WHERE season_id = ?', (season_id,))
+        game_ids = [row[0] for row in cursor.fetchall()]
+
+        # Delete from specified tables
+        for table in tables:
+            if game_ids:
+                cursor.execute(f'DELETE FROM {table} WHERE game_id IN ({",".join("?" * len(game_ids))})', game_ids)
+
+        conn.commit()
+        return len(game_ids)
+    except Exception as e:
+        console.print(f"[red]Error deleting season {season_id}: {e}[/red]")
+        return 0
+
+
+@cli.command()
+@click.option('--game-id', type=int, default=None, help='Repopulate a specific game by ID')
+@click.option('--season-id', type=int, default=None, help='Repopulate all games in a season')
+@click.option('--all', is_flag=True, help='Repopulate all games in all seasons')
+@click.option('--tables', multiple=True, type=click.Choice(['gamedata', 'gamepenalties', 'gameroster', 'gameofficial']),
+              help='Specify which tables to repopulate (can use multiple times). Default: all tables')
+@click.option('--limit', type=int, default=None, help='Limit number of games to repopulate (for season/all)')
+def repopulate(game_id: int | None, season_id: int | None, all: bool, tables: tuple[str, ...], limit: int | None):
+    """Repopulate game data by deleting and re-scraping from API."""
+    console.print(Panel.fit("[bold cyan]Repopulating Game Data[/bold cyan]", border_style="cyan"))
+
+    # Validate options
+    option_count = sum([game_id is not None, season_id is not None, all])
+    if option_count == 0:
+        console.print("[red]Error: Must specify --game-id, --season-id, or --all[/red]")
+        return
+    if option_count > 1:
+        console.print("[red]Error: Cannot specify multiple options at once[/red]")
+        return
+
+    # Convert tables tuple to list, default to all if not specified
+    tables_to_repopulate = list(tables) if tables else ['gamedata', 'gamepenalties', 'gameroster', 'gameofficial']
+
+    conn = init_database()
+    _load_existing_players(conn)
+
+    game_ids_to_repopulate = []
+
+    if game_id is not None:
+        game_ids_to_repopulate = [game_id]
+    elif season_id is not None:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            _ = progress.add_task("Fetching game IDs...", total=None)
+            game_ids_to_repopulate = get_season_game_ids(season_id)
+            progress.stop()
+
+        game_ids_to_repopulate = [int(gid) for gid in game_ids_to_repopulate]
+    else:  # all
+        cursor = conn.cursor()
+        cursor.execute('SELECT DISTINCT season_id FROM gamedata ORDER BY season_id')
+        season_ids = [row[0] for row in cursor.fetchall()]
+
+        for sid in season_ids:
+            game_ids = get_season_game_ids(sid)
+            game_ids_to_repopulate.extend([int(gid) for gid in game_ids])
+
+    if limit:
+        game_ids_to_repopulate = game_ids_to_repopulate[:limit]
+
+    if not game_ids_to_repopulate:
+        console.print("[yellow]⊘ No games found to repopulate[/yellow]")
+        return
+
+    console.print(f"[yellow]Found {len(game_ids_to_repopulate)} games to repopulate[/yellow]")
+    console.print(f"[cyan]Tables: {', '.join(tables_to_repopulate)}\n[/cyan]")
+
+    # Delete and rescrape
+    repopulated = 0
+    error_count = 0
+
+    # Optimize for penalties-only repopulation
+    penalties_only = tables_to_repopulate == ['gamepenalties']
+
+    with Progress(console=console) as progress:
+        task = progress.add_task("[cyan]Repopulating games...", total=len(game_ids_to_repopulate))
+
+        for gid in game_ids_to_repopulate:
+            try:
+                if penalties_only:
+                    # Fast path: only repopulate penalties, skip other operations
+                    if repopulate_penalties_for_game(conn, gid):
+                        repopulated += 1
+                    else:
+                        error_count += 1
+                else:
+                    # Standard path: delete and rescrape all selected tables
+                    if delete_game_records(conn, gid, tables_to_repopulate):
+                        success, message = save_game_data(conn, gid)
+                        if success:
+                            repopulated += 1
+                        else:
+                            error_count += 1
+                    else:
+                        error_count += 1
+            except Exception:
+                error_count += 1
+            finally:
+                progress.advance(task)
+
+    conn.commit()
+
+    console.print(f"\n[green]✓ Repopulated {repopulated} games[/green]")
+    if error_count > 0:
+        console.print(f"[yellow]⚠ {error_count} games failed[/yellow]")
 
 
 @cli.command()
