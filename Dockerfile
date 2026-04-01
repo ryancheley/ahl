@@ -25,10 +25,8 @@ RUN groupadd -r datasette && useradd -r -g datasette datasette && \
 
 # Create data directory for persistent database storage
 # Database files are stored in /data for persistence (configured via VOLUME mount in Coolify)
+# Note: my_database.db must be manually placed in the /data volume on the Coolify host
 RUN mkdir -p /data && chown -R datasette:datasette /data
-
-# Copy database to data directory
-COPY my_database.db /data/
 
 # Expose port for datasette
 EXPOSE 8001
