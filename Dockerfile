@@ -1,13 +1,19 @@
 FROM python:3.14-slim
 
-# Install curl and datasette
+# Install curl, datasette, and uv
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir datasette
+RUN pip install --no-cache-dir datasette uv
 
-# Copy metadata config
 WORKDIR /app
+
+# Copy project files
+COPY pyproject.toml uv.lock ./
 COPY metadata.json .
+COPY program.py .
+
+# Install Python dependencies using uv
+RUN uv pip install --python /usr/local/bin/python --no-cache-dir -e .
 
 # Create data directory for persistent database storage
 WORKDIR /data
