@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 
 secrets.txt
+
+my_database.db
