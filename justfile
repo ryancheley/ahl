@@ -48,3 +48,12 @@
 @clean:
     rm -rf .pytest_cache __pycache__ *.pyc logs/*.log
     find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+
+# Database sync
+
+@db-push:
+    scp my_database.db root@h-web-p-002:/data/my_database.db
+
+@db-pull:
+    cp my_database.db my_database.db.orig
+    scp root@h-web-p-002:/data/my_database.db my_database.db
