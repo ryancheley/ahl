@@ -942,6 +942,16 @@ def get_penalties(game_id: int, conn: sqlite3.Connection | None = None) -> list[
     return penalties
 
 
+def _safe_int(value) -> int:
+    """Safely convert a value to int, handling empty strings and None."""
+    if not value or value == '':
+        return 0
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return 0
+
+
 def get_goals(game_id: int) -> list[GameGoals]:
     goals: list[GameGoals] = []
 
@@ -951,66 +961,32 @@ def get_goals(game_id: int) -> list[GameGoals]:
 
     for goal_data in goals_data_list:
         try:
-            # Extract and convert all fields properly
-            home_val = goal_data.get('home', 0)
-            period_id_val = goal_data.get('period_id', 0)
-            time_of_goal_seconds_val = goal_data.get('s', 0)
-            team_id_val = goal_data.get('team_id', 0)
-            x_location_val = goal_data.get('x_location', 0)
-            y_location_val = goal_data.get('y_location', 0)
-            location_set_val = goal_data.get('location_set', 0)
-            power_play_val = goal_data.get('power_play', 0)
-            empty_net_val = goal_data.get('empty_net', 0)
-            penalty_shot_val = goal_data.get('penalty_shot', 0)
-            short_handed_val = goal_data.get('short_handed', 0)
-            insurance_goal_val = goal_data.get('insurance_goal', 0)
-            game_winning_val = goal_data.get('game_winning', 0)
-            game_tieing_val = goal_data.get('game_tieing', 0)
-            scorer_goal_num_val = goal_data.get('scorer_goal_num', 0)
-
-            home: bool = bool(int(home_val) if isinstance(home_val, (str, int)) else 0)
-            period_id: int = int(period_id_val) if isinstance(period_id_val, (str, int)) else 0
-            time_of_goal_seconds: int = int(time_of_goal_seconds_val) if isinstance(time_of_goal_seconds_val, (str, int)) else 0
-            team_id: int = int(team_id_val) if isinstance(team_id_val, (str, int)) else 0
+            # Extract all fields - _safe_int handles empty strings and invalid values
+            home: bool = bool(_safe_int(goal_data.get('home', 0)))
+            period_id: int = _safe_int(goal_data.get('period_id', 0))
+            time_of_goal_seconds: int = _safe_int(goal_data.get('s', 0))
+            team_id: int = _safe_int(goal_data.get('team_id', 0))
             goal_type: str = goal_data.get('goal_type', '')
-            x_location: int = int(x_location_val) if isinstance(x_location_val, (str, int)) else 0
-            y_location: int = int(y_location_val) if isinstance(y_location_val, (str, int)) else 0
-            location_set: bool = bool(int(location_set_val) if isinstance(location_set_val, (str, int)) else 0)
-            power_play: bool = bool(int(power_play_val) if isinstance(power_play_val, (str, int)) else 0)
-            empty_net: bool = bool(int(empty_net_val) if isinstance(empty_net_val, (str, int)) else 0)
-            penalty_shot: bool = bool(int(penalty_shot_val) if isinstance(penalty_shot_val, (str, int)) else 0)
-            short_handed: bool = bool(int(short_handed_val) if isinstance(short_handed_val, (str, int)) else 0)
-            insurance_goal: bool = bool(int(insurance_goal_val) if isinstance(insurance_goal_val, (str, int)) else 0)
-            game_winning: bool = bool(int(game_winning_val) if isinstance(game_winning_val, (str, int)) else 0)
-            game_tieing: bool = bool(int(game_tieing_val) if isinstance(game_tieing_val, (str, int)) else 0)
-            scorer_goal_num: int = int(scorer_goal_num_val) if isinstance(scorer_goal_num_val, (str, int)) else 0
+            x_location: int = _safe_int(goal_data.get('x_location', 0))
+            y_location: int = _safe_int(goal_data.get('y_location', 0))
+            location_set: bool = bool(_safe_int(goal_data.get('location_set', 0)))
+            power_play: bool = bool(_safe_int(goal_data.get('power_play', 0)))
+            empty_net: bool = bool(_safe_int(goal_data.get('empty_net', 0)))
+            penalty_shot: bool = bool(_safe_int(goal_data.get('penalty_shot', 0)))
+            short_handed: bool = bool(_safe_int(goal_data.get('short_handed', 0)))
+            insurance_goal: bool = bool(_safe_int(goal_data.get('insurance_goal', 0)))
+            game_winning: bool = bool(_safe_int(goal_data.get('game_winning', 0)))
+            game_tieing: bool = bool(_safe_int(goal_data.get('game_tieing', 0)))
+            scorer_goal_num: int = _safe_int(goal_data.get('scorer_goal_num', 0))
 
-            # Safely extract player IDs from nested objects
+            # Safely extract player IDs from nested objects, handling None values
             goal_scorer_info = goal_data.get('goal_scorer')
             assist1_player_info = goal_data.get('assist1_player')
             assist2_player_info = goal_data.get('assist2_player')
 
-            goal_scorer_player_id: int = 0
-            assist1_player_id: int = 0
-            assist2_player_id: int = 0
-
-            if goal_scorer_info and isinstance(goal_scorer_info, dict):
-                scorer_val = goal_scorer_info.get('player_id', 0)
-                goal_scorer_player_id = int(scorer_val) if isinstance(scorer_val, (str, int)) else 0
-            elif isinstance(goal_scorer_info, int):
-                goal_scorer_player_id = int(goal_scorer_info)
-
-            if assist1_player_info and isinstance(assist1_player_info, dict):
-                assist1_val = assist1_player_info.get('player_id', 0)
-                assist1_player_id = int(assist1_val) if isinstance(assist1_val, (str, int)) else 0
-            elif isinstance(assist1_player_info, int):
-                assist1_player_id = int(assist1_player_info)
-
-            if assist2_player_info and isinstance(assist2_player_info, dict):
-                assist2_val = assist2_player_info.get('player_id', 0)
-                assist2_player_id = int(assist2_val) if isinstance(assist2_val, (str, int)) else 0
-            elif isinstance(assist2_player_info, int):
-                assist2_player_id = int(assist2_player_info)
+            goal_scorer_player_id: int = _safe_int(goal_scorer_info.get('player_id', 0)) if isinstance(goal_scorer_info, dict) else 0
+            assist1_player_id: int = _safe_int(assist1_player_info.get('player_id', 0)) if isinstance(assist1_player_info, dict) else 0
+            assist2_player_id: int = _safe_int(assist2_player_info.get('player_id', 0)) if isinstance(assist2_player_info, dict) else 0
 
             goals.append(GameGoals(  # type: ignore
                 game_id=game_id,
