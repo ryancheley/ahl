@@ -1413,6 +1413,42 @@ def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
         return False, str(e)
 
 
+def save_scheduled_game(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
+    """Extract and save a scheduled (unplayed) game to the scheduled_games table."""
+    try:
+        away_team = get_game_team_instance(game_id, "visitor")
+        home_team = get_game_team_instance(game_id, "home")
+
+        # Parse date_played string to date object
+        date_played_str = _get_game_meta_data(game_id, "date_played")
+        game_date: date
+        if isinstance(date_played_str, str):
+            try:
+                game_date = datetime.strptime(date_played_str, "%Y-%m-%d").date()
+            except (ValueError, TypeError):
+                return False, "Invalid game date format"
+        else:
+            return False, "Could not extract game date"
+
+        # Check if game already exists in gamedata (shouldn't, but be safe)
+        cursor = conn.cursor()
+        cursor.execute('SELECT game_id FROM gamedata WHERE game_id = ?', (game_id,))
+        if cursor.fetchone():
+            return False, "Game already in gamedata (not scheduled)"
+
+        # Insert into scheduled_games table
+        cursor.execute(
+            'INSERT OR REPLACE INTO scheduled_games (game_id, home_team_id, away_team_id, game_date) VALUES (?, ?, ?, ?)',
+            (game_id, home_team.team_id, away_team.team_id, game_date)
+        )
+        conn.commit()
+
+        return True, f"{away_team.name} @ {home_team.name} on {game_date}"
+    except Exception as e:
+        logger.error(f"Error saving scheduled game {game_id}: {type(e).__name__}: {e}", exc_info=True)
+        return False, str(e)
+
+
 # ============================================================================
 # CLI Commands
 # ============================================================================
@@ -1451,16 +1487,18 @@ def today():
         console=console
     ) as progress:
         task = progress.add_task("Finding today's games...", total=None)
-        # Efficiently fetch only today's game IDs
-        game_ids = get_games_by_date(today_date)
+        # Fetch today's games from scheduled_games table
+        cursor = conn.cursor()
+        cursor.execute('SELECT game_id FROM scheduled_games WHERE game_date = ?', (today_date,))
+        game_ids = [row[0] for row in cursor.fetchall()]
         progress.stop()
 
     if not game_ids:
-        logger.info("No games found for today")
+        logger.info("No games found for today in scheduled_games")
         console.print("[yellow]⊘ No games found for today[/yellow]")
         return
 
-    logger.info(f"Found {len(game_ids)} games for today")
+    logger.info(f"Found {len(game_ids)} games for today from scheduled_games")
     console.print(f"[yellow]Found {len(game_ids)} games for today\n[/yellow]")
 
     # Pre-load existing players for faster lookups
@@ -1489,6 +1527,11 @@ def today():
                         "Status": game.game_status,
                     })
                     saved_count += 1
+
+                    # Remove from scheduled_games if it was there
+                    cursor = conn.cursor()
+                    cursor.execute('DELETE FROM scheduled_games WHERE game_id = ?', (game_id,))
+                    conn.commit()
                 else:
                     error_count += 1
             except Exception:
@@ -1582,8 +1625,10 @@ def season(season_id: int, limit: int):
     _load_existing_players(conn)
 
     saved_count = 0
+    scheduled_count = 0
     error_count = 0
     games_data = []
+    scheduled_data = []
     checkpoint_interval = 100  # Save progress every 100 games
 
     with Progress(console=console) as progress:
@@ -1593,8 +1638,15 @@ def season(season_id: int, limit: int):
         )
 
         for idx, game_id in enumerate(game_ids):
-            # Skip games that haven't been played yet (future games)
+            # Check if game has been played
             if not is_game_played(game_id):
+                # Save unplayed game to scheduled_games table
+                success, message = save_scheduled_game(conn, game_id)
+                if success:
+                    scheduled_data.append({"ID": game_id, "Result": message})
+                    scheduled_count += 1
+                else:
+                    error_count += 1
                 progress.advance(task)
                 continue
 
@@ -1626,7 +1678,7 @@ def season(season_id: int, limit: int):
     # Final commit
     conn.commit()
 
-    # Display results
+    # Display results for played games
     if games_data:
         table = Table(title=f"Games Loaded ({saved_count})", show_header=True, header_style="bold green")
         table.add_column("Game ID", style="dim")
@@ -1640,12 +1692,28 @@ def season(season_id: int, limit: int):
 
         console.print(table)
 
-    console.print(f"\n[green]✓ Saved {saved_count} games[/green]")
+    # Display results for scheduled games
+    if scheduled_data:
+        table = Table(title=f"Scheduled Games ({scheduled_count})", show_header=True, header_style="bold cyan")
+        table.add_column("Game ID", style="dim")
+        table.add_column("Result")
+
+        for game in scheduled_data[:20]:  # Show first 20
+            table.add_row(str(game["ID"]), game["Result"])
+
+        if len(scheduled_data) > 20:
+            table.add_row("[dim]...[/dim]", f"[dim]+{len(scheduled_data) - 20} more[/dim]")
+
+        console.print(table)
+
+    console.print(f"\n[green]✓ Saved {saved_count} played games[/green]")
+    if scheduled_count > 0:
+        console.print(f"[cyan]✓ Saved {scheduled_count} scheduled games[/cyan]")
     if error_count > 0:
         logger.warning(f"{error_count} games failed to save for season {season_id}")
         console.print(f"[yellow]⚠ {error_count} games failed[/yellow]")
 
-    logger.info(f"Completed 'season' command for season {season_id}: {saved_count} games saved, {error_count} errors")
+    logger.info(f"Completed 'season' command for season {season_id}: {saved_count} played games, {scheduled_count} scheduled games, {error_count} errors")
 
 
 @cli.command()
@@ -1893,6 +1961,147 @@ def list_seasons():
     else:
         console.print("[red]✗ Could not fetch seasons from API[/red]")
         console.print("[yellow]The API may be down or the endpoint has changed[/yellow]")
+
+
+@cli.command()
+@click.option('--season-id', type=int, default=None, help='Filter by season ID')
+@click.option('--limit', type=int, default=50, help='Maximum number of games to display (default: 50)')
+def list_scheduled(season_id: int | None, limit: int):
+    """List scheduled (future) games."""
+    logger.info("Starting 'list_scheduled' command")
+    console.print(Panel.fit("[bold cyan]Scheduled Games[/bold cyan]", border_style="cyan"))
+
+    conn = init_database()
+    cursor = conn.cursor()
+
+    try:
+        if season_id:
+            # Get the season year range to filter by date
+            cursor.execute('SELECT start_date, end_date FROM season WHERE season_id = ?', (season_id,))
+            season_row = cursor.fetchone()
+            if season_row:
+                start_date, end_date = season_row
+                query = '''
+                    SELECT DISTINCT sg.game_id, t_home.name as home_team, t_away.name as away_team, sg.game_date
+                    FROM scheduled_games sg
+                    JOIN team t_home ON sg.home_team_id = t_home.team_id
+                    JOIN team t_away ON sg.away_team_id = t_away.team_id
+                    WHERE sg.game_date BETWEEN ? AND ?
+                    ORDER BY sg.game_date ASC
+                    LIMIT ?
+                '''
+                cursor.execute(query, (start_date, end_date, limit))
+            else:
+                console.print(f"[yellow]⚠ Season {season_id} not found[/yellow]")
+                return
+        else:
+            query = '''
+                SELECT DISTINCT sg.game_id, t_home.name as home_team, t_away.name as away_team, sg.game_date
+                FROM scheduled_games sg
+                JOIN team t_home ON sg.home_team_id = t_home.team_id
+                JOIN team t_away ON sg.away_team_id = t_away.team_id
+                ORDER BY sg.game_date ASC
+                LIMIT ?
+            '''
+            cursor.execute(query, (limit,))
+
+        results = cursor.fetchall()
+
+        if results:
+            table = Table(show_header=True, header_style="bold cyan", title=f"Scheduled Games ({len(results)})")
+            table.add_column("Game ID", justify="center", style="cyan")
+            table.add_column("Away Team", justify="left")
+            table.add_column("Home Team", justify="left")
+            table.add_column("Date", justify="center")
+
+            for row in results:
+                game_id, away_team, home_team, game_date = row
+                table.add_row(str(game_id), away_team, home_team, str(game_date))
+
+            console.print(table)
+            console.print(f"\n[green]✓ Found {len(results)} scheduled games[/green]")
+        else:
+            console.print("[yellow]⊘ No scheduled games found[/yellow]")
+    except Exception as e:
+        logger.error(f"Error listing scheduled games: {type(e).__name__}: {e}", exc_info=True)
+        console.print(f"[red]✗ Error listing scheduled games: {e}[/red]")
+    finally:
+        conn.close()
+
+
+@cli.command()
+@click.confirmation_option(prompt='Are you sure you want to clear all scheduled games?')
+def clear_scheduled():
+    """Clear all scheduled games from the database."""
+    logger.info("Starting 'clear_scheduled' command")
+    console.print(Panel.fit("[bold yellow]Clearing Scheduled Games[/bold yellow]", border_style="yellow"))
+
+    conn = init_database()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('SELECT COUNT(*) FROM scheduled_games')
+        count = cursor.fetchone()[0]
+
+        if count == 0:
+            console.print("[yellow]⊘ No scheduled games to clear[/yellow]")
+            return
+
+        cursor.execute('DELETE FROM scheduled_games')
+        conn.commit()
+
+        logger.info(f"Cleared {count} scheduled games")
+        console.print(f"[green]✓ Deleted {count} scheduled games[/green]")
+    except Exception as e:
+        logger.error(f"Error clearing scheduled games: {type(e).__name__}: {e}", exc_info=True)
+        console.print(f"[red]✗ Error clearing scheduled games: {e}[/red]")
+    finally:
+        conn.close()
+
+
+@cli.command()
+@click.option('--game-id', type=int, default=None, help='Delete a specific scheduled game by ID')
+@click.option('--before-date', type=str, default=None, help='Delete all scheduled games before a date (YYYY-MM-DD format)')
+def delete_scheduled(game_id: int | None, before_date: str | None):
+    """Delete scheduled games."""
+    logger.info("Starting 'delete_scheduled' command")
+    console.print(Panel.fit("[bold yellow]Deleting Scheduled Games[/bold yellow]", border_style="yellow"))
+
+    if not game_id and not before_date:
+        console.print("[red]Error: Must specify --game-id or --before-date[/red]")
+        return
+
+    if game_id and before_date:
+        console.print("[red]Error: Cannot specify both --game-id and --before-date[/red]")
+        return
+
+    conn = init_database()
+    cursor = conn.cursor()
+
+    try:
+        if game_id:
+            cursor.execute('DELETE FROM scheduled_games WHERE game_id = ?', (game_id,))
+            deleted = cursor.rowcount
+            if deleted > 0:
+                logger.info(f"Deleted scheduled game {game_id}")
+                console.print(f"[green]✓ Deleted game {game_id}[/green]")
+            else:
+                console.print(f"[yellow]⊘ Game {game_id} not found in scheduled games[/yellow]")
+        else:  # before_date
+            cursor.execute('DELETE FROM scheduled_games WHERE game_date < ?', (before_date,))
+            deleted = cursor.rowcount
+            if deleted > 0:
+                logger.info(f"Deleted {deleted} scheduled games before {before_date}")
+                console.print(f"[green]✓ Deleted {deleted} games before {before_date}[/green]")
+            else:
+                console.print(f"[yellow]⊘ No games found before {before_date}[/yellow]")
+
+        conn.commit()
+    except Exception as e:
+        logger.error(f"Error deleting scheduled games: {type(e).__name__}: {e}", exc_info=True)
+        console.print(f"[red]✗ Error deleting scheduled games: {e}[/red]")
+    finally:
+        conn.close()
 
 
 @cli.command()
