@@ -250,6 +250,7 @@ def get_db_connection():
     """Get SQLite database connection."""
     conn = sqlite3.connect('my_database.db')
     conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA foreign_keys = ON')
     return conn
 
 
@@ -443,6 +444,80 @@ def _migrate_gamepenalties_schema(conn: sqlite3.Connection):
             conn.commit()
             logger.info("Migration complete: gamepenalties table updated successfully")
     except Exception as e:
+        logger.error(f"Migration error: {e}", exc_info=True)
+        conn.rollback()
+        raise
+
+
+def _migrate_add_game_fk_constraints(conn: sqlite3.Connection):
+    """Add foreign key constraints to gameofficial and gameroster tables."""
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('PRAGMA foreign_keys = OFF')
+
+        # Migrate gameofficial table
+        cursor.execute("PRAGMA table_info(gameofficial)")
+        columns = {col[1]: col for col in cursor.fetchall()}
+
+        if 'game_id' in columns:
+            logger.info("Adding FK constraint to gameofficial table...")
+            cursor.execute("ALTER TABLE gameofficial RENAME TO gameofficial_old")
+
+            cursor.execute('''
+                CREATE TABLE gameofficial (
+                    game_id INTEGER NOT NULL,
+                    person_id INTEGER NOT NULL,
+                    official_type_id INTEGER,
+                    PRIMARY KEY (game_id, person_id),
+                    FOREIGN KEY (game_id) REFERENCES gamedata(game_id)
+                )
+            ''')
+
+            cursor.execute('''
+                INSERT INTO gameofficial
+                (game_id, person_id, official_type_id)
+                SELECT game_id, person_id, official_type_id
+                FROM gameofficial_old
+            ''')
+
+            cursor.execute("DROP TABLE gameofficial_old")
+            logger.info("✓ gameofficial FK constraint added")
+
+        # Migrate gameroster table
+        cursor.execute("PRAGMA table_info(gameroster)")
+        columns = {col[1]: col for col in cursor.fetchall()}
+
+        if 'game_id' in columns:
+            logger.info("Adding FK constraint to gameroster table...")
+            cursor.execute("ALTER TABLE gameroster RENAME TO gameroster_old")
+
+            cursor.execute('''
+                CREATE TABLE gameroster (
+                    game_id INTEGER NOT NULL,
+                    player_id INTEGER NOT NULL,
+                    team_id INTEGER NOT NULL,
+                    starter BOOLEAN,
+                    PRIMARY KEY (game_id, player_id, team_id),
+                    FOREIGN KEY (game_id) REFERENCES gamedata(game_id)
+                )
+            ''')
+
+            cursor.execute('''
+                INSERT INTO gameroster
+                (game_id, player_id, team_id, starter)
+                SELECT game_id, player_id, team_id, starter
+                FROM gameroster_old
+            ''')
+
+            cursor.execute("DROP TABLE gameroster_old")
+            logger.info("✓ gameroster FK constraint added")
+
+        cursor.execute('PRAGMA foreign_keys = ON')
+        conn.commit()
+        logger.info("Migration complete: FK constraints added successfully")
+    except Exception as e:
+        cursor.execute('PRAGMA foreign_keys = ON')
         logger.error(f"Migration error: {e}", exc_info=True)
         conn.rollback()
         raise
@@ -1182,6 +1257,11 @@ def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
         is_ended = is_game_played(game_id)
         should_replace = is_past and is_ended
 
+        # Delete old penalties before re-inserting if we're replacing gamedata
+        if should_replace:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM gamepenalties WHERE game_id = ?', (game_id,))
+
         insert_model(conn, game, 'gamedata', replace=should_replace)
 
         away_team = get_game_team_instance(game_id, "visitor")
@@ -1191,7 +1271,7 @@ def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
 
         penalties = get_penalties(game_id, conn)
         for penalty in penalties:
-            insert_model(conn, penalty, 'gamepenalties', replace=True)
+            insert_model(conn, penalty, 'gamepenalties', replace=False)
 
         # Save venue, season, officials, penalty classes, and rosters
         save_venue(conn, game_id)
@@ -1672,6 +1752,30 @@ def init():
     console.print("[green]✓ Database initialized[/green]")
     console.print("[cyan]Models: Person, Team, Venue, Season, GameData, GameOfficial, Official, Player, GameRoster, PenaltyClass, Penalty, GamePenalties[/cyan]")
     console.print("[dim]Tables will be created automatically on first data insert[/dim]")
+
+
+@cli.command()
+def migrate_fk():
+    """Add foreign key constraints to gameofficial and gameroster tables."""
+    console.print(Panel.fit("[bold cyan]Migrating Foreign Key Constraints[/bold cyan]", border_style="cyan"))
+
+    conn = get_db_connection()
+    try:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            _ = progress.add_task("Adding FK constraints...", total=None)
+            _migrate_add_game_fk_constraints(conn)
+            progress.stop()
+
+        console.print("[green]✓ Migration complete[/green]")
+        console.print("[cyan]gameofficial and gameroster now have FK constraints to gamedata[/cyan]")
+    except Exception as e:
+        console.print(f"[red]✗ Migration failed: {e}[/red]")
+    finally:
+        conn.close()
 
 
 if __name__ == "__main__":
