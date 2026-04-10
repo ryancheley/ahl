@@ -265,6 +265,27 @@ class GameGoals(BaseModel):
     assist2_player_id: int
 
 
+class GameGoalies(BaseModel):
+    id: int
+    game_id: int
+    player_id: int
+    team_id: int
+    period_start: str
+    time_start: str
+    period_end: str
+    time_end: str
+    saves: int
+    seconds: int
+    goals_against: int
+    shots_against: int
+    win: bool
+    loss: bool
+    shootout_loss: bool
+    ot_loss: bool
+    tie: bool
+    shutout: bool
+
+
 # ============================================================================
 # Database Functions
 # ============================================================================
@@ -429,6 +450,28 @@ def init_database() -> sqlite3.Connection:
                 goal_scorer_player_id INTEGER,
                 assist1_player_id INTEGER,
                 assist2_player_id INTEGER
+            )
+        ''',
+        'gamegoalies': '''
+            CREATE TABLE IF NOT EXISTS gamegoalies (
+                id INTEGER PRIMARY KEY,
+                game_id INTEGER,
+                player_id INTEGER,
+                team_id INTEGER,
+                period_start TEXT,
+                time_start TEXT,
+                period_end TEXT,
+                time_end TEXT,
+                saves INTEGER,
+                seconds INTEGER,
+                goals_against INTEGER,
+                shots_against INTEGER,
+                win BOOLEAN,
+                loss BOOLEAN,
+                shootout_loss BOOLEAN,
+                ot_loss BOOLEAN,
+                tie BOOLEAN,
+                shutout BOOLEAN
             )
         ''',
     }
@@ -1369,6 +1412,61 @@ def save_officials(conn: sqlite3.Connection, game_id: int) -> bool:
         return False
 
 
+def save_goalies(conn: sqlite3.Connection, game_id: int, home_team_id: int, away_team_id: int) -> bool:
+    """Extract and save goalie performance data from game."""
+    try:
+        goalies = _get_game_game_summary_data(game_id, 'goalies')
+        if not goalies or not isinstance(goalies, dict):
+            return True
+
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM gamegoalies WHERE game_id = ?', (game_id,))
+
+        for team_type, goalie_list in goalies.items():
+            if not isinstance(goalie_list, list):
+                continue
+            team_id = home_team_id if team_type == 'home' else away_team_id
+            for goalie in goalie_list:
+                if not isinstance(goalie, dict):
+                    continue
+                stint_id = int(goalie.get('id', 0))
+                player_id = int(goalie.get('player_id', 0))
+                if stint_id <= 0 or player_id <= 0:
+                    continue
+                cursor.execute(
+                    '''INSERT OR REPLACE INTO gamegoalies
+                    (id, game_id, player_id, team_id, period_start, time_start,
+                     period_end, time_end, saves, seconds, goals_against, shots_against,
+                     win, loss, shootout_loss, ot_loss, tie, shutout)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                    (
+                        stint_id, game_id, player_id, team_id,
+                        goalie.get('period_start', ''),
+                        goalie.get('time_start', ''),
+                        goalie.get('period_end', ''),
+                        goalie.get('time_end', ''),
+                        int(goalie.get('saves', 0) or 0),
+                        int(goalie.get('seconds', 0) or 0),
+                        int(goalie.get('goals_against', 0) or 0),
+                        int(goalie.get('shots_against', 0) or 0),
+                        bool(int(goalie.get('win', 0) or 0)),
+                        bool(int(goalie.get('loss', 0) or 0)),
+                        bool(int(goalie.get('shootout_loss', 0) or 0)),
+                        bool(int(goalie.get('ot_loss', 0) or 0)),
+                        bool(int(goalie.get('tie', 0) or 0)),
+                        bool(int(goalie.get('shutout', 0) or 0)),
+                    )
+                )
+
+        conn.commit()
+        logger.debug(f"Successfully saved goalies for game {game_id}")
+        return True
+    except Exception as e:
+        logger.error(f"Error saving goalies for game {game_id}: {type(e).__name__}: {e}", exc_info=True)
+        console.print(f"[red]Error saving goalies: {e}[/red]")
+        return False
+
+
 def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
     """Fetch and save a single game's data to database. Returns (success, message)."""
     try:
@@ -1385,6 +1483,7 @@ def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
             cursor = conn.cursor()
             cursor.execute('DELETE FROM gamepenalties WHERE game_id = ?', (game_id,))
             cursor.execute('DELETE FROM gamegoals WHERE game_id = ?', (game_id,))
+            cursor.execute('DELETE FROM gamegoalies WHERE game_id = ?', (game_id,))
 
         insert_model(conn, game, 'gamedata', replace=should_replace)
 
@@ -1407,6 +1506,7 @@ def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
         save_officials(conn, game_id)
         save_penalty_classes(conn, game_id)
         save_players_and_rosters(conn, game_id)
+        save_goalies(conn, game_id, home_team.team_id, away_team.team_id)
 
         return True, f"{away_team.name} vs {home_team.name} ({game.away_team_score}-{game.home_team_score})"
     except Exception as e:
@@ -1794,6 +1894,29 @@ def repopulate_goals_for_game(conn: sqlite3.Connection, game_id: int) -> bool:
         return False
 
 
+def repopulate_goalies_for_game(conn: sqlite3.Connection, game_id: int) -> bool:
+    """Directly repopulate goalies for a single game, avoiding other save operations."""
+    try:
+        # Get team IDs for this game
+        cursor = conn.cursor()
+        cursor.execute('SELECT home_team_id, away_team_id FROM gamedata WHERE game_id = ?', (game_id,))
+        result = cursor.fetchone()
+        if not result:
+            console.print(f"[red]Game {game_id} not found in gamedata[/red]")
+            return False
+        home_team_id, away_team_id = result
+
+        # Delete existing goalies for this game
+        cursor.execute('DELETE FROM gamegoalies WHERE game_id = ?', (game_id,))
+        conn.commit()
+
+        # Fetch and save fresh goalie data
+        return save_goalies(conn, game_id, home_team_id, away_team_id)
+    except Exception as e:
+        console.print(f"[red]Error repopulating goalies for game {game_id}: {e}[/red]")
+        return False
+
+
 def delete_game_records(conn: sqlite3.Connection, game_id: int, tables: list[str] | None = None) -> bool:
     """Delete a game from specified tables. If tables is None, delete from all game-related tables."""
     if tables is None:
@@ -1837,7 +1960,7 @@ def delete_season_records(conn: sqlite3.Connection, season_id: int, tables: list
 @click.option('--game-id', type=int, default=None, help='Repopulate a specific game by ID')
 @click.option('--season-id', type=int, default=None, help='Repopulate all games in a season')
 @click.option('--all', is_flag=True, help='Repopulate all games in all seasons')
-@click.option('--tables', multiple=True, type=click.Choice(['gamedata', 'gamepenalties', 'gamegoals', 'gameroster', 'gameofficial']),
+@click.option('--tables', multiple=True, type=click.Choice(['gamedata', 'gamepenalties', 'gamegoals', 'gamegoalies', 'gameroster', 'gameofficial']),
               help='Specify which tables to repopulate (can use multiple times). Default: all tables')
 @click.option('--limit', type=int, default=None, help='Limit number of games to repopulate (for season/all)')
 def repopulate(game_id: int | None, season_id: int | None, all: bool, tables: tuple[str, ...], limit: int | None):
@@ -1854,7 +1977,7 @@ def repopulate(game_id: int | None, season_id: int | None, all: bool, tables: tu
         return
 
     # Convert tables tuple to list, default to all if not specified
-    tables_to_repopulate = list(tables) if tables else ['gamedata', 'gamepenalties', 'gamegoals', 'gameroster', 'gameofficial']
+    tables_to_repopulate = list(tables) if tables else ['gamedata', 'gamepenalties', 'gamegoals', 'gamegoalies', 'gameroster', 'gameofficial']
 
     conn = init_database()
     _load_existing_players(conn)
@@ -1897,9 +2020,10 @@ def repopulate(game_id: int | None, season_id: int | None, all: bool, tables: tu
     repopulated = 0
     error_count = 0
 
-    # Optimize for penalties-only or goals-only repopulation
+    # Optimize for penalties-only, goals-only, or goalies-only repopulation
     penalties_only = tables_to_repopulate == ['gamepenalties']
     goals_only = tables_to_repopulate == ['gamegoals']
+    goalies_only = tables_to_repopulate == ['gamegoalies']
 
     with Progress(console=console) as progress:
         task = progress.add_task("[cyan]Repopulating games...", total=len(game_ids_to_repopulate))
@@ -1915,6 +2039,12 @@ def repopulate(game_id: int | None, season_id: int | None, all: bool, tables: tu
                 elif goals_only:
                     # Fast path: only repopulate goals, skip other operations
                     if repopulate_goals_for_game(conn, gid):
+                        repopulated += 1
+                    else:
+                        error_count += 1
+                elif goalies_only:
+                    # Fast path: only repopulate goalies, skip other operations
+                    if repopulate_goalies_for_game(conn, gid):
                         repopulated += 1
                     else:
                         error_count += 1
