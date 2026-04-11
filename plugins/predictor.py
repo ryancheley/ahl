@@ -20,7 +20,10 @@ from datasette.utils.asgi import Response
 from monte_carlo import SimConfig, GameParams, run_simulation, compute_official_bias
 
 
-DB_PATH = Path(__file__).parent.parent / "my_database.db"
+# Use /data/my_database.db in Docker/Coolify, otherwise use local path
+_docker_db = Path("/data/my_database.db")
+DB_PATH = _docker_db if _docker_db.exists() else Path(__file__).parent.parent / "my_database.db"
+
 LEAGUE_HOME_WIN_PCT = 0.5361
 
 

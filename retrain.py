@@ -17,7 +17,11 @@ from rich.table import Table
 
 
 console = Console()
-DB_PATH = Path(__file__).parent / "my_database.db"
+
+# Use /data/my_database.db in Docker/Coolify, otherwise use local path
+_docker_db = Path("/data/my_database.db")
+DB_PATH = _docker_db if _docker_db.exists() else Path(__file__).parent / "my_database.db"
+
 LEAGUE_HOME_WIN_PCT = 0.5361  # Empirical from historical data
 MIN_OFFICIAL_GAMES = 20  # Minimum sample size for official stats
 
