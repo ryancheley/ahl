@@ -12,14 +12,15 @@ WORKDIR /app
 
 # Copy project files
 COPY pyproject.toml uv.lock ./
-COPY program.py .
+COPY program.py monte_carlo.py retrain.py ./
+COPY plugins ./plugins
 
 # Download metadata from GitHub
 RUN curl -L -o /app/metadata.json https://raw.githubusercontent.com/ryancheley/ahl/refs/heads/main/metadata.json
 
 # Install Python dependencies using uv (without editable mode to avoid breaking datasette)
 RUN uv pip install --python /usr/local/bin/python --no-cache-dir \
-    beautifulsoup4 lxml pyyaml httpx pydantic pydantic-sqlite rich click
+    beautifulsoup4 lxml pyyaml httpx pydantic pydantic-sqlite rich click numpy
 
 # Create data directory for persistent database storage
 WORKDIR /data
@@ -35,4 +36,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/ || exit 1
 
 # Start datasette with database from persistent volume
-CMD ["datasette", "serve", "/data/my_database.db", "--metadata", "/app/metadata.json", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["datasette", "serve", "/data/my_database.db", "--metadata", "/app/metadata.json", "--host", "0.0.0.0", "--port", "8001", "--plugins-dir", "/app/plugins", "--template-dir", "/app/plugins/templates"]
