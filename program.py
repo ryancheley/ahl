@@ -1508,6 +1508,12 @@ def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
         save_players_and_rosters(conn, game_id)
         save_goalies(conn, game_id, home_team.team_id, away_team.team_id)
 
+        # Remove from scheduled_games if it was there (game has been played)
+        if is_ended:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM scheduled_games WHERE game_id = ?', (game_id,))
+            conn.commit()
+
         return True, f"{away_team.name} vs {home_team.name} ({game.away_team_score}-{game.home_team_score})"
     except Exception as e:
         return False, str(e)
@@ -1627,11 +1633,6 @@ def today():
                         "Status": game.game_status,
                     })
                     saved_count += 1
-
-                    # Remove from scheduled_games if it was there
-                    cursor = conn.cursor()
-                    cursor.execute('DELETE FROM scheduled_games WHERE game_id = ?', (game_id,))
-                    conn.commit()
                 else:
                     error_count += 1
             except Exception:
