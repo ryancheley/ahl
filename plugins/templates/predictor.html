@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="predictor-container">
+    <h1>🎮 Monte Carlo Game Predictor</h1>
+    <p>Predict the outcome of an AHL game using Monte Carlo simulation with exponential decay weighting.</p>
+
+    <form id="predictorForm" class="predictor-form" method="GET" action="/predict/run">
+        <fieldset>
+            <legend>Game Selection</legend>
+
+            <div class="form-group">
+                <label for="season">Season:</label>
+                <select id="season" name="season_id" required onchange="updateGameDropdown()">
+                    {% for season in seasons %}
+                    <option value="{{ season.season_id }}" {% if season.season_id == default_season_id %}selected{% endif %}>
+                        {{ season.season_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="game">Game:</label>
+                <select id="game" name="game_id" required>
+                    {% if games %}
+                        {% for game in games %}
+                        <option value="{{ game.game_id }}">
+                            {% if game.game_type == 'upcoming' %}
+                            📅 {{ game.game_date | trim }} - {{ game.home_team }} vs {{ game.away_team }}
+                            {% else %}
+                            ✓ {{ game.game_date | trim }} - {{ game.home_team }} {{ game.home_team_score }} vs {{ game.away_team }} {{ game.away_team_score }} ({{ game.game_status }})
+                            {% endif %}
+                        </option>
+                        {% endfor %}
+                    {% else %}
+                    <option>No games available</option>
+                    {% endif %}
+                </select>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Simulation Parameters</legend>
+
+            <div class="form-group">
+                <label>Number of Simulations:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="n_simulations" value="100" /> 100</label>
+                    <label><input type="radio" name="n_simulations" value="1000" checked /> 1,000</label>
+                    <label><input type="radio" name="n_simulations" value="10000" /> 10,000</label>
+                    <label><input type="radio" name="n_simulations" value="100000" /> 100,000</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Recency Decay:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="decay" value="slow" /> Slow (0.05)</label>
+                    <label><input type="radio" name="decay" value="medium" checked /> Medium (0.1)</label>
+                    <label><input type="radio" name="decay" value="fast" /> Fast (0.25)</label>
+                </div>
+                <small>How much recent games are weighted vs older games in the season</small>
+            </div>
+
+            <div class="form-group">
+                <label for="lookback">Lookback Period:</label>
+                <input type="range" id="lookback" name="lookback" min="5" max="82" value="20" />
+                <span id="lookbackValue">20</span> games
+                <small>How many recent games to consider (within the selected season)</small>
+            </div>
+        </fieldset>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Run Prediction</button>
+            <span id="loadingIndicator" style="display: none; margin-left: 10px;">⏳ Running simulation...</span>
+        </div>
+    </form>
+
+    <div id="resultsContainer"></div>
+</div>
+
+<style>
+.predictor-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.predictor-form {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+fieldset {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+legend {
+    font-weight: bold;
+    color: #333;
+    padding: 0 10px;
+}
+
+.form-group {
+    margin: 15px 0;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+select, input[type="range"] {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+select {
+    width: 100%;
+    max-width: 500px;
+}
+
+input[type="range"] {
+    width: 200px;
+    vertical-align: middle;
+}
+
+#lookbackValue {
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.radio-group label {
+    display: inline;
+    margin: 0;
+    font-weight: normal;
+}
+
+.radio-group input[type="radio"] {
+    margin-right: 5px;
+}
+
+small {
+    display: block;
+    color: #666;
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+.form-actions {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary {
+    background-color: #0066cc;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0052a3;
+}
+
+.btn-primary:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+#resultsContainer {
+    margin-top: 30px;
+}
+
+.mc-results {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid #0066cc;
+}
+
+.mc-results h3 {
+    color: #0066cc;
+    margin-top: 0;
+}
+
+.mc-results h4 {
+    margin-top: 20px;
+    color: #333;
+}
+
+.mc-results table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+}
+
+.mc-results table th,
+.mc-results table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.mc-results table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    color: #333;
+}
+
+.mc-results table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.mc-results ul {
+    list-style: none;
+    padding: 0;
+}
+
+.mc-results ul li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.mc-results small {
+    color: #999;
+    margin-top: 15px;
+}
+</style>
+
+<script>
+    const lookbackSlider = document.getElementById('lookback');
+    const lookbackValue = document.getElementById('lookbackValue');
+    const seasonSelect = document.getElementById('season');
+    const gameSelect = document.getElementById('game');
+    const predictorForm = document.getElementById('predictorForm');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+
+    // Update lookback value display
+    lookbackSlider.addEventListener('input', (e) => {
+        lookbackValue.textContent = e.target.value;
+    });
+
+    // Update game dropdown when season changes
+    async function updateGameDropdown() {
+        const seasonId = seasonSelect.value;
+
+        // In a real implementation, this would fetch games from the server
+        // For now, just show a placeholder
+        gameSelect.innerHTML = '<option>Loading games...</option>';
+
+        // This would be implemented with a backend endpoint
+        // For MVP, we'll just reload the page or keep the form simple
+        gameSelect.innerHTML = '<option>Select a season first</option>';
+    }
+
+    // Show loading indicator on form submission (GET request)
+    predictorForm.addEventListener('submit', (e) => {
+        loadingIndicator.style.display = 'inline';
+        const submitButton = predictorForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        // Form will naturally navigate to /predict/run with query parameters
+    });
+</script>
+
+{% endblock %}

@@ -43,6 +43,9 @@
 @docker-dev:
     docker run --rm -it -p 8001:8001 -v {{justfile_directory()}}:/app -w /app python:3.14-slim /bin/bash
 
+@docker-cp-db:
+    docker cp my_database.db $(docker ps -q --filter ancestor=ahl):/data/my_database.db
+
 # Cleanup
 
 @clean:
@@ -57,3 +60,21 @@
 @db-pull:
     cp my_database.db my_database.db.orig
     scp root@h-web-p-002:/data/my_database.db my_database.db
+
+# Monte Carlo Game Predictor
+
+@datasette:
+    uv run datasette serve my_database.db \
+        --metadata metadata.yaml \
+        --plugins-dir plugins \
+        --template-dir plugins/templates \
+        --host 127.0.0.1 --port 8001
+
+@mc-init:
+    uv run retrain.py init
+
+@mc-train season_id="90":
+    uv run retrain.py train --season-id {{season_id}}
+
+@mc-status:
+    uv run retrain.py status
