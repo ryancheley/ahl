@@ -161,4 +161,5 @@ cython_debug/
 
 secrets.txt
 
-my_database.db
+my_database.dbmy_database.db-shm
+my_database.db-wal
