@@ -20,6 +20,7 @@ import sqlite3
 import time
 import logging
 import logging.handlers
+import io
 from functools import wraps
 from pathlib import Path
 from pydantic import BaseModel, Field
@@ -1573,15 +1574,19 @@ def cli(log_level: str):
 
 
 @cli.command()
-def today():
+@click.option('--quiet', is_flag=True, help='Suppress all output to stdout and stderr')
+def today(quiet: bool):
     """Load all games played today with optimizations."""
+    # Create a null console if quiet mode is enabled
+    output_console = Console(file=io.StringIO()) if quiet else console
+
     logger.info("Starting 'today' command")
-    console.print(Panel.fit("[bold cyan]Loading Today's Games[/bold cyan]", border_style="cyan"))
+    output_console.print(Panel.fit("[bold cyan]Loading Today's Games[/bold cyan]", border_style="cyan"))
 
     conn = init_database()
     today_date = datetime.now().date()
     logger.info(f"Fetching games for date: {today_date}")
-    console.print(f"[yellow]Date:[/yellow] {today_date}\n")
+    output_console.print(f"[yellow]Date:[/yellow] {today_date}\n")
 
     saved_count = 0
     error_count = 0
@@ -1590,27 +1595,27 @@ def today():
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
-        console=console
+        console=output_console
     ) as progress:
         task = progress.add_task("Finding today's games...", total=None)
         # Fetch today's games from scheduled_games table
         cursor = conn.cursor()
-        cursor.execute('SELECT game_id FROM scheduled_games WHERE game_date = ?', (today_date,))
+        cursor.execute('SELECT game_id FROM scheduled_games WHERE game_date = ?', (today_date.isoformat(),))
         game_ids = [row[0] for row in cursor.fetchall()]
         progress.stop()
 
     if not game_ids:
         logger.info("No games found for today in scheduled_games")
-        console.print("[yellow]⊘ No games found for today[/yellow]")
+        output_console.print("[yellow]⊘ No games found for today[/yellow]")
         return
 
     logger.info(f"Found {len(game_ids)} games for today from scheduled_games")
-    console.print(f"[yellow]Found {len(game_ids)} games for today\n[/yellow]")
+    output_console.print(f"[yellow]Found {len(game_ids)} games for today\n[/yellow]")
 
     # Pre-load existing players for faster lookups
     _load_existing_players(conn)
 
-    with Progress(console=console) as progress:
+    with Progress(console=output_console) as progress:
         task = progress.add_task("[cyan]Loading games...", total=len(game_ids))
 
         for game_id in game_ids:
@@ -1658,12 +1663,12 @@ def today():
                 game["Status"]
             )
 
-        console.print(table)
-        console.print(f"\n[green]✓ Loaded {saved_count} games[/green]")
+        output_console.print(table)
+        output_console.print(f"\n[green]✓ Loaded {saved_count} games[/green]")
 
     if error_count > 0:
         logger.warning(f"{error_count} games skipped due to errors")
-        console.print(f"[yellow]⚠ {error_count} games skipped due to errors[/yellow]")
+        output_console.print(f"[yellow]⚠ {error_count} games skipped due to errors[/yellow]")
 
     logger.info(f"Completed 'today' command: {saved_count} games loaded, {error_count} errors")
 
