@@ -25,7 +25,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `python manage.py most_recent` - Show most recent game ID
 - `pytest` - Run all tests
 - `pytest tests/test_utils.py` - Run specific test file
-- `black .` - Format code (line length: 130)
+- `ruff format .` - Format code
 
 ### Dependency Management
 This project uses split requirements files for different environments:
@@ -70,10 +70,11 @@ Database operations are routed by `core.dbrouters.GamesRouter` - models in the `
 - Run tests with `pytest` before committing changes
 
 ### Code Quality
-- Black formatter enforces 130-character line length
-- Pre-commit hooks validate:
+- Ruff formatter and linter for code quality
+- prek hooks validate (runs automatically on `git commit`):
   - Commit messages must start with emoji (`^[\p{Emoji}]:.{0,65}$`)
-  - Code formatting with Black
+  - Code formatting with Ruff
+  - Code linting with Ruff
   - Requirements compilation
 
 ### Deployment

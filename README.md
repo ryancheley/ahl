@@ -25,7 +25,7 @@ A Python web scraping application that collects comprehensive game data from the
 ## Getting Started
 
 ### Prerequisites
-- Python 3.11+
+- Python 3.14+
 - Just (recommended for command running)
 - Docker (optional, for containerized deployment)
 
@@ -86,4 +86,4 @@ The project uses SQLite for data storage:
 - **Formatter**: ruff
 - **Type Checker**: ty
 - **Testing**: pytest-based test suite
-- **Pre-commit Hooks**: Validate commit messages (emoji prefix), formatting, and requirements compilation
+- **Pre-commit Hooks**: prek validates commit messages (emoji prefix), formatting, and requirements compilation

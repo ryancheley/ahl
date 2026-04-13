@@ -7,11 +7,12 @@ repos:
         entry: '^[\p{Emoji}]:.{0,65}$'
         args: [--multiline]
         stages: [commit-msg]
--   repo: https://github.com/psf/black
-    rev: 23.3.0
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.5
     hooks:
-    - id: black
-      language_version: python3.11
+    - id: ruff
+      args: [--fix]
+    - id: ruff-format
 -   repo: https://github.com/jazzband/pip-tools
     rev: 6.13.0
     hooks:
