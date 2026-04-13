@@ -24,27 +24,22 @@
 @init:
     uv run program.py init
 
-# Docker Tasks
+# Docker Compose Tasks
 
-@docker-build:
-    docker build -t ahl .
+@up *ARGS:
+    docker compose up {{ ARGS }}
 
-@docker-up:
-    docker run --rm -p 8001:8001 ahl
+@down:
+    docker compose down
 
-@docker-logs:
-    docker logs -f $(docker ps -q --filter ancestor=ahl)
+@logs:
+    docker compose logs -f
 
-@docker-shell:
-    docker run --rm -it -p 8001:8001 --entrypoint /bin/bash ahl
+@shell:
+    docker compose exec datasette /bin/bash
 
-# Docker Development (mount local code)
-
-@docker-dev:
-    docker run --rm -it -p 8001:8001 -v {{justfile_directory()}}:/app -w /app python:3.14-slim /bin/bash
-
-@docker-cp-db:
-    docker cp my_database.db $(docker ps -q --filter ancestor=ahl):/data/my_database.db
+@rebuild *ARGS:
+    docker compose up --build {{ ARGS }}
 
 # Cleanup
 
@@ -61,7 +56,7 @@
     cp my_database.db my_database.db.orig
     scp root@h-web-p-002:/data/my_database.db my_database.db
 
-# Monte Carlo Game Predictor
+# Local Datasette (without Docker)
 
 @datasette:
     uv run datasette serve my_database.db \
@@ -69,6 +64,8 @@
         --plugins-dir plugins \
         --template-dir plugins/templates \
         --host 127.0.0.1 --port 8001
+
+# Monte Carlo Game Predictor
 
 @mc-init:
     uv run retrain.py init
