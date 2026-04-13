@@ -39,7 +39,7 @@ A Python web scraping application that collects comprehensive game data from the
 
 2. **Install dependencies**
    ```bash
-   just compile-all     # Compile all requirement files
+   uv sync              # Install dependencies from pyproject.toml
    ```
 
 3. **Run the scraper**

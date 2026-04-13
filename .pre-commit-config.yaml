@@ -13,10 +13,3 @@ repos:
     - id: ruff
       args: [--fix]
     - id: ruff-format
--   repo: https://github.com/jazzband/pip-tools
-    rev: 6.13.0
-    hooks:
-      - id: pip-compile
-        name: pip-compile
-        args: [requirements.in]
-        files: ^requirements\.(in|txt)$

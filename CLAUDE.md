@@ -28,13 +28,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `ruff format .` - Format code
 
 ### Dependency Management
-This project uses split requirements files for different environments:
-- `requirements.in` / `requirements.txt` - Full development dependencies (all tools, datasette, django)
-- `requirements-django.in` / `requirements-django.txt` - Django application dependencies
-- `requirements-datasette.in` / `requirements-datasette.txt` - Datasette application dependencies
-
-Use `just compile-all` to regenerate all `.txt` files from `.in` files after updating any `.in` file.
-Docker images use the split `requirements-django.txt` and the full `requirements.txt` (for datasette) to keep images lean.
+This project uses `pyproject.toml` with uv for dependency management:
+- `pyproject.toml` - Defines all project dependencies and optional dev dependencies
+- uv handles dependency resolution and installation
+- `uv.lock` - Lock file for reproducible installs
 
 ## Architecture Overview
 
@@ -75,7 +72,6 @@ Database operations are routed by `core.dbrouters.GamesRouter` - models in the `
   - Commit messages must start with emoji (`^[\p{Emoji}]:.{0,65}$`)
   - Code formatting with Ruff
   - Code linting with Ruff
-  - Requirements compilation
 
 ### Deployment
 - Automated via GitHub Actions (runs daily at 12:13 UTC)
