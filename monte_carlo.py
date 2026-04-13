@@ -95,9 +95,7 @@ def run_simulation(params: GameParams, config: SimConfig) -> SimResult:
     so_mask = tied_mask & ~ot_mask
 
     # OT: home team has slight advantage (54%)
-    ot_home_wins = ot_mask & (
-        rng.uniform(size=config.n_simulations) < HOME_OT_WIN_PCT
-    )
+    ot_home_wins = ot_mask & (rng.uniform(size=config.n_simulations) < HOME_OT_WIN_PCT)
     ot_away_wins = ot_mask & ~ot_home_wins
 
     # SO: use team-specific SO win rates
@@ -125,7 +123,9 @@ def run_simulation(params: GameParams, config: SimConfig) -> SimResult:
     scores = [f"{h}-{a}" for h, a in zip(home_goals, away_goals)]
     score_counts = Counter(scores)
     top_scores = score_counts.most_common(10)
-    score_dist = {score: (count / config.n_simulations * 100) for score, count in top_scores}
+    score_dist = {
+        score: (count / config.n_simulations * 100) for score, count in top_scores
+    }
 
     return SimResult(
         home_win_pct=round(home_win_pct, 1),

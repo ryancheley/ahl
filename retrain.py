@@ -20,7 +20,9 @@ console = Console()
 
 # Use /data/my_database.db in Docker/Coolify, otherwise use local path
 _docker_db = Path("/data/my_database.db")
-DB_PATH = _docker_db if _docker_db.exists() else Path(__file__).parent / "my_database.db"
+DB_PATH = (
+    _docker_db if _docker_db.exists() else Path(__file__).parent / "my_database.db"
+)
 
 LEAGUE_HOME_WIN_PCT = 0.5361  # Empirical from historical data
 MIN_OFFICIAL_GAMES = 20  # Minimum sample size for official stats
@@ -134,7 +136,9 @@ def compute_team_stats(
         (season_id,),
     )
     result = cursor.fetchone()
-    league_avg_goals = float(result["league_avg_goals"]) if result["league_avg_goals"] else 2.94
+    league_avg_goals = (
+        float(result["league_avg_goals"]) if result["league_avg_goals"] else 2.94
+    )
 
     # Get all teams in this season
     cursor.execute(
@@ -321,7 +325,12 @@ def save_official_stats(conn: sqlite3.Connection, stats: list[OfficialStats]) ->
             (person_id, home_win_pct, games_officiated, computed_at)
             VALUES (?, ?, ?, ?)
             """,
-            (stat.person_id, stat.home_win_pct, stat.games_officiated, stat.computed_at),
+            (
+                stat.person_id,
+                stat.home_win_pct,
+                stat.games_officiated,
+                stat.computed_at,
+            ),
         )
         count += 1
 
@@ -434,13 +443,19 @@ def status():
                 # Compare with timezone-aware UTC now
                 now = datetime.now(UTC)
                 hours_ago = (now - age).total_seconds() / 3600
-                age_str = f"{hours_ago:.1f}h ago" if hours_ago < 24 else f"{hours_ago/24:.1f}d ago"
+                age_str = (
+                    f"{hours_ago:.1f}h ago"
+                    if hours_ago < 24
+                    else f"{hours_ago/24:.1f}d ago"
+                )
 
                 table.add_row(str(row["season_id"]), str(row["team_count"]), age_str)
 
             console.print(table)
         else:
-            console.print("[yellow]No team stats found. Run 'retrain train' first.[/yellow]")
+            console.print(
+                "[yellow]No team stats found. Run 'retrain train' first.[/yellow]"
+            )
 
         if official_result and official_result["official_count"]:
             console.print("\n[cyan]Official Stats:[/cyan]")
@@ -451,7 +466,11 @@ def status():
             # Compare with timezone-aware UTC now
             now = datetime.now(UTC)
             hours_ago = (now - age).total_seconds() / 3600
-            age_str = f"{hours_ago:.1f}h ago" if hours_ago < 24 else f"{hours_ago/24:.1f}d ago"
+            age_str = (
+                f"{hours_ago:.1f}h ago"
+                if hours_ago < 24
+                else f"{hours_ago/24:.1f}d ago"
+            )
             console.print(f"  Latest Update: {age_str}")
         else:
             console.print("[yellow]No official stats found.[/yellow]")

@@ -25,16 +25,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `python manage.py most_recent` - Show most recent game ID
 - `pytest` - Run all tests
 - `pytest tests/test_utils.py` - Run specific test file
-- `black .` - Format code (line length: 130)
+- `ruff format .` - Format code
 
 ### Dependency Management
-This project uses split requirements files for different environments:
-- `requirements.in` / `requirements.txt` - Full development dependencies (all tools, datasette, django)
-- `requirements-django.in` / `requirements-django.txt` - Django application dependencies
-- `requirements-datasette.in` / `requirements-datasette.txt` - Datasette application dependencies
-
-Use `just compile-all` to regenerate all `.txt` files from `.in` files after updating any `.in` file.
-Docker images use the split `requirements-django.txt` and the full `requirements.txt` (for datasette) to keep images lean.
+This project uses `pyproject.toml` with uv for dependency management:
+- `pyproject.toml` - Defines all project dependencies and optional dev dependencies
+- uv handles dependency resolution and installation
+- `uv.lock` - Lock file for reproducible installs
 
 ## Architecture Overview
 
@@ -70,11 +67,11 @@ Database operations are routed by `core.dbrouters.GamesRouter` - models in the `
 - Run tests with `pytest` before committing changes
 
 ### Code Quality
-- Black formatter enforces 130-character line length
-- Pre-commit hooks validate:
+- Ruff formatter and linter for code quality
+- prek hooks validate (runs automatically on `git commit`):
   - Commit messages must start with emoji (`^[\p{Emoji}]:.{0,65}$`)
-  - Code formatting with Black
-  - Requirements compilation
+  - Code formatting with Ruff
+  - Code linting with Ruff
 
 ### Deployment
 - Automated via GitHub Actions (runs daily at 12:13 UTC)

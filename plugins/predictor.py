@@ -22,7 +22,11 @@ from monte_carlo import SimConfig, GameParams, run_simulation, compute_official_
 
 # Use /data/my_database.db in Docker/Coolify, otherwise use local path
 _docker_db = Path("/data/my_database.db")
-DB_PATH = _docker_db if _docker_db.exists() else Path(__file__).parent.parent / "my_database.db"
+DB_PATH = (
+    _docker_db
+    if _docker_db.exists()
+    else Path(__file__).parent.parent / "my_database.db"
+)
 
 LEAGUE_HOME_WIN_PCT = 0.5361
 
@@ -85,6 +89,7 @@ def menu_links(datasette, actor):
 @hookimpl
 def startup(datasette):
     """Check stats freshness on startup."""
+
     async def _startup():
         await _check_stats_freshness(datasette)
 
@@ -315,9 +320,7 @@ async def predict_run_view(request, datasette):
         if official["home_win_pct"]:
             official_biases.append(official["home_win_pct"])
 
-    official_bias = (
-        compute_official_bias(official_biases) if official_biases else 0.0
-    )
+    official_bias = compute_official_bias(official_biases) if official_biases else 0.0
 
     # Build game parameters
     params_obj = GameParams(
