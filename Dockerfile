@@ -16,7 +16,7 @@ COPY program.py monte_carlo.py retrain.py ./
 COPY plugins ./plugins
 
 # Download metadata from GitHub
-RUN curl -L -o /app/metadata.json https://raw.githubusercontent.com/ryancheley/ahl/refs/heads/main/metadata.json
+RUN curl -L -o /app/metadata.yaml https://raw.githubusercontent.com/ryancheley/ahl/refs/heads/main/metadata.yaml
 
 # Install Python dependencies using uv (without editable mode to avoid breaking datasette)
 RUN uv pip install --python /usr/local/bin/python --no-cache-dir \
@@ -24,9 +24,6 @@ RUN uv pip install --python /usr/local/bin/python --no-cache-dir \
 
 # Create data directory for persistent database storage
 WORKDIR /data
-
-# Create empty database if it doesn't exist (will be overwritten by actual database via SCP)
-RUN python3 -c "import sqlite3; sqlite3.connect('my_database.db').close()" || true
 
 # Expose port for datasette
 EXPOSE 8001
@@ -36,4 +33,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/ || exit 1
 
 # Start datasette with database from persistent volume
-CMD ["datasette", "serve", "/data/my_database.db", "--metadata", "/app/metadata.json", "--host", "0.0.0.0", "--port", "8001", "--plugins-dir", "/app/plugins", "--template-dir", "/app/plugins/templates"]
+CMD ["datasette", "serve", "/data/my_database.db", "--metadata", "/app/metadata.yaml", "--host", "0.0.0.0", "--port", "8001", "--plugins-dir", "/app/plugins", "--template-dir", "/app/plugins/templates"]
