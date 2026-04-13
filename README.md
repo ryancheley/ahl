@@ -87,7 +87,3 @@ The project uses SQLite for data storage:
 - **Type Checker**: ty
 - **Testing**: pytest-based test suite
 - **Pre-commit Hooks**: Validate commit messages (emoji prefix), formatting, and requirements compilation
-
-## License
-
-MIT
