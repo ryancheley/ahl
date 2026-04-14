@@ -54,6 +54,9 @@ class SimResult(BaseModel):
     home_reg_win_pct: float  # Regulation only (ties don't count)
     away_reg_win_pct: float  # Regulation only
     score_distribution: dict[str, float]  # Top 10 score lines, {score: pct}
+    goal_diff_distribution: dict[
+        int, float
+    ]  # Final-score diff: +N=home win by N, -N=away win by N; ±5 caps "5+"
     n_simulations: int
 
 
@@ -127,6 +130,21 @@ def run_simulation(params: GameParams, config: SimConfig) -> SimResult:
         score: (count / config.n_simulations * 100) for score, count in top_scores
     }
 
+    # Goal differential distribution based on final scores.
+    # Regulation wins keep their actual margin (clipped to ±5).
+    # OT/SO games are always decided by 1 goal: +1 for home win, -1 for away win.
+    reg_diff = home_goals - away_goals
+    final_diff = np.where(
+        reg_diff != 0,
+        np.clip(reg_diff, -5, 5),
+        np.where(total_home_wins, 1, -1),
+    )
+    diff_values, diff_counts = np.unique(final_diff, return_counts=True)
+    goal_diff_dist: dict[int, float] = {
+        int(d): round(float(c) / config.n_simulations * 100, 1)
+        for d, c in zip(diff_values, diff_counts)
+    }
+
     return SimResult(
         home_win_pct=round(home_win_pct, 1),
         away_win_pct=round(away_win_pct, 1),
@@ -137,6 +155,7 @@ def run_simulation(params: GameParams, config: SimConfig) -> SimResult:
         home_reg_win_pct=round(home_reg_win_pct, 1),
         away_reg_win_pct=round(away_reg_win_pct, 1),
         score_distribution=score_dist,
+        goal_diff_distribution=goal_diff_dist,
         n_simulations=config.n_simulations,
     )
 

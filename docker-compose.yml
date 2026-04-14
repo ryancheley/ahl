@@ -6,6 +6,11 @@ services:
     volumes:
       - ./my_database.db:/data/my_database.db
       - ./metadata.yaml:/app/metadata.yaml
+      # Mount code directories so changes are reflected without rebuilding.
+      # Plugin .py changes still need: docker compose restart datasette
+      # Template .html changes are picked up on the next request.
+      - ./plugins:/app/plugins
+      - ./monte_carlo.py:/app/monte_carlo.py
     environment:
       - TZ=America/Los_Angeles
     healthcheck:
