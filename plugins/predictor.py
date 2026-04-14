@@ -599,19 +599,36 @@ async def predict_run_view(request, datasette):
     except Exception as e:
         print(f"[MC] Error saving prediction: {e}")
 
-    # Prepare data for chart - filter out matching scores (they go to OT/SO)
-    filtered_scores = {}
-    for score, pct in result.score_distribution.items():
-        # Parse "X-Y" format and skip if matching
-        parts = score.split("-")
-        if len(parts) == 2 and parts[0] != parts[1]:
-            filtered_scores[score] = pct
+    # Build goal differential chart data.
+    # Positive diffs = home team wins; negative = away team wins.
+    # Arranged left-to-right: home 5+ → home 1 | away 1 → away 5+
+    DIFF_BUCKETS = [5, 4, 3, 2, 1, -1, -2, -3, -4, -5]
+    diff_dist = result.goal_diff_distribution
 
-    scores = list(filtered_scores.keys())
-    percentages = list(filtered_scores.values())
+    chart_labels = []
+    chart_values = []
+    chart_colors = []
 
-    # Render results HTML with Chart.js
-    chart_data_json = json.dumps({"scores": scores, "percentages": percentages})
+    for d in DIFF_BUCKETS:
+        if d > 0:
+            label = f"{home_team_name} +{d}" if d < 5 else f"{home_team_name} 5+"
+            color = "#0066cc"
+        else:
+            label = (
+                f"{away_team_name} +{abs(d)}" if abs(d) < 5 else f"{away_team_name} 5+"
+            )
+            color = "#cc0000"
+        chart_labels.append(label)
+        chart_values.append(diff_dist.get(d, 0.0))
+        chart_colors.append(color)
+
+    chart_data_json = json.dumps(
+        {
+            "labels": chart_labels,
+            "values": chart_values,
+            "colors": chart_colors,
+        }
+    )
 
     # Format game info
     game_info_html = f"""
@@ -722,12 +739,14 @@ async def predict_run_view(request, datasette):
                     </table>
                 </div>
 
-                <h4>Top Score Lines</h4>
-                <div style="position: relative; width: 100%; height: 300px; margin: 20px 0;">
+                <h4>Goal Differential Distribution</h4>
+                <div style="position: relative; width: 100%; height: 320px; margin: 20px 0;">
                     <canvas id="scoreChart"></canvas>
                 </div>
 
-                <p><small>Simulations: {result.n_simulations}</small></p>
+                <p><small>Simulations: {result.n_simulations} &mdash;
+                Blue = {home_team_name} win &nbsp;|&nbsp; Red = {away_team_name} win &nbsp;|&nbsp;
+                5+ includes all margins of 5 or more goals</small></p>
             </div>
         </div>
 
@@ -737,12 +756,12 @@ async def predict_run_view(request, datasette):
             const chart = new Chart(ctx, {{
                 type: 'bar',
                 data: {{
-                    labels: chartData.scores,
+                    labels: chartData.labels,
                     datasets: [{{
                         label: 'Probability (%)',
-                        data: chartData.percentages,
-                        backgroundColor: '#0066cc',
-                        borderColor: '#0052a3',
+                        data: chartData.values,
+                        backgroundColor: chartData.colors,
+                        borderColor: chartData.colors.map(c => c === '#0066cc' ? '#0052a3' : '#aa0000'),
                         borderWidth: 1
                     }}]
                 }},
@@ -750,10 +769,13 @@ async def predict_run_view(request, datasette):
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {{
-                        legend: {{ display: true, position: 'top' }},
-                        title: {{ display: true, text: 'Most Likely Final Scores' }}
+                        legend: {{ display: false }},
+                        title: {{ display: true, text: 'Goal Differential — Final Score Outcomes' }}
                     }},
                     scales: {{
+                        x: {{
+                            grid: {{ color: (ctx) => ctx.index === 4 ? '#999' : '#e0e0e0' }}
+                        }},
                         y: {{ beginAtZero: true, title: {{ display: true, text: 'Probability (%)' }} }}
                     }}
                 }}
