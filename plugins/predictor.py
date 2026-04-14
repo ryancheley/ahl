@@ -282,6 +282,34 @@ async def predict_run_view(request, datasette):
         return Response.html("<p>Game not found</p>", status=404)
     home_team_id = game["home_team_id"]
     away_team_id = game["away_team_id"]
+    game_date = game["game_date"]
+
+    # Fetch team names
+    team_names_result = await db.execute(
+        "SELECT team_id, name FROM team WHERE team_id IN (?, ?)",
+        [home_team_id, away_team_id],
+    )
+    team_names = {row["team_id"]: row["name"] for row in team_names_result.rows}
+    home_team_name = team_names.get(home_team_id, "Unknown")
+    away_team_name = team_names.get(away_team_id, "Unknown")
+
+    # Fetch game details (scores and status if completed)
+    game_details = None
+    game_status = "Upcoming"
+    home_score = None
+    away_score = None
+    gamedata = await db.execute(
+        """
+        SELECT game_status, home_team_score, away_team_score
+        FROM gamedata WHERE game_id = ?
+        """,
+        [game_id],
+    )
+    if gamedata.rows:
+        game_details = gamedata.rows[0]
+        game_status = game_details["game_status"] or "Unknown"
+        home_score = game_details["home_team_score"]
+        away_score = game_details["away_team_score"]
 
     # Load team stats
     team_stats_result = await db.execute(
@@ -381,6 +409,32 @@ async def predict_run_view(request, datasette):
     # Render results HTML with Chart.js
     chart_data_json = json.dumps({"scores": scores, "percentages": percentages})
 
+    # Format game info
+    game_info_html = f"""
+    <div class="game-info">
+        <h4>Game Information</h4>
+        <table class="results-table">
+            <tr>
+                <td><strong>Date</strong></td>
+                <td>{game_date}</td>
+            </tr>
+            <tr>
+                <td><strong>Status</strong></td>
+                <td>{game_status}</td>
+            </tr>
+    """
+    if home_score is not None and away_score is not None:
+        game_info_html += f"""
+            <tr>
+                <td><strong>Final Score</strong></td>
+                <td>{home_team_name} {home_score} - {away_score} {away_team_name}</td>
+            </tr>
+        """
+    game_info_html += """
+        </table>
+    </div>
+    """
+
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -393,12 +447,15 @@ async def predict_run_view(request, datasette):
             .mc-results {{ background: #fff; padding: 20px; border-radius: 8px; border: 2px solid #0066cc; }}
             .mc-results h3 {{ color: #0066cc; margin-top: 0; }}
             .mc-results h4 {{ margin-top: 20px; color: #333; }}
+            .game-info {{ background: #f0f7ff; padding: 15px; border-radius: 6px; margin: 20px 0; }}
+            .game-info h4 {{ margin-top: 0; }}
             .results-grid {{ display: flex; gap: 30px; margin: 20px 0; align-items: start; }}
             .outcome-boxes {{ display: flex; gap: 15px; }}
-            .outcome-box {{ padding: 15px 20px; border-radius: 6px; text-align: center; min-width: 120px; }}
+            .outcome-box {{ padding: 15px 20px; border-radius: 6px; text-align: center; min-width: 140px; }}
             .outcome-box.home-win {{ background: #e6f3ff; border: 2px solid #0066cc; }}
             .outcome-box.away-win {{ background: #ffe6e6; border: 2px solid #cc0000; }}
-            .outcome-label {{ font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px; }}
+            .outcome-label {{ font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px; }}
+            .team-name {{ font-size: 14px; font-weight: 600; margin-bottom: 8px; }}
             .outcome-percent {{ font-size: 28px; font-weight: bold; color: #333; }}
             .results-table {{ border-collapse: collapse; }}
             .results-table td {{ padding: 10px 15px; border-bottom: 1px solid #eee; }}
@@ -418,14 +475,18 @@ async def predict_run_view(request, datasette):
             <div class="mc-results">
                 <h3>Prediction Results</h3>
 
+                {game_info_html}
+
                 <div class="results-grid">
                     <div class="outcome-boxes">
                         <div class="outcome-box home-win">
                             <div class="outcome-label">Home Win</div>
+                            <div class="team-name">{home_team_name}</div>
                             <div class="outcome-percent">{result.home_win_pct}%</div>
                         </div>
                         <div class="outcome-box away-win">
                             <div class="outcome-label">Away Win</div>
+                            <div class="team-name">{away_team_name}</div>
                             <div class="outcome-percent">{result.away_win_pct}%</div>
                         </div>
                     </div>
