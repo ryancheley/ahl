@@ -969,33 +969,53 @@ async def predict_standings_view(request, datasette):
             sim_row[away_id] += away_row_win.astype(np.float32)
             sim_wins[away_id] += away_any_win.astype(np.float32)
 
-    # Fetch division assignments for this season
+    # Fetch division and conference assignments for this season
     div_result = await db.execute(
         """
-        SELECT tsd.team_id, tsd.division_name
+        SELECT tsd.team_id, tsd.division_name, tsd.conference_name
         FROM team_season_division tsd
         WHERE tsd.season_id = ?
-        ORDER BY tsd.division_name
         """,
         [season_id],
     )
-    team_divisions = {row["team_id"]: row["division_name"] for row in div_result.rows}
+    team_div_map = {
+        row["team_id"]: {
+            "division": row["division_name"],
+            "conference": row["conference_name"],
+        }
+        for row in div_result.rows
+    }
 
-    # Build per-division results
-    division_data: dict[str, list[dict]] = {}
+    def _current_sort_key(t: dict) -> tuple:
+        return (t["points"], t["reg_wins"], t["row_wins"], t["wins"])
+
+    def _predicted_sort_key(t: dict) -> tuple:
+        return (
+            t["predicted_pts"],
+            t["predicted_reg_wins"],
+            t["predicted_row"],
+            t["predicted_wins"],
+        )
+
+    # Build nested structure: conference → division → [teams]
+    conference_data: dict[str, dict[str, list[dict]]] = {}
+    zeros = np.zeros(N)
+
     for team_id, standing in current_standings.items():
-        div_name = team_divisions.get(team_id)
-        if not div_name:
+        mapping = team_div_map.get(team_id)
+        if not mapping:
             continue
 
+        conf_name = mapping["conference"]
+        div_name = mapping["division"]
         current_pts = standing["points"]
-        zeros = np.zeros(N)
+
         final_pts = current_pts + sim_points.get(team_id, zeros)
         final_reg = standing["reg_wins"] + sim_reg_wins.get(team_id, zeros)
         final_row = standing["row_wins"] + sim_row.get(team_id, zeros)
         final_wins = standing["wins"] + sim_wins.get(team_id, zeros)
 
-        division_data.setdefault(div_name, []).append(
+        conference_data.setdefault(conf_name, {}).setdefault(div_name, []).append(
             {
                 "team_id": team_id,
                 "name": standing["name"],
@@ -1015,29 +1035,23 @@ async def predict_standings_view(request, datasette):
             }
         )
 
-    def _current_sort_key(t: dict) -> tuple:
-        """AHL tiebreaker order for current standings: pts, reg_wins, row, wins."""
-        return (t["points"], t["reg_wins"], t["row_wins"], t["wins"])
+    # Sort each division; assign current and predicted ranks
+    for divisions in conference_data.values():
+        for teams in divisions.values():
+            teams.sort(key=_current_sort_key, reverse=True)
+            for i, team in enumerate(teams):
+                team["current_rank"] = i + 1
 
-    def _predicted_sort_key(t: dict) -> tuple:
-        """AHL tiebreaker order for predicted standings: pts, reg_wins, row, wins."""
-        return (
-            t["predicted_pts"],
-            t["predicted_reg_wins"],
-            t["predicted_row"],
-            t["predicted_wins"],
-        )
+            predicted_order = sorted(teams, key=_predicted_sort_key, reverse=True)
+            rank_map = {t["team_id"]: i + 1 for i, t in enumerate(predicted_order)}
+            for team in teams:
+                team["predicted_rank"] = rank_map[team["team_id"]]
+                team["rank_change"] = team["current_rank"] - team["predicted_rank"]
 
-    for div_name, teams in division_data.items():
-        teams.sort(key=_current_sort_key, reverse=True)
-        for i, team in enumerate(teams):
-            team["current_rank"] = i + 1
-
-        predicted_order = sorted(teams, key=_predicted_sort_key, reverse=True)
-        rank_map = {t["team_id"]: i + 1 for i, t in enumerate(predicted_order)}
-        for team in teams:
-            team["predicted_rank"] = rank_map[team["team_id"]]
-            team["rank_change"] = team["current_rank"] - team["predicted_rank"]
+    # Convert to sorted list for the template: [(conf, [(div, teams), ...]), ...]
+    conferences = [
+        (conf, sorted(divs.items())) for conf, divs in sorted(conference_data.items())
+    ]
 
     html = await datasette.render_template(
         "season_predictor.html",
@@ -1045,7 +1059,7 @@ async def predict_standings_view(request, datasette):
             "seasons": seasons,
             "season_id": season_id,
             "season_name": season_name,
-            "divisions": sorted(division_data.items()),
+            "conferences": conferences,
             "remaining_games": len(remaining_games),
             "n_simulations": N,
             "error": None,

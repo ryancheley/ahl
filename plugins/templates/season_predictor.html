@@ -28,9 +28,13 @@
         {{ n_simulations }} simulations per game
     </div>
 
+    {% for conference_name, divisions in conferences %}
+    <div class="conference-block">
+        <h2 class="conference-heading">{{ conference_name }}</h2>
+
     {% for division_name, teams in divisions %}
     <div class="division-block">
-        <h2>{{ division_name }}</h2>
+        <h3>{{ division_name }}</h3>
         <table class="standings-table">
             <thead>
                 <tr>
@@ -85,6 +89,9 @@
     </div>
     {% endfor %}
 
+    </div>
+    {% endfor %}
+
     {% endif %}
 </div>
 
@@ -131,11 +138,25 @@
     margin-bottom: 40px;
 }
 
-.division-block h2 {
-    color: #0066cc;
-    border-bottom: 2px solid #0066cc;
+.conference-block {
+    margin-bottom: 50px;
+}
+
+.conference-heading {
+    color: #333;
+    font-size: 20px;
+    border-bottom: 3px solid #333;
     padding-bottom: 6px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.division-block h3 {
+    color: #0066cc;
+    font-size: 16px;
+    border-bottom: 1px solid #0066cc;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+    margin-top: 24px;
 }
 
 .standings-table {

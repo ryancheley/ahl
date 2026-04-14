@@ -494,11 +494,11 @@ def init_database() -> sqlite3.Connection:
         """,
         "team_season_division": """
             CREATE TABLE IF NOT EXISTS team_season_division (
-                team_id              INTEGER NOT NULL,
-                season_id            INTEGER NOT NULL,
-                division_id          INTEGER NOT NULL,
-                division_name        TEXT NOT NULL,
-                division_short_name  TEXT NOT NULL,
+                team_id          INTEGER NOT NULL,
+                season_id        INTEGER NOT NULL,
+                division_id      INTEGER NOT NULL,
+                division_name    TEXT NOT NULL,
+                conference_name  TEXT NOT NULL,
                 PRIMARY KEY (team_id, season_id)
             )
         """,
@@ -2645,36 +2645,54 @@ _HOCKEYTECH_API_BASE = "https://lscluster.hockeytech.com/feed/index.php"
 
 
 def _fetch_team_divisions(season_id: int) -> list[dict]:
-    """Fetch team/division alignment from HockeyTech API for a given season."""
+    """Fetch team/division/conference alignment from HockeyTech standings API.
+
+    Returns a flat list of team dicts, each with team_id, division_id,
+    division_name, and conference_name extracted from the grouped response.
+    """
     url = (
-        f"{_HOCKEYTECH_API_BASE}?feed=modulekit&view=teamsbyseason"
-        f"&season_id={season_id}&key={_HOCKEYTECH_API_KEY}&client_code=ahl"
+        f"{_HOCKEYTECH_API_BASE}?feed=modulekit&view=statviewtype"
+        f"&stat=division&type=standings&season_id={season_id}"
+        f"&key={_HOCKEYTECH_API_KEY}&client_code=ahl"
     )
     response = _http_client.get(url)
     response.raise_for_status()
-    data = response.json()
-    return data["SiteKit"]["Teamsbyseason"]
+    entries = response.json()["SiteKit"]["Statviewtype"]
+
+    teams = []
+    for entry in entries:
+        if "team_id" not in entry:
+            continue
+        teams.append(
+            {
+                "team_id": int(entry["team_id"]),
+                "division_id": int(entry["division_id"]),
+                "division_name": entry["division_name"],
+                "conference_name": entry["conference_name"],
+            }
+        )
+    return teams
 
 
 def _save_team_divisions(
     conn: sqlite3.Connection, season_id: int, teams: list[dict]
 ) -> int:
-    """Store team/division records in team_season_division table."""
+    """Store team/division/conference records in team_season_division table."""
     cursor = conn.cursor()
     count = 0
     for team in teams:
         cursor.execute(
             """
             INSERT OR REPLACE INTO team_season_division
-            (team_id, season_id, division_id, division_name, division_short_name)
+            (team_id, season_id, division_id, division_name, conference_name)
             VALUES (?, ?, ?, ?, ?)
             """,
             (
-                int(team["id"]),
+                team["team_id"],
                 season_id,
-                int(team["division_id"]),
-                team["division_long_name"],
-                team["division_short_name"],
+                team["division_id"],
+                team["division_name"],
+                team["conference_name"],
             ),
         )
         count += 1
@@ -2700,19 +2718,31 @@ def divisions(season_id: int):
 
     conn = get_db_connection()
     try:
-        # Ensure table exists (may not be present in older DBs)
+        # Ensure table exists with current schema (may not exist in older DBs)
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS team_season_division (
-                team_id              INTEGER NOT NULL,
-                season_id            INTEGER NOT NULL,
-                division_id          INTEGER NOT NULL,
-                division_name        TEXT NOT NULL,
-                division_short_name  TEXT NOT NULL,
+                team_id          INTEGER NOT NULL,
+                season_id        INTEGER NOT NULL,
+                division_id      INTEGER NOT NULL,
+                division_name    TEXT NOT NULL,
+                conference_name  TEXT NOT NULL,
                 PRIMARY KEY (team_id, season_id)
             )
             """
         )
+        # Migrate: add conference_name if table exists but lacks it
+        existing_cols = {
+            row[1] for row in conn.execute("PRAGMA table_info(team_season_division)")
+        }
+        if "conference_name" not in existing_cols:
+            conn.execute(
+                "ALTER TABLE team_season_division ADD COLUMN conference_name TEXT NOT NULL DEFAULT ''"
+            )
+        if "division_short_name" in existing_cols:
+            conn.execute(
+                "ALTER TABLE team_season_division DROP COLUMN division_short_name"
+            )
         conn.commit()
 
         with Progress(
@@ -2726,22 +2756,29 @@ def divisions(season_id: int):
 
         count = _save_team_divisions(conn, season_id, teams)
 
-        table = Table(title=f"Division Alignments — Season {season_id}")
+        # Look up team names for display
+        team_name_map: dict[int, str] = {
+            row[0]: row[1] for row in conn.execute("SELECT team_id, name FROM team")
+        }
+
+        table = Table(title=f"Division & Conference Alignments — Season {season_id}")
         table.add_column("Team", style="cyan")
         table.add_column("Division", style="magenta")
+        table.add_column("Conference", style="yellow")
 
-        divisions_map: dict[str, list[str]] = {}
+        by_conf_div: dict[tuple[str, str], list[str]] = {}
         for team in teams:
-            div = team["division_short_name"]
-            divisions_map.setdefault(div, []).append(team["name"])
+            key = (team["conference_name"], team["division_name"])
+            name = team_name_map.get(team["team_id"], str(team["team_id"]))
+            by_conf_div.setdefault(key, []).append(name)
 
-        for div in sorted(divisions_map):
-            for name in sorted(divisions_map[div]):
-                table.add_row(name, div)
+        for conf, div in sorted(by_conf_div):
+            for name in sorted(by_conf_div[(conf, div)]):
+                table.add_row(name, div, conf)
 
         console.print(table)
         console.print(
-            f"[green]✓ Saved {count} team/division records for season {season_id}[/green]"
+            f"[green]✓ Saved {count} team/division/conference records for season {season_id}[/green]"
         )
     except httpx.HTTPError as e:
         console.print(f"[red]✗ HTTP error fetching division data: {e}[/red]")
