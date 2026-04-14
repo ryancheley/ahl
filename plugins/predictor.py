@@ -11,13 +11,21 @@ import urllib.parse
 from datetime import datetime, UTC
 from pathlib import Path
 
+import numpy as np
+
 # Import from parent directory
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from datasette import hookimpl
 from datasette.utils.asgi import Response
 
-from monte_carlo import SimConfig, GameParams, run_simulation, compute_official_bias
+from monte_carlo import (
+    SimConfig,
+    GameParams,
+    run_simulation,
+    compute_official_bias,
+    HOME_OT_WIN_PCT,
+)
 
 
 # Use /data/my_database.db in Docker/Coolify, otherwise use local path
@@ -82,8 +90,11 @@ def _run_retrain(datasette):
 
 @hookimpl
 def menu_links(datasette, actor):
-    """Add Game Predictor link to main navigation menu."""
-    return [{"href": "/predict", "label": "Game Predictor"}]
+    """Add predictor links to main navigation menu."""
+    return [
+        {"href": "/predict", "label": "Game Predictor"},
+        {"href": "/predict/standings", "label": "Season Predictor"},
+    ]
 
 
 @hookimpl
@@ -102,6 +113,8 @@ def register_routes():
     return [
         (r"^/predict$", predict_view),
         (r"^/predict/run$", predict_run_view),
+        (r"^/predict/games$", predict_games_api),
+        (r"^/predict/standings$", predict_standings_view),
     ]
 
 
@@ -134,6 +147,7 @@ async def predict_view(request, datasette):
 
     # Fetch games for default season (both completed and upcoming)
     games = []
+    teams = []
     if default_season_id:
         # Get season date range
         season_info = await db.execute(
@@ -144,6 +158,37 @@ async def predict_view(request, datasette):
         )
         season_dates = season_info.rows[0] if season_info.rows else None
 
+        # Fetch teams active in this season (from both completed and scheduled games)
+        teams_result = await db.execute(
+            """
+            SELECT DISTINCT t.team_id, t.name
+            FROM team t
+            WHERE t.team_id IN (
+                SELECT DISTINCT home_team_id FROM gamedata WHERE season_id = ?
+                UNION
+                SELECT DISTINCT away_team_id FROM gamedata WHERE season_id = ?
+                UNION
+                SELECT DISTINCT home_team_id FROM scheduled_games sg
+                WHERE sg.game_date >= (SELECT start_date FROM season WHERE season_id = ?)
+                  AND sg.game_date <= (SELECT end_date FROM season WHERE season_id = ?)
+                UNION
+                SELECT DISTINCT away_team_id FROM scheduled_games sg
+                WHERE sg.game_date >= (SELECT start_date FROM season WHERE season_id = ?)
+                  AND sg.game_date <= (SELECT end_date FROM season WHERE season_id = ?)
+            )
+            ORDER BY t.name
+            """,
+            [
+                default_season_id,
+                default_season_id,
+                default_season_id,
+                default_season_id,
+                default_season_id,
+                default_season_id,
+            ],
+        )
+        teams = teams_result.rows
+
         # Completed games
         completed = await db.execute(
             """
@@ -152,6 +197,8 @@ async def predict_view(request, datasette):
                 g.season_id,
                 g.game_date,
                 g.game_status,
+                g.home_team_id,
+                g.away_team_id,
                 ht.name as home_team,
                 at.name as away_team,
                 g.home_team_score,
@@ -177,6 +224,8 @@ async def predict_view(request, datasette):
                 SELECT
                     sg.game_id,
                     sg.game_date,
+                    sg.home_team_id,
+                    sg.away_team_id,
                     ht.name as home_team,
                     at.name as away_team
                 FROM scheduled_games sg
@@ -195,6 +244,8 @@ async def predict_view(request, datasette):
                     "season_id": default_season_id,
                     "game_date": row["game_date"],
                     "game_status": "Upcoming",
+                    "home_team_id": row["home_team_id"],
+                    "away_team_id": row["away_team_id"],
                     "home_team": row["home_team"],
                     "away_team": row["away_team"],
                     "home_team_score": None,
@@ -213,10 +264,156 @@ async def predict_view(request, datasette):
             "seasons": seasons,
             "default_season_id": default_season_id,
             "games": games,
+            "teams": teams,
         },
         request=request,
     )
     return Response.html(html)
+
+
+async def predict_games_api(request, datasette):
+    """GET /predict/games?season_id=X - Return games and teams for a season as JSON."""
+    try:
+        query_string = request.scope.get("query_string", b"").decode("utf-8")
+        params = urllib.parse.parse_qs(query_string)
+        season_id = int(params.get("season_id", [""])[0])
+
+        if not season_id:
+            return Response.json({"error": "Missing season_id"}, status=400)
+    except (ValueError, IndexError):
+        return Response.json({"error": "Invalid season_id"}, status=400)
+
+    db = datasette.get_database("my_database")
+
+    # Get season date range
+    season_info = await db.execute(
+        """
+        SELECT start_date, end_date FROM season WHERE season_id = ?
+        """,
+        [season_id],
+    )
+    season_dates = season_info.rows[0] if season_info.rows else None
+
+    if not season_dates:
+        return Response.json({"error": "Season not found"}, status=404)
+
+    # Fetch completed games
+    completed = await db.execute(
+        """
+        SELECT
+            g.game_id,
+            g.season_id,
+            g.game_date,
+            g.game_status,
+            g.home_team_id,
+            g.away_team_id,
+            ht.name as home_team,
+            at.name as away_team,
+            g.home_team_score,
+            g.away_team_score,
+            'completed' as game_type
+        FROM gamedata g
+        LEFT JOIN team ht ON g.home_team_id = ht.team_id
+        LEFT JOIN team at ON g.away_team_id = at.team_id
+        WHERE g.season_id = ?
+        ORDER BY g.game_date DESC
+        LIMIT 100
+        """,
+        [season_id],
+    )
+
+    # Fetch upcoming games
+    upcoming = await db.execute(
+        """
+        SELECT
+            sg.game_id,
+            sg.game_date,
+            sg.home_team_id,
+            sg.away_team_id,
+            ht.name as home_team,
+            at.name as away_team
+        FROM scheduled_games sg
+        LEFT JOIN team ht ON sg.home_team_id = ht.team_id
+        LEFT JOIN team at ON sg.away_team_id = at.team_id
+        WHERE sg.game_date >= ? AND sg.game_date <= ?
+          AND sg.game_id NOT IN (SELECT DISTINCT game_id FROM gamedata)
+        ORDER BY sg.game_date ASC
+        """,
+        [season_dates["start_date"], season_dates["end_date"]],
+    )
+
+    # Compile games list
+    games_list = []
+    for row in upcoming.rows:
+        games_list.append(
+            {
+                "game_id": row["game_id"],
+                "game_date": row["game_date"],
+                "home_team_id": row["home_team_id"],
+                "away_team_id": row["away_team_id"],
+                "home_team": row["home_team"],
+                "away_team": row["away_team"],
+                "home_team_score": None,
+                "away_team_score": None,
+                "game_status": "Upcoming",
+                "game_type": "upcoming",
+            }
+        )
+
+    for row in completed.rows:
+        games_list.append(
+            {
+                "game_id": row["game_id"],
+                "game_date": row["game_date"],
+                "home_team_id": row["home_team_id"],
+                "away_team_id": row["away_team_id"],
+                "home_team": row["home_team"],
+                "away_team": row["away_team"],
+                "home_team_score": row["home_team_score"],
+                "away_team_score": row["away_team_score"],
+                "game_status": row["game_status"],
+                "game_type": row["game_type"],
+            }
+        )
+
+    # Fetch teams active in this season
+    teams_result = await db.execute(
+        """
+        SELECT DISTINCT t.team_id, t.name
+        FROM team t
+        WHERE t.team_id IN (
+            SELECT DISTINCT home_team_id FROM gamedata WHERE season_id = ?
+            UNION
+            SELECT DISTINCT away_team_id FROM gamedata WHERE season_id = ?
+            UNION
+            SELECT DISTINCT home_team_id FROM scheduled_games sg
+            WHERE sg.game_date >= ? AND sg.game_date <= ?
+            UNION
+            SELECT DISTINCT away_team_id FROM scheduled_games sg
+            WHERE sg.game_date >= ? AND sg.game_date <= ?
+        )
+        ORDER BY t.name
+        """,
+        [
+            season_id,
+            season_id,
+            season_dates["start_date"],
+            season_dates["end_date"],
+            season_dates["start_date"],
+            season_dates["end_date"],
+        ],
+    )
+
+    teams = [
+        {"team_id": row["team_id"], "name": row["name"]} for row in teams_result.rows
+    ]
+
+    return Response.json(
+        {
+            "games": games_list,
+            "teams": teams,
+        }
+    )
 
 
 async def predict_run_view(request, datasette):
@@ -282,6 +479,34 @@ async def predict_run_view(request, datasette):
         return Response.html("<p>Game not found</p>", status=404)
     home_team_id = game["home_team_id"]
     away_team_id = game["away_team_id"]
+    game_date = game["game_date"]
+
+    # Fetch team names
+    team_names_result = await db.execute(
+        "SELECT team_id, name FROM team WHERE team_id IN (?, ?)",
+        [home_team_id, away_team_id],
+    )
+    team_names = {row["team_id"]: row["name"] for row in team_names_result.rows}
+    home_team_name = team_names.get(home_team_id, "Unknown")
+    away_team_name = team_names.get(away_team_id, "Unknown")
+
+    # Fetch game details (scores and status if completed)
+    game_details = None
+    game_status = "Upcoming"
+    home_score = None
+    away_score = None
+    gamedata = await db.execute(
+        """
+        SELECT game_status, home_team_score, away_team_score
+        FROM gamedata WHERE game_id = ?
+        """,
+        [game_id],
+    )
+    if gamedata.rows:
+        game_details = gamedata.rows[0]
+        game_status = game_details["game_status"] or "Unknown"
+        home_score = game_details["home_team_score"]
+        away_score = game_details["away_team_score"]
 
     # Load team stats
     team_stats_result = await db.execute(
@@ -374,12 +599,45 @@ async def predict_run_view(request, datasette):
     except Exception as e:
         print(f"[MC] Error saving prediction: {e}")
 
-    # Prepare data for chart
-    scores = list(result.score_distribution.keys())
-    percentages = list(result.score_distribution.values())
+    # Prepare data for chart - filter out matching scores (they go to OT/SO)
+    filtered_scores = {}
+    for score, pct in result.score_distribution.items():
+        # Parse "X-Y" format and skip if matching
+        parts = score.split("-")
+        if len(parts) == 2 and parts[0] != parts[1]:
+            filtered_scores[score] = pct
+
+    scores = list(filtered_scores.keys())
+    percentages = list(filtered_scores.values())
 
     # Render results HTML with Chart.js
     chart_data_json = json.dumps({"scores": scores, "percentages": percentages})
+
+    # Format game info
+    game_info_html = f"""
+    <div class="game-info">
+        <h4>Game Information</h4>
+        <table class="results-table">
+            <tr>
+                <td><strong>Date</strong></td>
+                <td>{game_date}</td>
+            </tr>
+            <tr>
+                <td><strong>Status</strong></td>
+                <td>{game_status}</td>
+            </tr>
+    """
+    if home_score is not None and away_score is not None:
+        game_info_html += f"""
+            <tr>
+                <td><strong>Final Score</strong></td>
+                <td>{home_team_name} {home_score} - {away_score} {away_team_name}</td>
+            </tr>
+        """
+    game_info_html += """
+        </table>
+    </div>
+    """
 
     html = f"""
     <!DOCTYPE html>
@@ -393,12 +651,15 @@ async def predict_run_view(request, datasette):
             .mc-results {{ background: #fff; padding: 20px; border-radius: 8px; border: 2px solid #0066cc; }}
             .mc-results h3 {{ color: #0066cc; margin-top: 0; }}
             .mc-results h4 {{ margin-top: 20px; color: #333; }}
+            .game-info {{ background: #f0f7ff; padding: 15px; border-radius: 6px; margin: 20px 0; }}
+            .game-info h4 {{ margin-top: 0; }}
             .results-grid {{ display: flex; gap: 30px; margin: 20px 0; align-items: start; }}
             .outcome-boxes {{ display: flex; gap: 15px; }}
-            .outcome-box {{ padding: 15px 20px; border-radius: 6px; text-align: center; min-width: 120px; }}
+            .outcome-box {{ padding: 15px 20px; border-radius: 6px; text-align: center; min-width: 140px; }}
             .outcome-box.home-win {{ background: #e6f3ff; border: 2px solid #0066cc; }}
             .outcome-box.away-win {{ background: #ffe6e6; border: 2px solid #cc0000; }}
-            .outcome-label {{ font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 5px; }}
+            .outcome-label {{ font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px; }}
+            .team-name {{ font-size: 14px; font-weight: 600; margin-bottom: 8px; }}
             .outcome-percent {{ font-size: 28px; font-weight: bold; color: #333; }}
             .results-table {{ border-collapse: collapse; }}
             .results-table td {{ padding: 10px 15px; border-bottom: 1px solid #eee; }}
@@ -418,14 +679,18 @@ async def predict_run_view(request, datasette):
             <div class="mc-results">
                 <h3>Prediction Results</h3>
 
+                {game_info_html}
+
                 <div class="results-grid">
                     <div class="outcome-boxes">
                         <div class="outcome-box home-win">
                             <div class="outcome-label">Home Win</div>
+                            <div class="team-name">{home_team_name}</div>
                             <div class="outcome-percent">{result.home_win_pct}%</div>
                         </div>
                         <div class="outcome-box away-win">
                             <div class="outcome-label">Away Win</div>
+                            <div class="team-name">{away_team_name}</div>
                             <div class="outcome-percent">{result.away_win_pct}%</div>
                         </div>
                     </div>
@@ -498,4 +763,293 @@ async def predict_run_view(request, datasette):
     </html>
     """
 
+    return Response.html(html)
+
+
+async def predict_standings_view(request, datasette):
+    """GET /predict/standings - Simulate final division standings for a season."""
+    db = datasette.get_database("my_database")
+
+    # Parse season_id from query params
+    query_string = request.scope.get("query_string", b"").decode("utf-8")
+    params = urllib.parse.parse_qs(query_string)
+    try:
+        season_id = int(params.get("season_id", ["90"])[0])
+    except ValueError:
+        season_id = 90
+
+    # Fetch all regular seasons for the selector
+    seasons_result = await db.execute(
+        """
+        SELECT season_id, season_name FROM season
+        WHERE career = 1 AND playoff = 0
+        ORDER BY season_id DESC
+        """
+    )
+    seasons = seasons_result.rows
+
+    # Fetch season date range
+    season_info = await db.execute(
+        "SELECT start_date, end_date, season_name FROM season WHERE season_id = ?",
+        [season_id],
+    )
+    if not season_info.rows:
+        return Response.html("<p>Season not found</p>", status=404)
+    season_dates = season_info.rows[0]
+    season_name = season_dates["season_name"]
+
+    # Check that division data exists for this season
+    div_check = await db.execute(
+        "SELECT COUNT(*) as cnt FROM team_season_division WHERE season_id = ?",
+        [season_id],
+    )
+    if not div_check.rows or div_check.rows[0]["cnt"] == 0:
+        html = await datasette.render_template(
+            "season_predictor.html",
+            {
+                "seasons": seasons,
+                "season_id": season_id,
+                "season_name": season_name,
+                "error": f"No division data for season {season_id}. Run: just divisions {season_id}",
+                "divisions": [],
+                "remaining_games": 0,
+                "n_simulations": 0,
+            },
+            request=request,
+        )
+        return Response.html(html)
+
+    # Compute current standings from completed games
+    standings_result = await db.execute(
+        """
+        SELECT
+            t.team_id,
+            t.name,
+            COUNT(*) as gp,
+            SUM(CASE
+                WHEN (g.home_team_id = t.team_id AND g.home_team_score > g.away_team_score)
+                  OR (g.away_team_id = t.team_id AND g.away_team_score > g.home_team_score)
+                THEN 1 ELSE 0 END) as wins,
+            SUM(CASE
+                WHEN g.game_status = 'Final'
+                 AND ((g.home_team_id = t.team_id AND g.home_team_score < g.away_team_score)
+                   OR (g.away_team_id = t.team_id AND g.away_team_score < g.home_team_score))
+                THEN 1 ELSE 0 END) as losses,
+            SUM(CASE
+                WHEN g.game_status != 'Final'
+                 AND ((g.home_team_id = t.team_id AND g.home_team_score < g.away_team_score)
+                   OR (g.away_team_id = t.team_id AND g.away_team_score < g.home_team_score))
+                THEN 1 ELSE 0 END) as otl,
+            SUM(CASE
+                WHEN (g.home_team_id = t.team_id AND g.home_team_score > g.away_team_score)
+                  OR (g.away_team_id = t.team_id AND g.away_team_score > g.home_team_score)
+                THEN 2
+                WHEN g.game_status != 'Final'
+                 AND ((g.home_team_id = t.team_id AND g.home_team_score < g.away_team_score)
+                   OR (g.away_team_id = t.team_id AND g.away_team_score < g.home_team_score))
+                THEN 1
+                ELSE 0 END) as points,
+            SUM(CASE
+                WHEN g.game_status = 'Final'
+                 AND ((g.home_team_id = t.team_id AND g.home_team_score > g.away_team_score)
+                   OR (g.away_team_id = t.team_id AND g.away_team_score > g.home_team_score))
+                THEN 1 ELSE 0 END) as reg_wins,
+            SUM(CASE
+                WHEN g.game_status != 'Final SO'
+                 AND ((g.home_team_id = t.team_id AND g.home_team_score > g.away_team_score)
+                   OR (g.away_team_id = t.team_id AND g.away_team_score > g.home_team_score))
+                THEN 1 ELSE 0 END) as row_wins
+        FROM team t
+        JOIN gamedata g ON (g.home_team_id = t.team_id OR g.away_team_id = t.team_id)
+        WHERE g.season_id = ?
+        GROUP BY t.team_id, t.name
+        """,
+        [season_id],
+    )
+    current_standings = {row["team_id"]: dict(row) for row in standings_result.rows}
+
+    # Fetch remaining (unplayed) games for this season
+    remaining_result = await db.execute(
+        """
+        SELECT sg.game_id, sg.home_team_id, sg.away_team_id
+        FROM scheduled_games sg
+        WHERE sg.game_date >= ? AND sg.game_date <= ?
+          AND sg.game_id NOT IN (SELECT DISTINCT game_id FROM gamedata)
+        """,
+        [season_dates["start_date"], season_dates["end_date"]],
+    )
+    remaining_games = remaining_result.rows
+
+    # Load mc_team_stats for this season
+    stats_result = await db.execute(
+        "SELECT team_id, attack_rate, defense_rate, so_win_rate FROM mc_team_stats WHERE season_id = ?",
+        [season_id],
+    )
+    team_stats = {row["team_id"]: row for row in stats_result.rows}
+
+    # Run Monte Carlo simulation across all remaining games (vectorized)
+    # Tracks points, reg wins, ROW, and total wins per trial for tiebreaking.
+    N = 1000
+    rng = np.random.default_rng()
+    config = SimConfig(n_simulations=N, decay_rate=0.1, lookback_games=20)
+
+    def _zeros() -> np.ndarray:
+        return np.zeros(N, dtype=np.float32)
+
+    sim_points: dict[int, np.ndarray] = {tid: _zeros() for tid in current_standings}
+    sim_reg_wins: dict[int, np.ndarray] = {tid: _zeros() for tid in current_standings}
+    sim_row: dict[int, np.ndarray] = {tid: _zeros() for tid in current_standings}
+    sim_wins: dict[int, np.ndarray] = {tid: _zeros() for tid in current_standings}
+
+    for game in remaining_games:
+        home_id = game["home_team_id"]
+        away_id = game["away_team_id"]
+        if home_id not in team_stats or away_id not in team_stats:
+            continue
+
+        ht = team_stats[home_id]
+        at = team_stats[away_id]
+
+        game_params = GameParams(
+            home_team_id=home_id,
+            away_team_id=away_id,
+            home_attack=ht["attack_rate"],
+            home_defense=ht["defense_rate"],
+            away_attack=at["attack_rate"],
+            away_defense=at["defense_rate"],
+            home_so_win_rate=ht["so_win_rate"],
+            away_so_win_rate=at["so_win_rate"],
+        )
+
+        result = run_simulation(game_params, config)
+
+        # Regulation outcomes
+        home_reg_p = result.home_reg_win_pct / 100.0
+        away_reg_p = result.away_reg_win_pct / 100.0
+        ot_p = result.ot_pct / 100.0
+        so_p = result.so_pct / 100.0
+        ot_frac = ot_p / (ot_p + so_p) if (ot_p + so_p) > 0 else 0.5
+
+        rand1 = rng.random(N)
+        home_reg_win = rand1 < home_reg_p
+        away_reg_win = rand1 > (1.0 - away_reg_p)
+        goes_extra = ~home_reg_win & ~away_reg_win
+
+        # Split extra time into OT vs SO
+        is_ot = goes_extra & (rng.random(N) < ot_frac)
+        is_so = goes_extra & ~is_ot
+
+        # OT winner: home has HOME_OT_WIN_PCT advantage
+        ot_rand = rng.random(N)
+        ot_home_win = is_ot & (ot_rand < HOME_OT_WIN_PCT)
+        ot_away_win = is_ot & ~ot_home_win
+
+        # SO winner: use team-specific SO win rate
+        so_home_win = is_so & (rng.random(N) < ht["so_win_rate"])
+        so_away_win = is_so & ~so_home_win
+
+        # Derived outcomes
+        home_any_win = home_reg_win | ot_home_win | so_home_win
+        away_any_win = away_reg_win | ot_away_win | so_away_win
+        home_row_win = home_reg_win | ot_home_win  # tiebreaker (b): reg + OT, not SO
+        away_row_win = away_reg_win | ot_away_win
+
+        if home_id in sim_points:
+            sim_points[home_id] += np.where(
+                home_any_win, 2, np.where(away_any_win, 1, 0)
+            )
+            sim_reg_wins[home_id] += home_reg_win.astype(np.float32)
+            sim_row[home_id] += home_row_win.astype(np.float32)
+            sim_wins[home_id] += home_any_win.astype(np.float32)
+        if away_id in sim_points:
+            sim_points[away_id] += np.where(
+                away_any_win, 2, np.where(home_any_win, 1, 0)
+            )
+            sim_reg_wins[away_id] += away_reg_win.astype(np.float32)
+            sim_row[away_id] += away_row_win.astype(np.float32)
+            sim_wins[away_id] += away_any_win.astype(np.float32)
+
+    # Fetch division assignments for this season
+    div_result = await db.execute(
+        """
+        SELECT tsd.team_id, tsd.division_name
+        FROM team_season_division tsd
+        WHERE tsd.season_id = ?
+        ORDER BY tsd.division_name
+        """,
+        [season_id],
+    )
+    team_divisions = {row["team_id"]: row["division_name"] for row in div_result.rows}
+
+    # Build per-division results
+    division_data: dict[str, list[dict]] = {}
+    for team_id, standing in current_standings.items():
+        div_name = team_divisions.get(team_id)
+        if not div_name:
+            continue
+
+        current_pts = standing["points"]
+        zeros = np.zeros(N)
+        final_pts = current_pts + sim_points.get(team_id, zeros)
+        final_reg = standing["reg_wins"] + sim_reg_wins.get(team_id, zeros)
+        final_row = standing["row_wins"] + sim_row.get(team_id, zeros)
+        final_wins = standing["wins"] + sim_wins.get(team_id, zeros)
+
+        division_data.setdefault(div_name, []).append(
+            {
+                "team_id": team_id,
+                "name": standing["name"],
+                "gp": standing["gp"],
+                "wins": standing["wins"],
+                "losses": standing["losses"],
+                "otl": standing["otl"],
+                "reg_wins": standing["reg_wins"],
+                "row_wins": standing["row_wins"],
+                "points": current_pts,
+                "predicted_pts": int(np.median(final_pts)),
+                "predicted_reg_wins": int(np.median(final_reg)),
+                "predicted_row": int(np.median(final_row)),
+                "predicted_wins": int(np.median(final_wins)),
+                "p10": int(np.percentile(final_pts, 10)),
+                "p90": int(np.percentile(final_pts, 90)),
+            }
+        )
+
+    def _current_sort_key(t: dict) -> tuple:
+        """AHL tiebreaker order for current standings: pts, reg_wins, row, wins."""
+        return (t["points"], t["reg_wins"], t["row_wins"], t["wins"])
+
+    def _predicted_sort_key(t: dict) -> tuple:
+        """AHL tiebreaker order for predicted standings: pts, reg_wins, row, wins."""
+        return (
+            t["predicted_pts"],
+            t["predicted_reg_wins"],
+            t["predicted_row"],
+            t["predicted_wins"],
+        )
+
+    for div_name, teams in division_data.items():
+        teams.sort(key=_current_sort_key, reverse=True)
+        for i, team in enumerate(teams):
+            team["current_rank"] = i + 1
+
+        predicted_order = sorted(teams, key=_predicted_sort_key, reverse=True)
+        rank_map = {t["team_id"]: i + 1 for i, t in enumerate(predicted_order)}
+        for team in teams:
+            team["predicted_rank"] = rank_map[team["team_id"]]
+            team["rank_change"] = team["current_rank"] - team["predicted_rank"]
+
+    html = await datasette.render_template(
+        "season_predictor.html",
+        {
+            "seasons": seasons,
+            "season_id": season_id,
+            "season_name": season_name,
+            "divisions": sorted(division_data.items()),
+            "remaining_games": len(remaining_games),
+            "n_simulations": N,
+            "error": None,
+        },
+        request=request,
+    )
     return Response.html(html)

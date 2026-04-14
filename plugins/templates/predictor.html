@@ -21,11 +21,21 @@
             </div>
 
             <div class="form-group">
+                <label for="team">Filter by Team (optional):</label>
+                <select id="team" name="team_filter">
+                    <option value="">All Teams</option>
+                    {% for team in teams %}
+                    <option value="{{ team.team_id }}">{{ team.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="game">Game:</label>
                 <select id="game" name="game_id" required>
                     {% if games %}
                         {% for game in games %}
-                        <option value="{{ game.game_id }}">
+                        <option value="{{ game.game_id }}" data-home-team-id="{{ game.home_team_id }}" data-away-team-id="{{ game.away_team_id }}">
                             {% if game.game_type == 'upcoming' %}
                             📅 {{ game.game_date | trim }} - {{ game.home_team }} vs {{ game.away_team }}
                             {% else %}
@@ -256,28 +266,109 @@ small {
     const lookbackSlider = document.getElementById('lookback');
     const lookbackValue = document.getElementById('lookbackValue');
     const seasonSelect = document.getElementById('season');
+    const teamSelect = document.getElementById('team');
     const gameSelect = document.getElementById('game');
     const predictorForm = document.getElementById('predictorForm');
     const resultsContainer = document.getElementById('resultsContainer');
     const loadingIndicator = document.getElementById('loadingIndicator');
+    const allGameOptions = Array.from(gameSelect.querySelectorAll('option')).slice(1); // Store all game options except the placeholder
 
     // Update lookback value display
     lookbackSlider.addEventListener('input', (e) => {
         lookbackValue.textContent = e.target.value;
     });
 
-    // Update game dropdown when season changes
+    // Filter games based on selected team
+    function filterGamesByTeam() {
+        const selectedTeamId = teamSelect.value;
+        const placeholder = gameSelect.querySelector('option[value=""]');
+
+        // Remove all options except placeholder
+        gameSelect.querySelectorAll('option:not([value=""])').forEach(opt => opt.remove());
+
+        if (!selectedTeamId) {
+            // Show all games
+            allGameOptions.forEach(opt => gameSelect.appendChild(opt.cloneNode(true)));
+        } else {
+            // Show only games with the selected team
+            const filteredOptions = allGameOptions.filter(opt => {
+                const homeTeamId = opt.getAttribute('data-home-team-id');
+                const awayTeamId = opt.getAttribute('data-away-team-id');
+                return homeTeamId === selectedTeamId || awayTeamId === selectedTeamId;
+            });
+
+            if (filteredOptions.length === 0) {
+                const noGamesOption = document.createElement('option');
+                noGamesOption.value = '';
+                noGamesOption.textContent = 'No games found for this team';
+                noGamesOption.disabled = true;
+                gameSelect.appendChild(noGamesOption);
+            } else {
+                filteredOptions.forEach(opt => gameSelect.appendChild(opt.cloneNode(true)));
+            }
+        }
+
+        // Reset game selection
+        gameSelect.value = '';
+    }
+
+    // Update game and team dropdowns when season changes
     async function updateGameDropdown() {
         const seasonId = seasonSelect.value;
 
-        // In a real implementation, this would fetch games from the server
-        // For now, just show a placeholder
-        gameSelect.innerHTML = '<option>Loading games...</option>';
+        if (!seasonId) return;
 
-        // This would be implemented with a backend endpoint
-        // For MVP, we'll just reload the page or keep the form simple
-        gameSelect.innerHTML = '<option>Select a season first</option>';
+        try {
+            // Fetch games and teams for the selected season
+            const response = await fetch(`/predict/games?season_id=${seasonId}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('Error fetching games:', data.error);
+                return;
+            }
+
+            const { games, teams } = data;
+
+            // Update team dropdown
+            const currentTeamValue = teamSelect.value;
+            teamSelect.innerHTML = '<option value="">All Teams</option>';
+            teams.forEach(team => {
+                const option = document.createElement('option');
+                option.value = team.team_id;
+                option.textContent = team.name;
+                teamSelect.appendChild(option);
+            });
+            teamSelect.value = '';
+
+            // Update games dropdown with new game list
+            allGameOptions.length = 0;
+            gameSelect.innerHTML = '';
+
+            games.forEach(game => {
+                const option = document.createElement('option');
+                option.value = game.game_id;
+                option.setAttribute('data-home-team-id', game.home_team_id);
+                option.setAttribute('data-away-team-id', game.away_team_id);
+
+                if (game.game_type === 'upcoming') {
+                    option.textContent = `📅 ${game.game_date.trim()} - ${game.home_team} vs ${game.away_team}`;
+                } else {
+                    option.textContent = `✓ ${game.game_date.trim()} - ${game.home_team} ${game.home_team_score} vs ${game.away_team} ${game.away_team_score} (${game.game_status})`;
+                }
+
+                allGameOptions.push(option);
+                gameSelect.appendChild(option.cloneNode(true));
+            });
+
+            gameSelect.value = '';
+        } catch (error) {
+            console.error('Error updating dropdowns:', error);
+        }
     }
+
+    // Add event listeners
+    teamSelect.addEventListener('change', filterGamesByTeam);
 
     // Show loading indicator on form submission (GET request)
     predictorForm.addEventListener('submit', (e) => {

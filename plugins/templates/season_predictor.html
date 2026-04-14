@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="standings-container">
+    <h1>Season Standings Predictor</h1>
+    <p>Monte Carlo simulation of final season standings based on remaining games.</p>
+
+    <form method="GET" action="/predict/standings" class="season-form">
+        <label for="season">Season:</label>
+        <select id="season" name="season_id" onchange="this.form.submit()">
+            {% for season in seasons %}
+            <option value="{{ season.season_id }}" {% if season.season_id == season_id %}selected{% endif %}>
+                {{ season.season_name }}
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if error %}
+    <div class="error-box">
+        <strong>Data not available:</strong> {{ error }}
+    </div>
+    {% else %}
+
+    <div class="sim-meta">
+        <strong>{{ season_name }}</strong> &mdash;
+        {{ remaining_games }} games remaining &mdash;
+        {{ n_simulations }} simulations per game
+    </div>
+
+    {% for division_name, teams in divisions %}
+    <div class="division-block">
+        <h2>{{ division_name }}</h2>
+        <table class="standings-table">
+            <thead>
+                <tr>
+                    <th colspan="9" class="section-header current-header">Current</th>
+                    <th colspan="5" class="section-header predicted-header">Predicted Final</th>
+                </tr>
+                <tr>
+                    <th title="Current rank in division">Rank</th>
+                    <th>Team</th>
+                    <th title="Games played">GP</th>
+                    <th title="Wins (all)">W</th>
+                    <th title="Regulation wins — tiebreaker (a)">RW</th>
+                    <th title="Regulation + OT wins, excludes shootouts — tiebreaker (b)">ROW</th>
+                    <th title="Regulation losses">L</th>
+                    <th title="Overtime/Shootout losses">OTL</th>
+                    <th title="Current points">PTS</th>
+                    <th title="Predicted final points (median of simulations)">PTS</th>
+                    <th title="10th–90th percentile confidence range">Range</th>
+                    <th title="Predicted regulation wins (median)">RW</th>
+                    <th title="Predicted ROW (median)">ROW</th>
+                    <th title="Predicted final rank and rank change">Rank</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for team in teams %}
+                <tr>
+                    <td class="rank-cell">{{ team.current_rank }}</td>
+                    <td class="team-name">{{ team.name }}</td>
+                    <td>{{ team.gp }}</td>
+                    <td>{{ team.wins }}</td>
+                    <td>{{ team.reg_wins }}</td>
+                    <td>{{ team.row_wins }}</td>
+                    <td>{{ team.losses }}</td>
+                    <td>{{ team.otl }}</td>
+                    <td class="pts-cell">{{ team.points }}</td>
+                    <td class="predicted-pts">{{ team.predicted_pts }}</td>
+                    <td class="range-cell">{{ team.p10 }}–{{ team.p90 }}</td>
+                    <td class="predicted-sub">{{ team.predicted_reg_wins }}</td>
+                    <td class="predicted-sub">{{ team.predicted_row }}</td>
+                    <td class="rank-col">
+                        <span class="pred-rank">{{ team.predicted_rank }}</span>
+                        <span class="change-cell {% if team.rank_change > 0 %}up{% elif team.rank_change < 0 %}down{% endif %}">
+                            {% if team.rank_change > 0 %}▲{{ team.rank_change }}
+                            {% elif team.rank_change < 0 %}▼{{ team.rank_change | abs }}
+                            {% else %}—{% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+
+    {% endif %}
+</div>
+
+<style>
+.standings-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.season-form {
+    margin: 15px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.season-form select {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.sim-meta {
+    background: #f0f7ff;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    font-size: 14px;
+    color: #444;
+}
+
+.error-box {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 20px 0;
+    color: #856404;
+}
+
+.division-block {
+    margin-bottom: 40px;
+}
+
+.division-block h2 {
+    color: #0066cc;
+    border-bottom: 2px solid #0066cc;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+}
+
+.standings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.standings-table th {
+    background: #f0f0f0;
+    padding: 9px 12px;
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    cursor: default;
+}
+
+.standings-table th:nth-child(2) {
+    text-align: left;
+}
+
+.standings-table td {
+    padding: 9px 12px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.standings-table tbody tr:hover {
+    background: #f5f9ff;
+}
+
+.team-name {
+    text-align: left !important;
+    font-weight: 500;
+}
+
+.pts-cell {
+    font-weight: bold;
+}
+
+.predicted-pts {
+    font-weight: bold;
+    color: #0066cc;
+}
+
+.range-cell {
+    color: #666;
+    font-size: 13px;
+}
+
+.section-header {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 5px 12px;
+}
+
+.current-header {
+    background: #e8e8e8;
+    color: #555;
+    border-right: 2px solid #bbb;
+}
+
+.predicted-header {
+    background: #dbeeff;
+    color: #0055aa;
+}
+
+.standings-table td:nth-child(9) {
+    border-right: 2px solid #bbb;
+}
+
+.standings-table th:nth-child(9) {
+    border-right: 2px solid #bbb;
+}
+
+.predicted-sub {
+    color: #555;
+    font-size: 13px;
+}
+
+.rank-col {
+    white-space: nowrap;
+}
+
+.pred-rank {
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+.change-cell {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.change-cell.up {
+    color: #28a745;
+}
+
+.change-cell.down {
+    color: #dc3545;
+}
+</style>
+{% endblock %}
