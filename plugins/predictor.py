@@ -402,9 +402,16 @@ async def predict_run_view(request, datasette):
     except Exception as e:
         print(f"[MC] Error saving prediction: {e}")
 
-    # Prepare data for chart
-    scores = list(result.score_distribution.keys())
-    percentages = list(result.score_distribution.values())
+    # Prepare data for chart - filter out matching scores (they go to OT/SO)
+    filtered_scores = {}
+    for score, pct in result.score_distribution.items():
+        # Parse "X-Y" format and skip if matching
+        parts = score.split("-")
+        if len(parts) == 2 and parts[0] != parts[1]:
+            filtered_scores[score] = pct
+
+    scores = list(filtered_scores.keys())
+    percentages = list(filtered_scores.values())
 
     # Render results HTML with Chart.js
     chart_data_json = json.dumps({"scores": scores, "percentages": percentages})
