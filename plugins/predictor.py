@@ -102,6 +102,7 @@ def register_routes():
     return [
         (r"^/predict$", predict_view),
         (r"^/predict/run$", predict_run_view),
+        (r"^/predict/games$", predict_games_api),
     ]
 
 
@@ -134,6 +135,7 @@ async def predict_view(request, datasette):
 
     # Fetch games for default season (both completed and upcoming)
     games = []
+    teams = []
     if default_season_id:
         # Get season date range
         season_info = await db.execute(
@@ -144,6 +146,37 @@ async def predict_view(request, datasette):
         )
         season_dates = season_info.rows[0] if season_info.rows else None
 
+        # Fetch teams active in this season (from both completed and scheduled games)
+        teams_result = await db.execute(
+            """
+            SELECT DISTINCT t.team_id, t.name
+            FROM team t
+            WHERE t.team_id IN (
+                SELECT DISTINCT home_team_id FROM gamedata WHERE season_id = ?
+                UNION
+                SELECT DISTINCT away_team_id FROM gamedata WHERE season_id = ?
+                UNION
+                SELECT DISTINCT home_team_id FROM scheduled_games sg
+                WHERE sg.game_date >= (SELECT start_date FROM season WHERE season_id = ?)
+                  AND sg.game_date <= (SELECT end_date FROM season WHERE season_id = ?)
+                UNION
+                SELECT DISTINCT away_team_id FROM scheduled_games sg
+                WHERE sg.game_date >= (SELECT start_date FROM season WHERE season_id = ?)
+                  AND sg.game_date <= (SELECT end_date FROM season WHERE season_id = ?)
+            )
+            ORDER BY t.name
+            """,
+            [
+                default_season_id,
+                default_season_id,
+                default_season_id,
+                default_season_id,
+                default_season_id,
+                default_season_id,
+            ],
+        )
+        teams = teams_result.rows
+
         # Completed games
         completed = await db.execute(
             """
@@ -152,6 +185,8 @@ async def predict_view(request, datasette):
                 g.season_id,
                 g.game_date,
                 g.game_status,
+                g.home_team_id,
+                g.away_team_id,
                 ht.name as home_team,
                 at.name as away_team,
                 g.home_team_score,
@@ -177,6 +212,8 @@ async def predict_view(request, datasette):
                 SELECT
                     sg.game_id,
                     sg.game_date,
+                    sg.home_team_id,
+                    sg.away_team_id,
                     ht.name as home_team,
                     at.name as away_team
                 FROM scheduled_games sg
@@ -195,6 +232,8 @@ async def predict_view(request, datasette):
                     "season_id": default_season_id,
                     "game_date": row["game_date"],
                     "game_status": "Upcoming",
+                    "home_team_id": row["home_team_id"],
+                    "away_team_id": row["away_team_id"],
                     "home_team": row["home_team"],
                     "away_team": row["away_team"],
                     "home_team_score": None,
@@ -213,10 +252,156 @@ async def predict_view(request, datasette):
             "seasons": seasons,
             "default_season_id": default_season_id,
             "games": games,
+            "teams": teams,
         },
         request=request,
     )
     return Response.html(html)
+
+
+async def predict_games_api(request, datasette):
+    """GET /predict/games?season_id=X - Return games and teams for a season as JSON."""
+    try:
+        query_string = request.scope.get("query_string", b"").decode("utf-8")
+        params = urllib.parse.parse_qs(query_string)
+        season_id = int(params.get("season_id", [""])[0])
+
+        if not season_id:
+            return Response.json({"error": "Missing season_id"}, status=400)
+    except (ValueError, IndexError):
+        return Response.json({"error": "Invalid season_id"}, status=400)
+
+    db = datasette.get_database("my_database")
+
+    # Get season date range
+    season_info = await db.execute(
+        """
+        SELECT start_date, end_date FROM season WHERE season_id = ?
+        """,
+        [season_id],
+    )
+    season_dates = season_info.rows[0] if season_info.rows else None
+
+    if not season_dates:
+        return Response.json({"error": "Season not found"}, status=404)
+
+    # Fetch completed games
+    completed = await db.execute(
+        """
+        SELECT
+            g.game_id,
+            g.season_id,
+            g.game_date,
+            g.game_status,
+            g.home_team_id,
+            g.away_team_id,
+            ht.name as home_team,
+            at.name as away_team,
+            g.home_team_score,
+            g.away_team_score,
+            'completed' as game_type
+        FROM gamedata g
+        LEFT JOIN team ht ON g.home_team_id = ht.team_id
+        LEFT JOIN team at ON g.away_team_id = at.team_id
+        WHERE g.season_id = ?
+        ORDER BY g.game_date DESC
+        LIMIT 100
+        """,
+        [season_id],
+    )
+
+    # Fetch upcoming games
+    upcoming = await db.execute(
+        """
+        SELECT
+            sg.game_id,
+            sg.game_date,
+            sg.home_team_id,
+            sg.away_team_id,
+            ht.name as home_team,
+            at.name as away_team
+        FROM scheduled_games sg
+        LEFT JOIN team ht ON sg.home_team_id = ht.team_id
+        LEFT JOIN team at ON sg.away_team_id = at.team_id
+        WHERE sg.game_date >= ? AND sg.game_date <= ?
+          AND sg.game_id NOT IN (SELECT DISTINCT game_id FROM gamedata)
+        ORDER BY sg.game_date ASC
+        """,
+        [season_dates["start_date"], season_dates["end_date"]],
+    )
+
+    # Compile games list
+    games_list = []
+    for row in upcoming.rows:
+        games_list.append(
+            {
+                "game_id": row["game_id"],
+                "game_date": row["game_date"],
+                "home_team_id": row["home_team_id"],
+                "away_team_id": row["away_team_id"],
+                "home_team": row["home_team"],
+                "away_team": row["away_team"],
+                "home_team_score": None,
+                "away_team_score": None,
+                "game_status": "Upcoming",
+                "game_type": "upcoming",
+            }
+        )
+
+    for row in completed.rows:
+        games_list.append(
+            {
+                "game_id": row["game_id"],
+                "game_date": row["game_date"],
+                "home_team_id": row["home_team_id"],
+                "away_team_id": row["away_team_id"],
+                "home_team": row["home_team"],
+                "away_team": row["away_team"],
+                "home_team_score": row["home_team_score"],
+                "away_team_score": row["away_team_score"],
+                "game_status": row["game_status"],
+                "game_type": row["game_type"],
+            }
+        )
+
+    # Fetch teams active in this season
+    teams_result = await db.execute(
+        """
+        SELECT DISTINCT t.team_id, t.name
+        FROM team t
+        WHERE t.team_id IN (
+            SELECT DISTINCT home_team_id FROM gamedata WHERE season_id = ?
+            UNION
+            SELECT DISTINCT away_team_id FROM gamedata WHERE season_id = ?
+            UNION
+            SELECT DISTINCT home_team_id FROM scheduled_games sg
+            WHERE sg.game_date >= ? AND sg.game_date <= ?
+            UNION
+            SELECT DISTINCT away_team_id FROM scheduled_games sg
+            WHERE sg.game_date >= ? AND sg.game_date <= ?
+        )
+        ORDER BY t.name
+        """,
+        [
+            season_id,
+            season_id,
+            season_dates["start_date"],
+            season_dates["end_date"],
+            season_dates["start_date"],
+            season_dates["end_date"],
+        ],
+    )
+
+    teams = [
+        {"team_id": row["team_id"], "name": row["name"]} for row in teams_result.rows
+    ]
+
+    return Response.json(
+        {
+            "games": games_list,
+            "teams": teams,
+        }
+    )
 
 
 async def predict_run_view(request, datasette):
