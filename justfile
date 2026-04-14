@@ -65,6 +65,22 @@ PROD_HOST := "root@h-web-p-002"
         -H "Authorization: Bearer $COOLIFY_TOKEN"
     echo "Done."
 
+UAT_HOST := "root@h-web-t-002"
+
+@db-push-uat:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source .env
+    echo "Stopping datasette via Coolify API..."
+    curl -sf -X POST "$COOLIFY_HOST/api/v1/applications/$COOLIFY_UAT_APP_UUID/stop" \
+        -H "Authorization: Bearer $COOLIFY_TOKEN"
+    echo "Copying database..."
+    scp my_database.db {{UAT_HOST}}:/data/my_database.db
+    echo "Starting datasette via Coolify API..."
+    curl -sf -X POST "$COOLIFY_HOST/api/v1/applications/$COOLIFY_UAT_APP_UUID/start" \
+        -H "Authorization: Bearer $COOLIFY_TOKEN"
+    echo "Done."
+
 @db-pull:
     cp my_database.db my_database.db.orig
     scp root@h-web-p-002:/data/my_database.db my_database.db
