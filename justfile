@@ -49,8 +49,21 @@
 
 # Database sync
 
+PROD_HOST := "root@h-web-p-002"
+
 @db-push:
-    scp my_database.db root@h-web-p-002:/data/my_database.db
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source .env
+    echo "Stopping datasette via Coolify API..."
+    curl -sf -X POST "$COOLIFY_HOST/api/v1/applications/$COOLIFY_APP_UUID/stop" \
+        -H "Authorization: Bearer $COOLIFY_TOKEN"
+    echo "Copying database..."
+    scp my_database.db {{PROD_HOST}}:/data/my_database.db
+    echo "Starting datasette via Coolify API..."
+    curl -sf -X POST "$COOLIFY_HOST/api/v1/applications/$COOLIFY_APP_UUID/start" \
+        -H "Authorization: Bearer $COOLIFY_TOKEN"
+    echo "Done."
 
 @db-pull:
     cp my_database.db my_database.db.orig
