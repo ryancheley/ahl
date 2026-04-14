@@ -75,3 +75,6 @@
 
 @mc-status:
     uv run retrain.py status
+
+@divisions season_id="90":
+    uv run program.py divisions --season-id {{season_id}}

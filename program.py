@@ -492,6 +492,16 @@ def init_database() -> sqlite3.Connection:
                 shutout BOOLEAN
             )
         """,
+        "team_season_division": """
+            CREATE TABLE IF NOT EXISTS team_season_division (
+                team_id              INTEGER NOT NULL,
+                season_id            INTEGER NOT NULL,
+                division_id          INTEGER NOT NULL,
+                division_name        TEXT NOT NULL,
+                division_short_name  TEXT NOT NULL,
+                PRIMARY KEY (team_id, season_id)
+            )
+        """,
     }
 
     for table_sql in tables.values():
@@ -2626,6 +2636,116 @@ def migrate_fk():
         )
     except Exception as e:
         console.print(f"[red]✗ Migration failed: {e}[/red]")
+    finally:
+        conn.close()
+
+
+_HOCKEYTECH_API_KEY = "ccb91f29d6744675"
+_HOCKEYTECH_API_BASE = "https://lscluster.hockeytech.com/feed/index.php"
+
+
+def _fetch_team_divisions(season_id: int) -> list[dict]:
+    """Fetch team/division alignment from HockeyTech API for a given season."""
+    url = (
+        f"{_HOCKEYTECH_API_BASE}?feed=modulekit&view=teamsbyseason"
+        f"&season_id={season_id}&key={_HOCKEYTECH_API_KEY}&client_code=ahl"
+    )
+    response = _http_client.get(url)
+    response.raise_for_status()
+    data = response.json()
+    return data["SiteKit"]["Teamsbyseason"]
+
+
+def _save_team_divisions(
+    conn: sqlite3.Connection, season_id: int, teams: list[dict]
+) -> int:
+    """Store team/division records in team_season_division table."""
+    cursor = conn.cursor()
+    count = 0
+    for team in teams:
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO team_season_division
+            (team_id, season_id, division_id, division_name, division_short_name)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                int(team["id"]),
+                season_id,
+                int(team["division_id"]),
+                team["division_long_name"],
+                team["division_short_name"],
+            ),
+        )
+        count += 1
+    conn.commit()
+    return count
+
+
+@cli.command()
+@click.option(
+    "--season-id",
+    type=int,
+    default=90,
+    help="Season ID to fetch division alignments for (default: 90)",
+)
+def divisions(season_id: int):
+    """Fetch and store team/division alignments for a season from the HockeyTech API."""
+    console.print(
+        Panel.fit(
+            f"[bold cyan]Fetching Division Alignments — Season {season_id}[/bold cyan]",
+            border_style="cyan",
+        )
+    )
+
+    conn = get_db_connection()
+    try:
+        # Ensure table exists (may not be present in older DBs)
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS team_season_division (
+                team_id              INTEGER NOT NULL,
+                season_id            INTEGER NOT NULL,
+                division_id          INTEGER NOT NULL,
+                division_name        TEXT NOT NULL,
+                division_short_name  TEXT NOT NULL,
+                PRIMARY KEY (team_id, season_id)
+            )
+            """
+        )
+        conn.commit()
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            _ = progress.add_task("Fetching from HockeyTech API...", total=None)
+            teams = _fetch_team_divisions(season_id)
+            progress.stop()
+
+        count = _save_team_divisions(conn, season_id, teams)
+
+        table = Table(title=f"Division Alignments — Season {season_id}")
+        table.add_column("Team", style="cyan")
+        table.add_column("Division", style="magenta")
+
+        divisions_map: dict[str, list[str]] = {}
+        for team in teams:
+            div = team["division_short_name"]
+            divisions_map.setdefault(div, []).append(team["name"])
+
+        for div in sorted(divisions_map):
+            for name in sorted(divisions_map[div]):
+                table.add_row(name, div)
+
+        console.print(table)
+        console.print(
+            f"[green]✓ Saved {count} team/division records for season {season_id}[/green]"
+        )
+    except httpx.HTTPError as e:
+        console.print(f"[red]✗ HTTP error fetching division data: {e}[/red]")
+        raise SystemExit(1)
     finally:
         conn.close()
 
