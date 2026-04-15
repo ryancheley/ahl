@@ -146,4 +146,4 @@ databases:
           order by game_date;
         title: "Team Performance By Day"
         hide_sql: true
-        description: "Returns cumulative performance of a team by day. Query the 'available_seasons' view to find the season_id for your desired season."
+        description: "Returns cumulative performance of a team by day. Query the 'season' table to find the season_id for your desired season."
