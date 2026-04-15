@@ -18,9 +18,9 @@ COPY plugins ./plugins
 # Download metadata from GitHub
 RUN curl -L -o /app/metadata.yaml https://raw.githubusercontent.com/ryancheley/ahl/refs/heads/main/metadata.yaml
 
-# Install Python dependencies using uv (without editable mode to avoid breaking datasette)
-RUN uv pip install --python /usr/local/bin/python --no-cache-dir \
-    beautifulsoup4 lxml pyyaml httpx pydantic pydantic-sqlite rich click numpy
+# Compile and install dependencies from pyproject.toml using uv
+RUN uv pip compile pyproject.toml -o /tmp/requirements.txt && \
+    uv pip install --python /usr/local/bin/python --no-cache-dir -r /tmp/requirements.txt
 
 # Create data directory for persistent database storage
 WORKDIR /data
