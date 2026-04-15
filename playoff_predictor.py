@@ -1303,6 +1303,70 @@ def update(season_id: int, n_simulations: int, projected: bool):
 
         print(f"    ✓ {total_filled} TBD slots filled")
 
+        # Step 5: Generate predictions for all newly-complete series (those with both teams now)
+        print("  Generating predictions for remaining series...")
+        cursor = conn.cursor()
+        additional_count = 0
+
+        cursor.execute(
+            """
+            SELECT series_id, series_label, higher_seed_team_id, lower_seed_team_id, round_number
+            FROM playoff_brackets
+            WHERE playoff_season_id = ? AND higher_seed_team_id IS NOT NULL
+              AND lower_seed_team_id IS NOT NULL
+              AND series_id NOT IN (SELECT series_id FROM playoff_series_predictions)
+            """,
+            [playoff_season_id],
+        )
+        for row in cursor.fetchall():
+            series_id = row["series_id"]
+            higher_id = row["higher_seed_team_id"]
+            lower_id = row["lower_seed_team_id"]
+            round_num = row["round_number"]
+
+            # Get series format
+            schedule_key = get_series_format(
+                conn,
+                higher_id,
+                lower_id,
+                round_num,
+            )
+
+            # Run simulation
+            h_pct, l_pct, games_dist, exp_games = get_series_win_probability(
+                conn,
+                higher_id,
+                lower_id,
+                schedule_key,
+                n_simulations,
+            )
+
+            # Save prediction
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO playoff_series_predictions
+                (series_id, snapshot_date, home_team_id, away_team_id, home_series_win_pct, away_series_win_pct,
+                 expected_games, games_dist_json, n_simulations, computed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    series_id,
+                    snapshot_date,
+                    higher_id,
+                    lower_id,
+                    h_pct,
+                    l_pct,
+                    exp_games,
+                    json.dumps(games_dist),
+                    n_simulations,
+                    datetime.now(UTC).isoformat(),
+                ),
+            )
+            additional_count += 1
+
+        conn.commit()
+        print(f"    ✓ {additional_count} additional predictions generated")
+
         print("✓ Update complete")
 
     finally:

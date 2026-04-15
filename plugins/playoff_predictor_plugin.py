@@ -93,21 +93,6 @@ async def playoffs_view(request, datasette):
             .prob-high { background: #c8e6c9; color: #1b5e20; }
             .prob-med { background: #fff9c4; color: #f57f17; }
             .prob-low { background: #ffccbc; color: #bf360c; }
-            .champion-section {
-                margin: 40px 0;
-                background: #f0f4f8;
-                padding: 20px;
-                border-radius: 8px;
-            }
-            .champion-list { list-style: none; padding: 0; }
-            .champion-item {
-                padding: 10px;
-                margin: 5px 0;
-                background: white;
-                border-radius: 4px;
-                display: flex;
-                justify-content: space-between;
-            }
             .loading { color: #666; text-align: center; padding: 40px; }
             .error { color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 4px; }
         </style>
@@ -189,32 +174,36 @@ async def playoffs_view(request, datasette):
                                 html += '<div class="team-row lower-seed"><span style="color: #999;">TBD</span></div>';
                             }
 
+                            // Add expected games info
+                            if (series.prediction && series.prediction.expected_games) {
+                                const exp = Math.round(series.prediction.expected_games * 10) / 10;
+                                html += '<div style="font-size: 0.85em; color: #666; margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">';
+                                html += '<strong>Expected:</strong> ' + exp + ' games';
+
+                                // Add game distribution if available
+                                if (series.prediction.games_dist) {
+                                    try {
+                                        const dist = typeof series.prediction.games_dist === 'string'
+                                            ? JSON.parse(series.prediction.games_dist)
+                                            : series.prediction.games_dist;
+                                        html += '<br><small>';
+                                        for (const [games, pct] of Object.entries(dist).sort()) {
+                                            html += games + ' games: ' + Math.round(pct) + '% • ';
+                                        }
+                                        html = html.slice(0, -3); // Remove trailing ' • '
+                                        html += '</small>';
+                                    } catch (e) {
+                                        // silently ignore parse errors
+                                    }
+                                }
+                                html += '</div>';
+                            }
+
                             html += '</div>';
                         }
                         html += '</div>';
                     }
                     html += '</div>';
-
-                    // Add champion probabilities
-                    if (data.champion_probs && Object.keys(data.champion_probs).length > 0) {
-                        html += '<div class="champion-section">';
-                        html += '<h2>🏆 Calder Cup Winner Probability</h2>';
-                        html += '<ul class="champion-list">';
-
-                        const sorted = Object.entries(data.champion_probs)
-                            .sort((a, b) => b[1] - a[1])
-                            .slice(0, 10);
-
-                        for (const [team_id, pct] of sorted) {
-                            const team_name = data.team_names[team_id] || 'Team ' + team_id;
-                            html += '<li class="champion-item">';
-                            html += '<span>' + team_name + '</span>';
-                            html += '<strong>' + Math.round(pct * 10) / 10 + '%</strong>';
-                            html += '</li>';
-                        }
-                        html += '</ul>';
-                        html += '</div>';
-                    }
 
                     document.getElementById('content').innerHTML = html;
                 } catch (error) {
@@ -295,7 +284,7 @@ async def playoffs_data_api(request, datasette):
             # Get latest prediction for this series
             lookup_cursor.execute(
                 """
-                SELECT home_series_win_pct, away_series_win_pct, expected_games
+                SELECT home_series_win_pct, away_series_win_pct, expected_games, games_dist_json
                 FROM playoff_series_predictions
                 WHERE series_id = ?
                 ORDER BY snapshot_date DESC
@@ -309,6 +298,7 @@ async def playoffs_data_api(request, datasette):
                     "home_series_win_pct": pred_row[0],
                     "away_series_win_pct": pred_row[1],
                     "expected_games": pred_row[2],
+                    "games_dist": pred_row[3],  # JSON string
                 }
 
                 # Determine expected winner (higher seed if > 50% chance)
@@ -392,20 +382,104 @@ async def playoffs_data_api(request, datasette):
             if lower_team_id:
                 team_names[lower_team_id] = lower_team_name
 
-        # Compute champion probabilities (simplified)
+        # Compute champion probabilities by tracing each team's bracket path
+        # Only show if all 22 teams can be calculated; otherwise show nothing
         champion_probs = {}
+
+        # Load all series into memory for fast lookups
         lookup_cursor.execute(
             """
-            SELECT away_team_id, AVG(away_series_win_pct) as avg_pct
-            FROM playoff_series_predictions psp
-            JOIN playoff_brackets pb ON psp.series_id = pb.series_id
-            WHERE pb.round_number >= 4
-            GROUP BY away_team_id
-            """
+            SELECT pb.series_id, pb.round_number, pb.series_label, pb.higher_seed_team_id, pb.lower_seed_team_id,
+                   pb.source_series_a_id, pb.source_series_b_id,
+                   psp.home_series_win_pct, psp.away_series_win_pct
+            FROM playoff_brackets pb
+            LEFT JOIN playoff_series_predictions psp ON pb.series_id = psp.series_id
+            WHERE pb.playoff_season_id = ?
+            ORDER BY pb.round_number
+            """,
+            [playoff_season_id],
         )
 
+        series_by_id = {}
+        series_by_round = {}  # round -> list of series
+
         for row in lookup_cursor.fetchall():
-            champion_probs[row["away_team_id"]] = row["avg_pct"] / 100.0
+            series_id = row["series_id"]
+            series_by_id[series_id] = {
+                "round": row["round_number"],
+                "label": row["series_label"],
+                "higher_id": row["higher_seed_team_id"],
+                "lower_id": row["lower_seed_team_id"],
+                "source_a": row["source_series_a_id"],
+                "source_b": row["source_series_b_id"],
+                "higher_prob": (row["home_series_win_pct"] or 50.0) / 100.0,
+                "lower_prob": (row["away_series_win_pct"] or 50.0) / 100.0,
+            }
+            if row["round_number"] not in series_by_round:
+                series_by_round[row["round_number"]] = []
+            series_by_round[row["round_number"]].append(series_id)
+
+        # Get all playoff teams (from R1)
+        all_teams = set()
+        for series_id in series_by_round.get(1, []):
+            series = series_by_id[series_id]
+            if series["higher_id"]:
+                all_teams.add(series["higher_id"])
+            if series["lower_id"]:
+                all_teams.add(series["lower_id"])
+
+        # Also add R2 bye teams (those not in R1)
+        for series_id in series_by_round.get(2, []):
+            series = series_by_id[series_id]
+            if series["higher_id"]:
+                all_teams.add(series["higher_id"])
+            if series["lower_id"]:
+                all_teams.add(series["lower_id"])
+
+        # Helper: find which series a team plays in during a given round
+        def find_team_series_in_round(team_id, round_num):
+            """Find the series_id where team_id plays in round_num."""
+            for series_id in series_by_round.get(round_num, []):
+                series = series_by_id[series_id]
+                if team_id == series["higher_id"] or team_id == series["lower_id"]:
+                    return series_id
+
+            return None
+
+        # Trace championship path for each team
+        for team_id in sorted(all_teams):
+            prob = 1.0
+
+            # Find starting round (R1 or R2 if bye)
+            current_round = 1
+            if not find_team_series_in_round(team_id, 1):
+                current_round = 2
+
+            # Trace through each round from current_round to Cup Final
+            for round_num in range(current_round, 6):
+                series_id = find_team_series_in_round(team_id, round_num)
+                if not series_id:
+                    prob = None
+                    break
+
+                series = series_by_id[series_id]
+
+                # Multiply by win probability based on seed
+                if team_id == series["higher_id"]:
+                    prob *= series["higher_prob"]
+                elif team_id == series["lower_id"]:
+                    prob *= series["lower_prob"]
+                else:
+                    # Team should be in this series
+                    prob = None
+                    break
+
+            if prob is not None and prob > 0:
+                champion_probs[team_id] = prob
+
+        # Only display if we have all 22 teams
+        if len(champion_probs) != 22:
+            champion_probs = {}
 
         lookup_cursor.close()
         conn.close()
