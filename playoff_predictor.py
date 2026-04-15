@@ -450,15 +450,15 @@ def build_bracket_structure(
         series_counter[div] = 0
 
         if div == "Central Division" or div == "North Division":
-            # 5-team format: #4v#5, #2v#3, winners play #1
-            # R1 series
+            # 5-team format: #4v#5 in R1; #1 and #2 get byes to R2
+            # R1 series (only one: #4 vs #5)
             s1 = SeriesState(
                 playoff_season_id=playoff_season_id,
                 reg_season_id=reg_season_id,
                 round_number=1,
                 division_name=div,
                 conference_name=conf,
-                series_label=f"{div} R1-A",
+                series_label=f"{div} R1",
                 higher_seed_team_id=teams[3].team_id,  # #4
                 lower_seed_team_id=teams[4].team_id,  # #5
             )
@@ -466,67 +466,52 @@ def build_bracket_structure(
             series_id_map[(div, 1, "A")] = series_idx
             series_idx += 1
 
+            # R2 series: #1 and #2 both have byes
             s2 = SeriesState(
-                playoff_season_id=playoff_season_id,
-                reg_season_id=reg_season_id,
-                round_number=1,
-                division_name=div,
-                conference_name=conf,
-                series_label=f"{div} R1-B",
-                higher_seed_team_id=teams[1].team_id,  # #2
-                lower_seed_team_id=teams[2].team_id,  # #3
-            )
-            series_list.append(s2)
-            series_id_map[(div, 1, "B")] = series_idx
-            series_idx += 1
-
-            # R2 series (winners play #1 and each other)
-            s3 = SeriesState(
                 playoff_season_id=playoff_season_id,
                 reg_season_id=reg_season_id,
                 round_number=2,
                 division_name=div,
                 conference_name=conf,
                 series_label=f"{div} R2-A",
-                higher_seed_team_id=teams[0].team_id,  # #1
-                lower_seed_team_id=None,  # TBD: winner of R1-A
+                higher_seed_team_id=teams[0].team_id,  # #1 (bye)
+                lower_seed_team_id=None,  # TBD: winner of R1
                 source_series_a_id=None,  # Will be filled in after R1 series are saved
                 source_series_b_id=None,
             )
-            series_list.append(s3)
+            series_list.append(s2)
             series_id_map[(div, 2, "A")] = series_idx
             series_idx += 1
 
-            s4 = SeriesState(
+            # R2-B series: #2 seed vs #3 seed (both have byes, play each other first)
+            s3 = SeriesState(
                 playoff_season_id=playoff_season_id,
                 reg_season_id=reg_season_id,
                 round_number=2,
                 division_name=div,
                 conference_name=conf,
                 series_label=f"{div} R2-B",
-                higher_seed_team_id=None,  # TBD
-                lower_seed_team_id=None,  # TBD
-                source_series_a_id=None,  # Will be filled in after R1 series are saved
-                source_series_b_id=None,
+                higher_seed_team_id=teams[1].team_id,  # #2 (bye)
+                lower_seed_team_id=teams[2].team_id,  # #3
             )
-            series_list.append(s4)
+            series_list.append(s3)
             series_id_map[(div, 2, "B")] = series_idx
             series_idx += 1
 
-            # R3 (division final)
-            s5 = SeriesState(
+            # R3 (division final): R2-A winner vs R2-B winner
+            s4 = SeriesState(
                 playoff_season_id=playoff_season_id,
                 reg_season_id=reg_season_id,
                 round_number=3,
                 division_name=div,
                 conference_name=conf,
                 series_label=f"{div} Final",
-                higher_seed_team_id=None,  # TBD
-                lower_seed_team_id=None,  # TBD
-                source_series_a_id=series_id_map[(div, 2, "A")],
-                source_series_b_id=series_id_map[(div, 2, "B")],
+                higher_seed_team_id=None,  # TBD: winner of R2-A
+                lower_seed_team_id=None,  # TBD: winner of R2-B
+                source_series_a_id=None,  # Will be filled in after R2 series are saved
+                source_series_b_id=None,
             )
-            series_list.append(s5)
+            series_list.append(s4)
             series_id_map[(div, 3, "A")] = series_idx
             series_idx += 1
 
@@ -759,11 +744,151 @@ def build_bracket_structure(
     return series_list
 
 
+def _build_series_relationships(
+    series_list: list[SeriesState], series_by_label: dict[str, int]
+) -> dict[str, tuple[str, str]]:
+    """Build mapping of which Round N series feed into Round N+1.
+
+    Returns dict: {source_series_label: (target_series_label, slot)}
+    where slot is 'a' (higher_seed) or 'b' (lower_seed).
+    """
+    relationships = {}
+
+    # Group series by round and division
+    by_round = {}
+    for series in series_list:
+        key = (series.round_number, series.division_name or series.conference_name)
+        if key not in by_round:
+            by_round[key] = []
+        by_round[key].append(series)
+
+    # Map Round 1 → Round 2 for each division
+    divisions = [
+        "Central Division",
+        "North Division",
+        "Atlantic Division",
+        "Pacific Division",
+    ]
+    for div in divisions:
+        r1_series = [
+            s for s in series_list if s.round_number == 1 and s.division_name == div
+        ]
+        r2_series = [
+            s for s in series_list if s.round_number == 2 and s.division_name == div
+        ]
+
+        if r1_series and r2_series:
+            # For Central/North (5-team): R1 winner (from #4v#5) → R2-A (vs #1)
+            if div in ["Central Division", "North Division"]:
+                if len(r1_series) >= 1:
+                    relationships[r1_series[0].series_label] = (
+                        r2_series[0].series_label,
+                        "b",
+                    )  # R1 → R2-A
+
+            # For Atlantic (6-team): R1-A vs R1-B, then lowest seed plays #1, other vs #2
+            # Lowest seed is #4v#5 (R1-B), so: R1-B → R2-A (vs #1), R1-A → R2-B (vs #2)
+            elif div == "Atlantic Division":
+                if len(r1_series) >= 2:
+                    relationships[r1_series[1].series_label] = (
+                        r2_series[0].series_label,
+                        "b",
+                    )  # R1-B → R2-A
+                    relationships[r1_series[0].series_label] = (
+                        r2_series[1].series_label,
+                        "b",
+                    )  # R1-A → R2-B
+
+            # For Pacific (7-team): R1-A → R2-B, R1-B → R2-B, R1-C → R2-A (vs #1)
+            elif div == "Pacific Division":
+                if len(r1_series) >= 3:
+                    relationships[r1_series[0].series_label] = (
+                        r2_series[1].series_label,
+                        "a",
+                    )
+                    relationships[r1_series[1].series_label] = (
+                        r2_series[1].series_label,
+                        "b",
+                    )
+                    relationships[r1_series[2].series_label] = (
+                        r2_series[0].series_label,
+                        "b",
+                    )
+
+    # Map Round 2 → Round 3 for each division
+    for div in divisions:
+        r2_series = [
+            s for s in series_list if s.round_number == 2 and s.division_name == div
+        ]
+        r3_series = [
+            s for s in series_list if s.round_number == 3 and s.division_name == div
+        ]
+
+        if r3_series:
+            r3_label = r3_series[0].series_label
+
+            if div in ["Central Division", "North Division"]:
+                # 5-team: R2-A winner goes to R3 higher_seed, R2-B winner goes to R3 lower_seed
+                if len(r2_series) >= 2:
+                    relationships[r2_series[0].series_label] = (r3_label, "a")
+                    relationships[r2_series[1].series_label] = (r3_label, "b")
+            else:
+                # 6-team and 7-team: Both R2 winners go to R3
+                if len(r2_series) >= 2:
+                    relationships[r2_series[0].series_label] = (r3_label, "a")
+                    relationships[r2_series[1].series_label] = (r3_label, "b")
+
+    # Map Round 3 → Round 4 (Conference finals)
+    # Central → West, Pacific → West, North → East, Atlantic → East
+    r3_by_div = {s.division_name: s for s in series_list if s.round_number == 3}
+    r4_series = [s for s in series_list if s.round_number == 4]
+
+    if r4_series:
+        # West: Central vs Pacific
+        west = [s for s in r4_series if s.conference_name == "West"]
+        if west and "Central Division" in r3_by_div and "Pacific Division" in r3_by_div:
+            relationships[r3_by_div["Central Division"].series_label] = (
+                west[0].series_label,
+                "a",
+            )
+            relationships[r3_by_div["Pacific Division"].series_label] = (
+                west[0].series_label,
+                "b",
+            )
+
+        # East: North vs Atlantic
+        east = [s for s in r4_series if s.conference_name == "East"]
+        if east and "North Division" in r3_by_div and "Atlantic Division" in r3_by_div:
+            relationships[r3_by_div["North Division"].series_label] = (
+                east[0].series_label,
+                "a",
+            )
+            relationships[r3_by_div["Atlantic Division"].series_label] = (
+                east[0].series_label,
+                "b",
+            )
+
+    # Map Round 4 → Round 5 (Calder Cup Final)
+    r4_series = [s for s in series_list if s.round_number == 4]
+    r5_series = [s for s in series_list if s.round_number == 5]
+
+    if r4_series and r5_series:
+        west = [s for s in r4_series if s.conference_name == "West"]
+        east = [s for s in r4_series if s.conference_name == "East"]
+        if west and east:
+            relationships[west[0].series_label] = (r5_series[0].series_label, "a")
+            relationships[east[0].series_label] = (r5_series[0].series_label, "b")
+
+    return relationships
+
+
 def save_bracket(conn: sqlite3.Connection, series_list: list[SeriesState]) -> int:
-    """Save bracket series to database. Returns count saved."""
+    """Save bracket series to database and populate series relationships."""
     cursor = conn.cursor()
     count = 0
+    series_by_label = {}
 
+    # First pass: insert all series
     for series in series_list:
         cursor.execute(
             """
@@ -786,12 +911,45 @@ def save_bracket(conn: sqlite3.Connection, series_list: list[SeriesState]) -> in
                 series.lower_seed_wins,
                 series.series_winner_team_id,
                 1 if series.series_complete else 0,
-                None,  # source_series_a_id - will be filled in after Round 1 complete
-                None,  # source_series_b_id - will be filled in after Round 1 complete
+                None,
+                None,
                 series.updated_at,
             ),
         )
         count += 1
+
+    # Commit to get series_ids, then fetch them
+    conn.commit()
+
+    # Fetch all series with their IDs
+    cursor.execute(
+        """
+        SELECT series_id, series_label
+        FROM playoff_brackets
+        WHERE playoff_season_id = ?
+        """,
+        [series_list[0].playoff_season_id],
+    )
+    for row in cursor.fetchall():
+        series_by_label[row[1]] = row[0]
+
+    # Second pass: populate source_series relationships
+    # This maps which Round N series feed into Round N+1
+    series_relationships = _build_series_relationships(series_list, series_by_label)
+    for source_label, (target_label, slot) in series_relationships.items():
+        source_id = series_by_label.get(source_label)
+        target_id = series_by_label.get(target_label)
+        if source_id and target_id:
+            if slot == "a":
+                cursor.execute(
+                    "UPDATE playoff_brackets SET source_series_a_id = ? WHERE series_id = ?",
+                    [source_id, target_id],
+                )
+            else:
+                cursor.execute(
+                    "UPDATE playoff_brackets SET source_series_b_id = ? WHERE series_id = ?",
+                    [source_id, target_id],
+                )
 
     conn.commit()
     return count
@@ -1062,6 +1220,88 @@ def update(season_id: int, n_simulations: int, projected: bool):
 
         conn.commit()
         print(f"    ✓ {saved_count} predictions generated and saved")
+
+        # Step 4: Fill TBD slots with expected winners from predictions (cascade through all rounds)
+        print("  Filling TBD slots with expected winners...")
+        cursor = conn.cursor()
+
+        # Iteratively fill TBD slots and generate predictions until all possible slots are filled
+        total_filled = 0
+        for _ in range(5):  # Max 5 iterations to cascade through all rounds
+            # Build expected_winners from all series with both teams known
+            expected_winners = {}
+            cursor.execute(
+                """
+                SELECT pb.series_id, pb.higher_seed_team_id, pb.lower_seed_team_id,
+                       psp.home_series_win_pct
+                FROM playoff_brackets pb
+                LEFT JOIN playoff_series_predictions psp ON pb.series_id = psp.series_id
+                WHERE pb.playoff_season_id = ? AND pb.higher_seed_team_id IS NOT NULL
+                  AND pb.lower_seed_team_id IS NOT NULL
+                """,
+                [playoff_season_id],
+            )
+            for row in cursor.fetchall():
+                series_id = row["series_id"]
+                higher_id = row["higher_seed_team_id"]
+                lower_id = row["lower_seed_team_id"]
+                home_pct = row["home_series_win_pct"]
+
+                # Determine expected winner
+                if home_pct and home_pct > 50:
+                    expected_winners[series_id] = higher_id
+                elif home_pct:
+                    expected_winners[series_id] = lower_id
+                else:
+                    # No prediction, assume higher seed wins (they earned home ice)
+                    expected_winners[series_id] = higher_id
+
+            # Fill TBD slots using expected winners
+            filled_this_round = 0
+            cursor.execute(
+                """
+                SELECT series_id, higher_seed_team_id, lower_seed_team_id,
+                       source_series_a_id, source_series_b_id
+                FROM playoff_brackets
+                WHERE playoff_season_id = ? AND round_number >= 2
+                """,
+                [playoff_season_id],
+            )
+            for row in cursor.fetchall():
+                series_id = row["series_id"]
+                higher_id = row["higher_seed_team_id"]
+                lower_id = row["lower_seed_team_id"]
+                source_a = row["source_series_a_id"]
+                source_b = row["source_series_b_id"]
+
+                updates = {}
+
+                # Fill higher seed slot if empty
+                if not higher_id and source_a and source_a in expected_winners:
+                    updates["higher_seed_team_id"] = expected_winners[source_a]
+
+                # Fill lower seed slot if empty
+                if not lower_id and source_b and source_b in expected_winners:
+                    updates["lower_seed_team_id"] = expected_winners[source_b]
+
+                if updates:
+                    update_cols = ", ".join([f"{k} = ?" for k in updates.keys()])
+                    update_vals = list(updates.values())
+                    update_vals.append(datetime.now(UTC).isoformat())
+                    update_vals.append(series_id)
+                    cursor.execute(
+                        f"UPDATE playoff_brackets SET {update_cols}, updated_at = ? WHERE series_id = ?",
+                        update_vals,
+                    )
+                    filled_this_round += 1
+
+            if filled_this_round == 0:
+                break  # No more TBD slots filled, we're done
+
+            total_filled += filled_this_round
+            conn.commit()
+
+        print(f"    ✓ {total_filled} TBD slots filled")
 
         print("✓ Update complete")
 
