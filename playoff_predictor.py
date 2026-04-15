@@ -1426,6 +1426,181 @@ def update(season_id: int, n_simulations: int, projected: bool):
         conn.commit()
         print(f"    ✓ {additional_count} additional predictions generated")
 
+        # Step 6: Save bracket snapshot with champion probabilities
+        print("  Saving bracket snapshot...")
+        cursor = conn.cursor()
+
+        # Collect complete bracket data with predictions
+        cursor.execute(
+            """
+            SELECT pb.series_id, pb.round_number, pb.series_label,
+                   pb.higher_seed_team_id, pb.lower_seed_team_id,
+                   psp.home_series_win_pct, psp.away_series_win_pct,
+                   psp.expected_games, psp.games_dist_json
+            FROM playoff_brackets pb
+            LEFT JOIN playoff_series_predictions psp ON pb.series_id = psp.series_id
+            WHERE pb.playoff_season_id = ?
+            ORDER BY pb.round_number, pb.series_label
+            """,
+            [playoff_season_id],
+        )
+        bracket_data = []
+        for row in cursor.fetchall():
+            bracket_data.append(
+                {
+                    "series_id": row["series_id"],
+                    "round": row["round_number"],
+                    "label": row["series_label"],
+                    "higher_id": row["higher_seed_team_id"],
+                    "lower_id": row["lower_seed_team_id"],
+                    "higher_pct": row["home_series_win_pct"],
+                    "lower_pct": row["away_series_win_pct"],
+                    "expected_games": row["expected_games"],
+                    "games_dist": row["games_dist_json"],
+                }
+            )
+
+        # Calculate champion probabilities (same logic as in plugin)
+        cursor.execute(
+            """
+            SELECT pb.series_id, pb.round_number, pb.series_label, pb.higher_seed_team_id, pb.lower_seed_team_id,
+                   pb.source_series_a_id, pb.source_series_b_id,
+                   psp.home_series_win_pct, psp.away_series_win_pct
+            FROM playoff_brackets pb
+            LEFT JOIN playoff_series_predictions psp ON pb.series_id = psp.series_id
+            WHERE pb.playoff_season_id = ?
+            ORDER BY pb.round_number
+            """,
+            [playoff_season_id],
+        )
+
+        series_by_id = {}
+        series_by_round = {}  # round -> list of series_ids
+
+        for row in cursor.fetchall():
+            series_id = row["series_id"]
+            series_by_id[series_id] = {
+                "round": row["round_number"],
+                "label": row["series_label"],
+                "higher_id": row["higher_seed_team_id"],
+                "lower_id": row["lower_seed_team_id"],
+                "source_a": row["source_series_a_id"],
+                "source_b": row["source_series_b_id"],
+                "higher_prob": (row["home_series_win_pct"] or 50.0) / 100.0,
+                "lower_prob": (row["away_series_win_pct"] or 50.0) / 100.0,
+            }
+            if row["round_number"] not in series_by_round:
+                series_by_round[row["round_number"]] = []
+            series_by_round[row["round_number"]].append(series_id)
+
+        # Get all playoff teams
+        all_teams = set()
+        for series_id in series_by_round.get(1, []):
+            series = series_by_id[series_id]
+            if series["higher_id"]:
+                all_teams.add(series["higher_id"])
+            if series["lower_id"]:
+                all_teams.add(series["lower_id"])
+
+        # Also add R2 bye teams
+        for series_id in series_by_round.get(2, []):
+            series = series_by_id[series_id]
+            if series["higher_id"]:
+                all_teams.add(series["higher_id"])
+            if series["lower_id"]:
+                all_teams.add(series["lower_id"])
+
+        # Helper function
+        def find_team_series_in_round(team_id, round_num):
+            for series_id in series_by_round.get(round_num, []):
+                series = series_by_id[series_id]
+                if team_id == series["higher_id"] or team_id == series["lower_id"]:
+                    return series_id
+            return None
+
+        # Calculate champion probabilities
+        champion_probs = {}
+        for team_id in sorted(all_teams):
+            prob = 1.0
+
+            # Find starting round
+            current_round = 1
+            if not find_team_series_in_round(team_id, 1):
+                current_round = 2
+
+            # Trace through each round until we hit unfilled series or end
+            for round_num in range(current_round, 6):
+                series_id = find_team_series_in_round(team_id, round_num)
+                if not series_id:
+                    # Hit a future unfilled series (in projections, Conference Finals won't be filled until Division Finals are played)
+                    # This is expected - we calculate probability up to the last filled series
+                    break
+
+                series = series_by_id[series_id]
+
+                # Check if both teams exist (unfilled series will have None)
+                if not series["higher_id"] or not series["lower_id"]:
+                    # Series not yet filled - stop tracing
+                    break
+
+                # Multiply by win probability
+                if team_id == series["higher_id"]:
+                    prob *= series["higher_prob"]
+                elif team_id == series["lower_id"]:
+                    prob *= series["lower_prob"]
+                else:
+                    prob = None
+                    break
+
+            if prob is not None and prob > 0:
+                champion_probs[team_id] = prob
+
+        # Only save if we have all playoff teams (23 total: 6+5+5+7 across divisions)
+        if len(champion_probs) >= 23:
+            # Determine snapshot type (pre, live, mid, final)
+            # Count how many series are complete
+            cursor.execute(
+                "SELECT COUNT(*) FROM playoff_brackets WHERE playoff_season_id = ? AND series_complete = 1",
+                [playoff_season_id],
+            )
+            completed_series = cursor.fetchone()[0]
+            total_series = len(series_by_id)
+
+            if completed_series == 0:
+                snapshot_type = "pre"  # No series started
+            elif completed_series == total_series:
+                snapshot_type = "final"  # All series complete
+            elif completed_series >= total_series * 0.75:
+                snapshot_type = "mid"  # Most series done
+            else:
+                snapshot_type = "live"  # Active playoffs
+
+            # Save snapshot
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO playoff_prediction_snapshots
+                (playoff_season_id, snapshot_date, snapshot_type, bracket_json, champion_probs_json, n_simulations, computed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    playoff_season_id,
+                    snapshot_date,
+                    snapshot_type,
+                    json.dumps(bracket_data),
+                    json.dumps(champion_probs),
+                    n_simulations,
+                    datetime.now(UTC).isoformat(),
+                ),
+            )
+            conn.commit()
+            print(
+                f"    ✓ Snapshot saved (type: {snapshot_type}, {len(champion_probs)} teams tracked)"
+            )
+        else:
+            print(
+                f"    ⚠ Skipped snapshot: only {len(champion_probs)}/23 teams have paths"
+            )
+
         print("✓ Update complete")
 
     finally:

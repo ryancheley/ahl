@@ -6,6 +6,16 @@
     <div id="projected-banner" style="display:none; background:#fff3cd; border:1px solid #ffc107; padding:12px; border-radius:4px; margin-bottom:20px; color:#856404;">
         <strong>📊 Projected Bracket</strong> — Based on current regular season standings (updates daily as season progresses)
     </div>
+
+    <!-- Date selector for historical snapshots -->
+    <div id="date-selector" style="background:#f0f0f0; padding:12px; border-radius:4px; margin-bottom:20px; display:none;">
+        <label for="snapshot-date"><strong>View historical predictions:</strong></label>
+        <select id="snapshot-date" onchange="loadSnapshotByDate()">
+            <option value="">-- Latest --</option>
+        </select>
+        <small id="snapshot-info" style="display:block; margin-top:8px; color:#666;"></small>
+    </div>
+
     <div id="content" class="loading">Loading bracket data...</div>
 </div>
 
@@ -62,9 +72,53 @@
 </style>
 
 <script>
-    async function loadBracket() {
+    // Load available snapshot dates
+    async function loadAvailableDates() {
         try {
-            const response = await fetch('/playoffs/data');
+            const response = await fetch('/playoffs/dates');
+            const data = await response.json();
+
+            if (data.dates && data.dates.length > 0) {
+                const select = document.getElementById('snapshot-date');
+                const dateSelector = document.getElementById('date-selector');
+
+                // Populate dropdown
+                for (const snapshot of data.dates) {
+                    const option = document.createElement('option');
+                    option.value = snapshot.date;
+                    option.textContent = `${snapshot.date} (${snapshot.type})`;
+                    select.appendChild(option);
+                }
+
+                // Show date selector if snapshots available
+                if (data.dates.length > 0) {
+                    dateSelector.style.display = 'block';
+                }
+            }
+        } catch (error) {
+            console.warn('Could not load snapshot dates:', error);
+        }
+    }
+
+    // Load bracket for a specific date
+    async function loadSnapshotByDate() {
+        const selectedDate = document.getElementById('snapshot-date').value;
+        const url = selectedDate ? `/playoffs/data?date=${selectedDate}` : '/playoffs/data';
+
+        // Update snapshot info
+        const infoEl = document.getElementById('snapshot-info');
+        if (selectedDate) {
+            infoEl.textContent = `Showing predictions from ${selectedDate}`;
+        } else {
+            infoEl.textContent = 'Showing latest predictions';
+        }
+
+        loadBracket(url);
+    }
+
+    async function loadBracket(url = '/playoffs/data') {
+        try {
+            const response = await fetch(url);
             const data = await response.json();
 
             if (data.error) {
@@ -167,6 +221,8 @@
         }
     }
 
+    // Load on page init
+    loadAvailableDates();
     loadBracket();
 </script>
 {% endblock %}
