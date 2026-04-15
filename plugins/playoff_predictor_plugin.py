@@ -35,6 +35,7 @@ def register_routes():
     return [
         (r"^/playoffs$", playoffs_view),
         (r"^/playoffs/data$", playoffs_data_api),
+        (r"^/playoffs/dates$", playoffs_dates_api),
     ]
 
 
@@ -48,10 +49,25 @@ async def playoffs_data_api(request, datasette):
 
     Returns the most recent playoff bracket with full bracket projection filled in.
     Prioritizes actual playoffs over projections. Projections use playoff_season_id=999.
+    Supports ?date=YYYY-MM-DD to get historical snapshots.
     """
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+
+        # Get requested date from query params (default to today or latest snapshot)
+        requested_date = None
+        if hasattr(request, "query_string") and request.query_string:
+            # Parse query string manually
+            query_str = (
+                request.query_string
+                if isinstance(request.query_string, str)
+                else request.query_string.decode()
+            )
+            for param in query_str.split("&"):
+                if param.startswith("date="):
+                    requested_date = param.split("=", 1)[1]
+                    break
 
         # Get the latest playoff season - prefer projections (999) first, then actual playoffs
         cursor.execute(
@@ -67,9 +83,110 @@ async def playoffs_data_api(request, datasette):
         season_row = cursor.fetchone()
         playoff_season_id = season_row[0] if season_row else 999
 
+        # Check if we should load from snapshot
+        use_snapshot = False
+        champion_probs = {}
+        if requested_date:
+            cursor.execute(
+                "SELECT bracket_json, champion_probs_json FROM playoff_prediction_snapshots WHERE playoff_season_id = ? AND snapshot_date = ? LIMIT 1",
+                [playoff_season_id, requested_date],
+            )
+            snapshot_row = cursor.fetchone()
+            if snapshot_row:
+                use_snapshot = True
+                import json
+
+                # Load snapshot data
+                snapshot_bracket = json.loads(snapshot_row[0])
+                champion_probs = json.loads(snapshot_row[1])
+
         is_projected = playoff_season_id == 999
 
-        # Get all bracket series
+        # If loading from snapshot, build response from snapshot data
+        if use_snapshot:
+            # Build series list from snapshot bracket data
+            series_list = []
+            team_names = {}
+
+            # Convert snapshot data back to series format
+            for bracket_item in snapshot_bracket:
+                series_id = bracket_item.get("series_id")
+
+                # Get team names
+                cursor.execute(
+                    "SELECT name FROM team WHERE team_id = ?",
+                    [bracket_item.get("higher_id")],
+                )
+                higher_name_row = cursor.fetchone()
+                higher_name = (
+                    higher_name_row[0]
+                    if higher_name_row
+                    else f"Team {bracket_item.get('higher_id')}"
+                )
+
+                if bracket_item.get("higher_id"):
+                    team_names[bracket_item.get("higher_id")] = higher_name
+
+                cursor.execute(
+                    "SELECT name FROM team WHERE team_id = ?",
+                    [bracket_item.get("lower_id")],
+                )
+                lower_name_row = cursor.fetchone()
+                lower_name = (
+                    lower_name_row[0]
+                    if lower_name_row
+                    else f"Team {bracket_item.get('lower_id')}"
+                )
+
+                if bracket_item.get("lower_id"):
+                    team_names[bracket_item.get("lower_id")] = lower_name
+
+                # Get prediction for this series if available
+                prediction = None
+                if bracket_item.get("higher_pct") is not None:
+                    # Probabilities in snapshot are stored as percentages (0-100)
+                    prediction = {
+                        "home_series_win_pct": bracket_item.get("higher_pct", 50),
+                        "away_series_win_pct": bracket_item.get("lower_pct", 50),
+                        "expected_games": bracket_item.get("expected_games"),
+                        "games_dist": bracket_item.get("games_dist"),
+                    }
+
+                # Determine max games
+                round_num = bracket_item.get("round", 1)
+                if round_num == 1:
+                    max_games = 3
+                elif round_num in (2, 3):
+                    max_games = 5
+                else:
+                    max_games = 7
+
+                series_list.append(
+                    {
+                        "series_id": series_id,
+                        "round_number": bracket_item.get("round"),
+                        "series_label": bracket_item.get("label"),
+                        "higher_seed_team_id": bracket_item.get("higher_id"),
+                        "lower_seed_team_id": bracket_item.get("lower_id"),
+                        "prediction": prediction,
+                        "max_games": max_games,
+                        "is_tbd": False,
+                    }
+                )
+
+            conn.close()
+            return Response.json(
+                {
+                    "series": series_list,
+                    "team_names": team_names,
+                    "champion_probs": champion_probs,
+                    "is_projected": is_projected,
+                    "playoff_season_id": playoff_season_id,
+                    "snapshot_date": requested_date,
+                }
+            )
+
+        # Get all bracket series (current data, not snapshot)
         cursor.execute(
             """
             SELECT
@@ -206,7 +323,8 @@ async def playoffs_data_api(request, datasette):
                 team_names[lower_team_id] = lower_team_name
 
         # Compute champion probabilities by tracing each team's bracket path
-        # Only show if all 22 teams can be calculated; otherwise show nothing
+        # Only show if all 23 playoff teams can be calculated; otherwise show nothing
+        # (6 Atlantic + 5 Central + 5 North + 7 Pacific = 23 teams)
         champion_probs = {}
 
         # Load all series into memory for fast lookups
@@ -300,8 +418,8 @@ async def playoffs_data_api(request, datasette):
             if prob is not None and prob > 0:
                 champion_probs[team_id] = prob
 
-        # Only display if we have all 22 teams
-        if len(champion_probs) != 22:
+        # Only display if we have all 23 playoff teams
+        if len(champion_probs) != 23:
             champion_probs = {}
 
         lookup_cursor.close()
@@ -313,6 +431,60 @@ async def playoffs_data_api(request, datasette):
                 "team_names": team_names,
                 "champion_probs": champion_probs,
                 "is_projected": is_projected,
+                "playoff_season_id": playoff_season_id,
+            }
+        )
+
+    except Exception as e:
+        return Response.json({"error": str(e)}, status=500)
+
+
+async def playoffs_dates_api(request, datasette):
+    """API endpoint returning available snapshot dates for historical comparison."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Get the latest playoff season
+        cursor.execute(
+            """
+            SELECT playoff_season_id
+            FROM playoff_brackets
+            ORDER BY
+              CASE WHEN playoff_season_id = 999 THEN 0 ELSE 1 END ASC,
+              playoff_season_id DESC
+            LIMIT 1
+            """
+        )
+        season_row = cursor.fetchone()
+        playoff_season_id = season_row[0] if season_row else 999
+
+        # Get all available snapshot dates
+        cursor.execute(
+            """
+            SELECT snapshot_date, snapshot_type, n_simulations, computed_at
+            FROM playoff_prediction_snapshots
+            WHERE playoff_season_id = ?
+            ORDER BY snapshot_date DESC
+            """,
+            [playoff_season_id],
+        )
+
+        dates = []
+        for row in cursor.fetchall():
+            dates.append(
+                {
+                    "date": row["snapshot_date"],
+                    "type": row["snapshot_type"],
+                    "simulations": row["n_simulations"],
+                    "computed_at": row["computed_at"],
+                }
+            )
+
+        conn.close()
+        return Response.json(
+            {
+                "dates": dates,
                 "playoff_season_id": playoff_season_id,
             }
         )
