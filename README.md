@@ -22,6 +22,77 @@ A Python web scraping application that collects comprehensive game data from the
 
 - [Player Database](https://ahl-data.ryancheley.com/players) — 9,000+ player records with biographical information
 
+## Playoff Predictions
+
+The application includes Monte Carlo-based playoff bracket predictions that update daily as the regular season progresses.
+
+### Features
+
+- **Projected Brackets** — Generate playoff predictions based on current standings for seasons before playoffs begin
+- **Daily Updates** — Update predictions as teams' records change throughout the season
+- **Win Probabilities** — Monte Carlo simulations show likelihood of each series outcome
+- **Interactive Visualization** — View brackets and predictions in the `/playoffs` datasette page
+
+### Quick Start
+
+**For ongoing season predictions:**
+
+```bash
+# Generate or update projected playoffs for Season 90 (2025-26)
+uv run playoff_predictor.py update --season-id 90 --projected
+```
+
+**Once the playoff season is officially created:**
+
+```bash
+# Update with actual playoff results
+uv run playoff_predictor.py update --season-id 90
+```
+
+### Configuration
+
+The system uses environment variables to map regular seasons to playoff seasons. Create a `.env` file in the project root:
+
+```bash
+# .env
+AHL_SEASON_PAIRS={"77": 80, "81": 84, "86": 88, "90": 92}
+```
+
+**Default mapping** (if no `.env` file):
+- Season 77 → Playoff 80 (2022-23)
+- Season 81 → Playoff 84 (2023-24)
+- Season 86 → Playoff 88 (2024-25)
+- Season 90 → Playoff 92 (2025-26, once created)
+
+Use `null` for seasons where the playoff season hasn't been created yet:
+
+```bash
+AHL_SEASON_PAIRS={"77": 80, "81": 84, "86": 88, "90": null}
+```
+
+See `.env.example` for complete configuration options.
+
+### Deployment
+
+**Environment Variables:**
+- Set `AHL_SEASON_PAIRS` as an environment variable on your deployment platform
+- Coolify: Add in dashboard → **Variables**
+- Docker Compose: Set in `environment:` section
+- GitHub Actions: Use repository secrets
+
+**Daily Cronjob:**
+
+```bash
+# Add to your cronjob or CI/CD scheduler
+0 2 * * * cd /path/to/ahl && AHL_SEASON_PAIRS='{"77": 80, "81": 84, "86": 88, "90": 92}' uv run playoff_predictor.py update --season-id 90 --projected
+```
+
+### Commands
+
+- `playoff_predictor.py init` — Create playoff prediction tables
+- `playoff_predictor.py update [--season-id N] [--projected] [--n-simulations 1000]` — Generate/update predictions
+- `playoff_predictor.py status [--season-id N]` — Show last update time and prediction counts
+
 ## Getting Started
 
 ### Prerequisites
