@@ -12,7 +12,7 @@ WORKDIR /app
 
 # Copy project files
 COPY pyproject.toml uv.lock ./
-COPY program.py monte_carlo.py retrain.py ./
+COPY program.py monte_carlo.py retrain.py playoff_predictor.py ./
 COPY plugins ./plugins
 
 # Download metadata from GitHub
