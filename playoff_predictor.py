@@ -1080,7 +1080,12 @@ def get_series_format(
     )
     result_a = cursor.fetchone()
     if not result_a or result_a[0] is None:
-        return "R1_close" if round_number == 1 else "R23_close"
+        if round_number == 1:
+            return "R1_close"
+        elif round_number in (2, 3):
+            return "R23_close"
+        else:
+            return "finals"
 
     lat_a, lon_a = result_a[0], result_a[1]
 
@@ -1096,7 +1101,12 @@ def get_series_format(
     )
     result_b = cursor.fetchone()
     if not result_b or result_b[0] is None:
-        return "R1_close" if round_number == 1 else "R23_close"
+        if round_number == 1:
+            return "R1_close"
+        elif round_number in (2, 3):
+            return "R23_close"
+        else:
+            return "finals"
 
     lat_b, lon_b = result_b[0], result_b[1]
 
