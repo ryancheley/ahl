@@ -19,7 +19,7 @@
     uv run program.py game {{game_id}}
 
 @list-seasons:
-    uv run program.py list_seasons
+    uv run program.py list-seasons
 
 @init:
     uv run program.py init
