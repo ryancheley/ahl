@@ -278,7 +278,9 @@ def compute_standings(
 ) -> list[PlayoffSeeding]:
     """Compute final regular-season standings with AHL tiebreakers.
 
-    Tiebreakers: (1) most points, (2) most regulation wins, (3) most reg+OT wins.
+    Implements official AHL tiebreaker rules:
+    - Between two teams: RW, ROW, wins, H2H points, H2H goal diff, H2H goals scored
+    - Among 3+ teams: RW, ROW, wins, combined H2H points %, goal diff, combined H2H goal diff
 
     Args:
         conn: Database connection.
@@ -321,7 +323,9 @@ def compute_standings(
                 COUNT(*) as gp,
                 SUM(CASE WHEN ag.team_score > ag.opp_score THEN 1 ELSE 0 END) as wins,
                 SUM(CASE WHEN ag.team_score < ag.opp_score AND ag.game_status = 'Final' THEN 1 ELSE 0 END) as reg_losses,
-                SUM(CASE WHEN ag.team_score < ag.opp_score AND ag.game_status IN ('Final OT', 'Final SO') THEN 1 ELSE 0 END) as ot_losses
+                SUM(CASE WHEN ag.team_score < ag.opp_score AND ag.game_status IN ('Final OT', 'Final SO') THEN 1 ELSE 0 END) as ot_losses,
+                SUM(ag.team_score) as gf,
+                SUM(ag.opp_score) as ga
             FROM all_games ag
             LEFT JOIN team_season_division tsd ON ag.team_id = tsd.team_id AND tsd.season_id = ?
             GROUP BY ag.team_id
@@ -336,7 +340,9 @@ def compute_standings(
             ot_losses,
             wins * 2 + ot_losses as points,
             wins as reg_wins,
-            wins + ot_losses as row_wins
+            wins + ot_losses as row_wins,
+            gf,
+            ga
         FROM team_records
         WHERE division_name IS NOT NULL
         ORDER BY division_name, points DESC, reg_wins DESC, row_wins DESC
@@ -345,35 +351,296 @@ def compute_standings(
     )
 
     rows = cursor.fetchall()
-    seedings = []
     now = datetime.now(UTC).isoformat()
 
-    # Assign seeds by division
-    division_seeds = {}
+    # Group teams by division
+    division_teams = {}
     for row in rows:
         div = row["division_name"]
-        if div not in division_seeds:
-            division_seeds[div] = []
-        division_seeds[div].append(row)
+        if div not in division_teams:
+            division_teams[div] = []
+        division_teams[div].append(row)
 
-    for div, teams in division_seeds.items():
-        for i, row in enumerate(teams, start=1):
+    # Apply tiebreaker logic within each division
+    all_seedings = []
+
+    for div, teams in division_teams.items():
+        # Sort teams by basic criteria first
+        sorted_teams = sorted(
+            teams,
+            key=lambda t: (
+                -t["points"],  # most points
+                -t["reg_wins"],  # most regulation wins
+                -t["row_wins"],  # most reg+OT wins
+            ),
+        )
+
+        # Apply head-to-head tiebreakers for teams with identical records
+        final_order = _apply_h2h_tiebreakers(conn, sorted_teams, reg_season_id)
+
+        # Assign seeds
+        for i, team_data in enumerate(final_order, start=1):
             seeding = PlayoffSeeding(
                 reg_season_id=reg_season_id,
-                team_id=row["team_id"],
-                division_name=row["division_name"],
-                conference_name=row["conference_name"],
+                team_id=team_data["team_id"],
+                division_name=team_data["division_name"],
+                conference_name=team_data["conference_name"],
                 seed=i,
-                points=row["points"],
-                wins=row["wins"],
-                reg_wins=row["reg_wins"],
-                row_wins=row["row_wins"],
-                gp=row["gp"],
+                points=team_data["points"],
+                wins=team_data["wins"],
+                reg_wins=team_data["reg_wins"],
+                row_wins=team_data["row_wins"],
+                gp=team_data["gp"],
                 computed_at=now,
             )
-            seedings.append(seeding)
+            all_seedings.append(seeding)
 
-    return seedings
+    return all_seedings
+
+
+def _apply_h2h_tiebreakers(
+    conn: sqlite3.Connection, teams: list, reg_season_id: int
+) -> list:
+    """Apply head-to-head tiebreakers for teams with identical basic records.
+
+    Implements AHL rules:
+    - For 2 tied teams: use H2H points, H2H goal diff, H2H goals scored
+    - For 3+ tied teams: use combined H2H points %, H2H goal diff, combined H2H goal diff
+    """
+    if len(teams) <= 1:
+        return teams
+
+    # Identify groups of tied teams (same points, RW, ROW)
+    tied_groups = []
+    current_group = [teams[0]]
+
+    for i in range(1, len(teams)):
+        if (
+            teams[i]["points"] == current_group[0]["points"]
+            and teams[i]["reg_wins"] == current_group[0]["reg_wins"]
+            and teams[i]["row_wins"] == current_group[0]["row_wins"]
+        ):
+            current_group.append(teams[i])
+        else:
+            if len(current_group) > 1:
+                tied_groups.append(current_group)
+            current_group = [teams[i]]
+
+    if len(current_group) > 1:
+        tied_groups.append(current_group)
+
+    # If no tied groups, return as-is
+    if not tied_groups:
+        return teams
+
+    # Process each tied group
+    result = []
+    processed_indices = set()
+
+    for group in tied_groups:
+        if len(group) == 2:
+            # Two-team tiebreaker: H2H points, then H2H goal diff, then H2H goals
+            sorted_group = _sort_two_team_h2h(conn, group, reg_season_id)
+        else:
+            # Three+ team tiebreaker: combined H2H points %, then goal diff
+            sorted_group = _sort_multi_team_h2h(conn, group, reg_season_id)
+
+        result.extend(sorted_group)
+        for team in group:
+            processed_indices.add(id(team))
+
+    # Add non-tied teams in original order
+    for i, team in enumerate(teams):
+        if id(team) not in processed_indices:
+            result.append(team)
+
+    return result
+
+
+def _sort_two_team_h2h(
+    conn: sqlite3.Connection, teams: list, reg_season_id: int
+) -> list:
+    """Sort two teams using head-to-head tiebreaker."""
+    if len(teams) != 2:
+        return teams
+
+    team_a, team_b = teams[0], teams[1]
+    cursor = conn.cursor()
+
+    # Get H2H record between these two teams
+    cursor.execute(
+        """
+        WITH h2h_games AS (
+            SELECT
+                CASE WHEN home_team_id = ? THEN away_team_id ELSE home_team_id END as opponent,
+                CASE WHEN home_team_id = ? THEN home_team_score ELSE away_team_score END as team_score,
+                CASE WHEN home_team_id = ? THEN away_team_score ELSE home_team_score END as opp_score,
+                game_status
+            FROM gamedata
+            WHERE season_id = ?
+              AND ((home_team_id = ? AND away_team_id = ?)
+                   OR (home_team_id = ? AND away_team_id = ?))
+              AND game_status IN ('Final', 'Final OT', 'Final SO')
+        )
+        SELECT
+            SUM(CASE WHEN team_score > opp_score THEN 1 ELSE 0 END) as h2h_wins,
+            SUM(CASE WHEN team_score > opp_score THEN 2
+                     WHEN team_score < opp_score AND game_status = 'Final' THEN 0
+                     WHEN team_score < opp_score AND game_status IN ('Final OT', 'Final SO') THEN 1
+                     ELSE 0 END) as h2h_points,
+            SUM(CASE WHEN team_score > opp_score THEN team_score - opp_score
+                     ELSE opp_score - team_score END) as h2h_goal_diff,
+            SUM(team_score) as h2h_goals_for
+        FROM h2h_games
+        """,
+        [
+            team_a["team_id"],
+            team_a["team_id"],
+            team_a["team_id"],
+            reg_season_id,
+            team_a["team_id"],
+            team_b["team_id"],
+            team_b["team_id"],
+            team_a["team_id"],
+        ],
+    )
+
+    h2h_a = cursor.fetchone()
+
+    cursor.execute(
+        """
+        WITH h2h_games AS (
+            SELECT
+                CASE WHEN home_team_id = ? THEN away_team_id ELSE home_team_id END as opponent,
+                CASE WHEN home_team_id = ? THEN home_team_score ELSE away_team_score END as team_score,
+                CASE WHEN home_team_id = ? THEN away_team_score ELSE home_team_score END as opp_score,
+                game_status
+            FROM gamedata
+            WHERE season_id = ?
+              AND ((home_team_id = ? AND away_team_id = ?)
+                   OR (home_team_id = ? AND away_team_id = ?))
+              AND game_status IN ('Final', 'Final OT', 'Final SO')
+        )
+        SELECT
+            SUM(CASE WHEN team_score > opp_score THEN 1 ELSE 0 END) as h2h_wins,
+            SUM(CASE WHEN team_score > opp_score THEN 2
+                     WHEN team_score < opp_score AND game_status = 'Final' THEN 0
+                     WHEN team_score < opp_score AND game_status IN ('Final OT', 'Final SO') THEN 1
+                     ELSE 0 END) as h2h_points,
+            SUM(CASE WHEN team_score > opp_score THEN team_score - opp_score
+                     ELSE opp_score - team_score END) as h2h_goal_diff,
+            SUM(team_score) as h2h_goals_for
+        FROM h2h_games
+        """,
+        [
+            team_b["team_id"],
+            team_b["team_id"],
+            team_b["team_id"],
+            reg_season_id,
+            team_b["team_id"],
+            team_a["team_id"],
+            team_a["team_id"],
+            team_b["team_id"],
+        ],
+    )
+
+    h2h_b = cursor.fetchone()
+
+    # Compare H2H records
+    h2h_a_points = h2h_a[1] if h2h_a[1] else 0
+    h2h_b_points = h2h_b[1] if h2h_b[1] else 0
+
+    if h2h_a_points != h2h_b_points:
+        return [team_a, team_b] if h2h_a_points > h2h_b_points else [team_b, team_a]
+
+    # H2H points tied, check H2H goal differential
+    h2h_a_gd = h2h_a[2] if h2h_a[2] else 0
+    h2h_b_gd = h2h_b[2] if h2h_b[2] else 0
+
+    if h2h_a_gd != h2h_b_gd:
+        return [team_a, team_b] if h2h_a_gd > h2h_b_gd else [team_b, team_a]
+
+    # H2H goal diff tied, check H2H goals scored
+    h2h_a_gf = h2h_a[3] if h2h_a[3] else 0
+    h2h_b_gf = h2h_b[3] if h2h_b[3] else 0
+
+    if h2h_a_gf != h2h_b_gf:
+        return [team_a, team_b] if h2h_a_gf > h2h_b_gf else [team_b, team_a]
+
+    # Still tied after all H2H tiebreakers, return original order
+    return [team_a, team_b]
+
+
+def _sort_multi_team_h2h(
+    conn: sqlite3.Connection, teams: list, reg_season_id: int
+) -> list:
+    """Sort 3+ teams using combined head-to-head tiebreaker."""
+    if len(teams) <= 1:
+        return teams
+
+    team_ids = [t["team_id"] for t in teams]
+    cursor = conn.cursor()
+
+    # Build list for each team's H2H record against all others in the group
+    h2h_stats = {}
+
+    for team in teams:
+        cursor.execute(
+            """
+            WITH h2h_games AS (
+                SELECT
+                    CASE WHEN home_team_id = ? THEN home_team_score ELSE away_team_score END as team_score,
+                    CASE WHEN home_team_id = ? THEN away_team_score ELSE home_team_score END as opp_score,
+                    game_status
+                FROM gamedata
+                WHERE season_id = ?
+                  AND (
+                    (home_team_id = ? AND away_team_id IN ({}))
+                    OR (away_team_id = ? AND home_team_id IN ({}))
+                  )
+                  AND game_status IN ('Final', 'Final OT', 'Final SO')
+            )
+            SELECT
+                SUM(CASE WHEN team_score > opp_score THEN 2
+                         WHEN team_score < opp_score AND game_status = 'Final' THEN 0
+                         WHEN team_score < opp_score AND game_status IN ('Final OT', 'Final SO') THEN 1
+                         ELSE 0 END) as h2h_points,
+                COUNT(*) as h2h_games,
+                SUM(team_score) as h2h_gf,
+                SUM(opp_score) as h2h_ga
+            FROM h2h_games
+            """.format(
+                ",".join("?" * (len(team_ids) - 1)),
+                ",".join("?" * (len(team_ids) - 1)),
+            ),
+            [team["team_id"]] * 2
+            + [reg_season_id]
+            + [team["team_id"]]
+            + [t for t in team_ids if t != team["team_id"]]
+            + [team["team_id"]]
+            + [t for t in team_ids if t != team["team_id"]],
+        )
+
+        h2h_row = cursor.fetchone()
+        h2h_stats[team["team_id"]] = {
+            "h2h_points": h2h_row[0] or 0,
+            "h2h_games": h2h_row[1] or 0,
+            "h2h_gf": h2h_row[2] or 0,
+            "h2h_ga": h2h_row[3] or 0,
+        }
+
+    # Sort by H2H points percentage, then goal differential
+    def sort_key(team):
+        stats = h2h_stats[team["team_id"]]
+        h2h_pct = (
+            stats["h2h_points"] / (stats["h2h_games"] * 2)
+            if stats["h2h_games"] > 0
+            else 0
+        )
+        h2h_gd = stats["h2h_gf"] - stats["h2h_ga"]
+        return (-h2h_pct, -h2h_gd, -(stats["h2h_gf"]))
+
+    return sorted(teams, key=sort_key)
 
 
 def save_seedings(conn: sqlite3.Connection, seedings: list[PlayoffSeeding]) -> int:
