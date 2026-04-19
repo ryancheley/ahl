@@ -60,6 +60,8 @@ PROD_HOST := "root@h-web-p-002"
         -H "Authorization: Bearer $COOLIFY_TOKEN"
     echo "Copying database..."
     scp my_database.db {{PROD_HOST}}:/data/my_database.db
+    echo "Cleaning up WAL/SHM files..."
+    ssh {{PROD_HOST}} 'rm -f /data/my_database.db-wal /data/my_database.db-shm'
     echo "Starting datasette via Coolify API..."
     curl -sf -X POST "$COOLIFY_HOST/api/v1/applications/$COOLIFY_APP_UUID/start" \
         -H "Authorization: Bearer $COOLIFY_TOKEN"
@@ -76,6 +78,8 @@ UAT_HOST := "root@h-web-t-002"
         -H "Authorization: Bearer $COOLIFY_TOKEN"
     echo "Copying database..."
     scp my_database.db {{UAT_HOST}}:/data/my_database.db
+    echo "Cleaning up WAL/SHM files..."
+    ssh {{UAT_HOST}} 'rm -f /data/my_database.db-wal /data/my_database.db-shm'
     echo "Starting datasette via Coolify API..."
     curl -sf -X POST "$COOLIFY_HOST/api/v1/applications/$COOLIFY_UAT_APP_UUID/start" \
         -H "Authorization: Bearer $COOLIFY_TOKEN"
