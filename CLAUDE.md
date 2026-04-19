@@ -92,6 +92,10 @@ The `games.db` schema includes:
 - `.env` file contains SECRET_KEY and DEBUG settings
 - WhiteNoise middleware serves static files in production
 
+### Season Pairing Configuration
+- Regular season and playoff season IDs are paired via `AHL_SEASON_PAIRS` environment variable
+- Format: JSON mapping `regular_season_id` → `playoff_season_id`
+
 ### Data Access
 - Primary data access via datasette SQL queries
 - Pre-built queries in `metadata.yaml` for common analyses
