@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Direct Python Commands
 - `python manage.py runserver` - Start Django dev server
-- `python program.py` - Run scraping script (update games.db)
+- `python program.py` - Run scraping script (update my_database.db)
 - `python manage.py get_game --game_id=<id>` - Get specific game data
 - `python manage.py most_recent` - Show most recent game ID
 - `pytest` - Run all tests
@@ -39,10 +39,7 @@ This project uses `pyproject.toml` with uv for dependency management:
 AHL Scraper is a Python web scraping + Django web application that collects game data from the American Hockey League (AHL) website and serves it through a Django admin interface with datasette for data visualization.
 
 ### Multi-Database Architecture
-- **games.db** - SQLite database for scraped game data (managed directly by scraper)
-- **db.sqlite3** - Django default database for application data
-
-Database operations are routed by `core.dbrouters.GamesRouter` - models in the `games` app read/write to `games.db`, while all other operations use the default database.
+- **my_database.db** - SQLite database for scraped game data (managed directly by scraper)
 
 ### Key Applications
 - **games** - Main Django app with models for scraped data (Conference, Division, Team, Arena, Season, DimDate, TeamDatePoint, Game)
@@ -50,14 +47,14 @@ Database operations are routed by `core.dbrouters.GamesRouter` - models in the `
 
 ### Data Flow
 1. `program.py` scrapes AHL website (lscluster.hockeytech.com) directly
-2. Updates `games.db` using SQLite (not Django migrations)
+2. Updates `my_database.db` using SQLite (not Django migrations)
 3. Django models provide ORM access to existing tables
 4. Data served via datasette at ahl-data.ryancheley.com
 
 ## Development Workflow
 
 ### Scraping Development
-- Tables in `games.db` must be created via direct SQLite commands
+- Tables in `my_database.db` must be created via direct SQLite commands
 - Django models added after table creation (not the other way around)
 - Use `just load` to run scraper and update database
 
@@ -75,13 +72,13 @@ Database operations are routed by `core.dbrouters.GamesRouter` - models in the `
 
 ### Deployment
 - Automated via GitHub Actions (runs daily at 12:13 UTC)
-- Updates games.db and commits with timestamp
+- Updates my_database.db and commits with timestamp
 - After PR merges, switch back to main and pull changes
 
 ## Important Conventions
 
 ### Database Schema
-The `games.db` schema includes:
+The `my_database.db` schema includes:
 - Games (scores, attendance, teams, dates)
 - Teams, Arenas, Conferences, Divisions
 - DimDate (dimension table with seasons and phases)
@@ -91,6 +88,10 @@ The `games.db` schema includes:
 - Uses `django-environ` for environment variables
 - `.env` file contains SECRET_KEY and DEBUG settings
 - WhiteNoise middleware serves static files in production
+
+### Season Pairing Configuration
+- Regular season and playoff season IDs are paired via `AHL_SEASON_PAIRS` environment variable
+- Format: JSON mapping `regular_season_id` → `playoff_season_id`
 
 ### Data Access
 - Primary data access via datasette SQL queries
@@ -105,7 +106,4 @@ To test a specific game:
 3. Verify in datasette or Django admin
 
 ## File Structure Notes
-- `program.py` - Main scraper (imports directly from games.models)
-- `dim_date.py` - Season date definitions loaded via Django management command
-- `data-to-update.py` - Database update utilities
-- `games/management/` - Custom management commands for data access
+- `program.py` - Main scraper

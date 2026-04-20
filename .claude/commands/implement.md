@@ -233,7 +233,7 @@ done
 ## Emergency Rollback Plan
 
 Document rollback strategy:
-- For database changes: identify SQLite schema rollback steps (games.db)
+- For database changes: identify SQLite schema rollback steps (my_database.db)
 - For scraper changes: note data quality impact and revert program.py if needed
 - Monitor GitHub Actions deployment workflow on merge
 - Monitor datasette endpoint (ahl-data.ryancheley.com) for data availability
@@ -246,6 +246,6 @@ Document rollback strategy:
 
 This command guides you through implementing one or more GitHub issues for the AHL Scraper project following best practices:
 - Python scraper for AHL game data
-- SQLite database (games.db for scraped data)
+- SQLite database (my_database.db for scraped data)
 - Testing with pytest
 - Deployment via GitHub Actions to datasette endpoint
