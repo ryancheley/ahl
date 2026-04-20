@@ -10,6 +10,7 @@ and each franchise_history entry captures one era (city, name, years active).
 
 import re
 import sqlite3
+import sys
 import time
 from typing import Optional
 
@@ -17,12 +18,11 @@ import httpx
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, model_validator
 from rich.console import Console
-import sys
+
+sys.path.insert(0, "/Users/ryan/Documents/github/ahl")
 from program import get_db_connection
 
 console = Console()
-
-sys.path.insert(0, "/Users/ryan/Documents/github/ahl")
 
 # Constants
 HOCKEYDB_BASE = "https://www.hockeydb.com"
