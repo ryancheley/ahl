@@ -69,13 +69,13 @@ async def playoffs_data_api(request, datasette):
                     requested_date = param.split("=", 1)[1]
                     break
 
-        # Get the latest playoff season - prefer projections (999) first, then actual playoffs
+        # Get the latest playoff season - prefer actual playoffs over projections (999)
         cursor.execute(
             """
             SELECT playoff_season_id
             FROM playoff_brackets
             ORDER BY
-              CASE WHEN playoff_season_id = 999 THEN 0 ELSE 1 END ASC,
+              CASE WHEN playoff_season_id = 999 THEN 1 ELSE 0 END ASC,
               playoff_season_id DESC
             LIMIT 1
             """
@@ -445,13 +445,13 @@ async def playoffs_dates_api(request, datasette):
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Get the latest playoff season
+        # Get the latest playoff season - prefer actual playoffs over projections (999)
         cursor.execute(
             """
             SELECT playoff_season_id
             FROM playoff_brackets
             ORDER BY
-              CASE WHEN playoff_season_id = 999 THEN 0 ELSE 1 END ASC,
+              CASE WHEN playoff_season_id = 999 THEN 1 ELSE 0 END ASC,
               playoff_season_id DESC
             LIMIT 1
             """
