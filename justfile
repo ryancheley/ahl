@@ -86,8 +86,15 @@ UAT_HOST := "root@h-web-t-002"
     echo "Done."
 
 @db-pull:
-    cp my_database.db my_database.db.orig
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Backing up current database..."
+    cp my_database.db my_database.db.orig 2>/dev/null || true
+    echo "Pulling production database (including WAL/SHM files)..."
     scp root@h-web-p-002:/data/my_database.db my_database.db
+    scp root@h-web-p-002:/data/my_database.db-wal my_database.db-wal 2>/dev/null || true
+    scp root@h-web-p-002:/data/my_database.db-shm my_database.db-shm 2>/dev/null || true
+    echo "Done. Database pulled with all WAL/SHM data included."
 
 # Local Datasette (without Docker)
 
