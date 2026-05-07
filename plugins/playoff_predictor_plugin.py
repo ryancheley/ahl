@@ -214,12 +214,57 @@ async def playoffs_data_api(request, datasette):
         series_by_id = {}  # series_id -> row
         series_predictions = {}  # series_id -> prediction
         expected_winners = {}  # series_id -> team_id
+        eliminated_teams = set()  # teams that have been eliminated
 
         # Use separate cursor for lookups to avoid state issues
         lookup_cursor = conn.cursor()
 
         for row in all_series:
             series_by_id[row["series_id"]] = row
+            higher_team_id = row["higher_seed_team_id"]
+            lower_team_id = row["lower_seed_team_id"]
+
+            # Check if this series is actually complete using actual game results
+            if higher_team_id and lower_team_id:
+                # Count actual wins between these two teams in playoff games
+                # Playoff seasons are those >= 80 and distinct from regular seasons
+                lookup_cursor.execute(
+                    """
+                    SELECT
+                        SUM(CASE WHEN home_team_id = ? AND home_team_score > away_team_score THEN 1 ELSE 0 END) +
+                        SUM(CASE WHEN away_team_id = ? AND away_team_score > home_team_score THEN 1 ELSE 0 END) as wins_a,
+                        SUM(CASE WHEN home_team_id = ? AND home_team_score > away_team_score THEN 1 ELSE 0 END) +
+                        SUM(CASE WHEN away_team_id = ? AND away_team_score > home_team_score THEN 1 ELSE 0 END) as wins_b
+                    FROM gamedata
+                    WHERE season_id >= 80
+                      AND ((home_team_id = ? AND away_team_id = ?) OR (home_team_id = ? AND away_team_id = ?))
+                    """,
+                    [
+                        higher_team_id,
+                        higher_team_id,
+                        lower_team_id,
+                        lower_team_id,
+                        higher_team_id,
+                        lower_team_id,
+                        lower_team_id,
+                        higher_team_id,
+                    ],
+                )
+                result = lookup_cursor.fetchone()
+                if result and (
+                    result[0] or result[1]
+                ):  # If there are any games between these teams
+                    wins_a = result[0] or 0
+                    wins_b = result[1] or 0
+
+                    # Series is complete if one team has majority wins (2 out of 3, 3 out of 5, or 4 out of 7)
+                    # For AHL best-of series, first to 2, 3, or 4 wins
+                    if wins_a >= 2 and wins_a > wins_b:  # Higher seed won series
+                        eliminated_teams.add(lower_team_id)
+                        expected_winners[row["series_id"]] = higher_team_id
+                    elif wins_b >= 2 and wins_b > wins_a:  # Lower seed won series
+                        eliminated_teams.add(higher_team_id)
+                        expected_winners[row["series_id"]] = lower_team_id
 
             # Get latest prediction for this series
             lookup_cursor.execute(
@@ -241,11 +286,32 @@ async def playoffs_data_api(request, datasette):
                     "games_dist": pred_row[3],  # JSON string
                 }
 
-                # Determine expected winner (higher seed if > 50% chance)
-                if row["higher_seed_team_id"] and pred_row[0] > 50:
-                    expected_winners[row["series_id"]] = row["higher_seed_team_id"]
-                elif row["lower_seed_team_id"]:
-                    expected_winners[row["series_id"]] = row["lower_seed_team_id"]
+                # Determine expected winner and track eliminations
+                # A team is eliminated if opponent has >99% win probability (only for incomplete series)
+                # or if they've actually lost their series (checked above with actual game results)
+                if (
+                    row["series_id"] not in expected_winners
+                ):  # Only if not already determined by actual result
+                    home_prob = pred_row[0]
+                    away_prob = pred_row[1]
+
+                    if row["higher_seed_team_id"] and row["lower_seed_team_id"]:
+                        if home_prob > 50:
+                            expected_winners[row["series_id"]] = row[
+                                "higher_seed_team_id"
+                            ]
+                            if away_prob < 1:  # Lower seed effectively eliminated
+                                eliminated_teams.add(row["lower_seed_team_id"])
+                        else:
+                            expected_winners[row["series_id"]] = row[
+                                "lower_seed_team_id"
+                            ]
+                            if home_prob < 1:  # Higher seed effectively eliminated
+                                eliminated_teams.add(row["higher_seed_team_id"])
+                    elif row["higher_seed_team_id"]:
+                        expected_winners[row["series_id"]] = row["higher_seed_team_id"]
+                    elif row["lower_seed_team_id"]:
+                        expected_winners[row["series_id"]] = row["lower_seed_team_id"]
 
         # Get series relationship information to fill TBD slots
         lookup_cursor.execute(
@@ -272,23 +338,32 @@ async def playoffs_data_api(request, datasette):
             lower_team_name = row["lower_team_name"]
 
             # Fill TBD slots with expected winners from source series
+            # But only if the team hasn't been eliminated
             if not higher_team_id and source_a and source_a in expected_winners:
-                higher_team_id = expected_winners[source_a]
-                lookup_cursor.execute(
-                    "SELECT name FROM team WHERE team_id = ?",
-                    [higher_team_id],
-                )
-                name_row = lookup_cursor.fetchone()
-                higher_team_name = name_row[0] if name_row else f"Team {higher_team_id}"
+                candidate = expected_winners[source_a]
+                if candidate not in eliminated_teams:
+                    higher_team_id = candidate
+                    lookup_cursor.execute(
+                        "SELECT name FROM team WHERE team_id = ?",
+                        [higher_team_id],
+                    )
+                    name_row = lookup_cursor.fetchone()
+                    higher_team_name = (
+                        name_row[0] if name_row else f"Team {higher_team_id}"
+                    )
 
             if not lower_team_id and source_b and source_b in expected_winners:
-                lower_team_id = expected_winners[source_b]
-                lookup_cursor.execute(
-                    "SELECT name FROM team WHERE team_id = ?",
-                    [lower_team_id],
-                )
-                name_row = lookup_cursor.fetchone()
-                lower_team_name = name_row[0] if name_row else f"Team {lower_team_id}"
+                candidate = expected_winners[source_b]
+                if candidate not in eliminated_teams:
+                    lower_team_id = candidate
+                    lookup_cursor.execute(
+                        "SELECT name FROM team WHERE team_id = ?",
+                        [lower_team_id],
+                    )
+                    name_row = lookup_cursor.fetchone()
+                    lower_team_name = (
+                        name_row[0] if name_row else f"Team {lower_team_id}"
+                    )
 
             # Determine max games for this series based on round
             round_num = row["round_number"]
@@ -389,6 +464,10 @@ async def playoffs_data_api(request, datasette):
 
         # Trace championship path for each team
         for team_id in sorted(all_teams):
+            # Skip teams that have been eliminated
+            if team_id in eliminated_teams:
+                continue
+
             prob = 1.0
 
             # Find starting round (R1 or R2 if bye)
