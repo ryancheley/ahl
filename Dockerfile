@@ -25,6 +25,12 @@ RUN uv pip compile pyproject.toml -o /tmp/requirements.txt && \
 # Create data directory for persistent database storage
 WORKDIR /data
 
+# Create non-root user and give it ownership of app and data directories
+RUN adduser --disabled-password --gecos "" appuser && \
+    chown -R appuser:appuser /app /data
+
+USER appuser
+
 # Expose port for datasette
 EXPOSE 8001
 
