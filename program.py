@@ -16,6 +16,7 @@ dependencies = [
 from datetime import date, datetime
 import httpx
 import json
+import os
 import sqlite3
 import time
 import logging
@@ -39,7 +40,9 @@ console = Console()
 
 def _setup_logging(log_level: int = logging.INFO, log_file: str | None = None):
     """Configure logging to file and console."""
-    log_dir = Path("logs")
+    # Allow the log directory to be overridden (e.g. in the Docker container,
+    # where the working directory is the read-only/root-owned /data volume).
+    log_dir = Path(os.environ.get("AHL_LOG_DIR", "logs"))
     log_dir.mkdir(parents=True, exist_ok=True)
 
     if log_file is None:
@@ -2199,7 +2202,7 @@ def delete_season_records(
         for table in tables:
             if game_ids:
                 cursor.execute(
-                    f'DELETE FROM {table} WHERE game_id IN ({",".join("?" * len(game_ids))})',
+                    f"DELETE FROM {table} WHERE game_id IN ({','.join('?' * len(game_ids))})",
                     game_ids,
                 )
 
