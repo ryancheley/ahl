@@ -3,6 +3,10 @@ FROM python:3.14-slim
 # Set timezone
 ENV TZ=America/Los_Angeles
 
+# Write logs to an image-owned directory rather than the root-owned /data volume,
+# which the non-root appuser cannot write to at runtime.
+ENV AHL_LOG_DIR=/app/logs
+
 # Install curl, datasette, and uv
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
@@ -27,6 +31,7 @@ WORKDIR /data
 
 # Create non-root user and give it ownership of app and data directories
 RUN adduser --disabled-password --gecos "" appuser && \
+    mkdir -p /app/logs && \
     chown -R appuser:appuser /app /data
 
 USER appuser
