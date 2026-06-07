@@ -27,7 +27,7 @@ WORKDIR /data
 
 # Create non-root user and give it ownership of app and data directories
 RUN adduser --disabled-password --gecos "" appuser && \
-    chown -R appuser:appuser /app /data
+    chown -R appuser:appuser /app /data /data/logs
 
 USER appuser
 
