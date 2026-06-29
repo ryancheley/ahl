@@ -44,4 +44,15 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/ || exit 1
 
 # Start datasette with database from persistent volume
-CMD ["datasette", "serve", "/data/my_database.db", "--metadata", "/app/metadata.yaml", "--host", "0.0.0.0", "--port", "8001", "--plugins-dir", "/app/plugins", "--template-dir", "/app/plugins/templates"]
+# Start datasette with database from persistent volume
+CMD ["datasette", "serve", "/data/my_database.db", \
+     "--metadata", "/app/metadata.yaml", \
+     "--host", "0.0.0.0", \
+     "--port", "8001", \
+     "--plugins-dir", "/app/plugins", \
+     "--template-dir", "/app/plugins/templates", \
+     "--setting", "suggest_facets", "off", \
+     "--setting", "allow_facet", "off", \
+     "--setting", "allow_csv_stream", "off", \
+     "--setting", "allow_download", "off", \
+     "--setting", "num_sql_threads", "2"]
