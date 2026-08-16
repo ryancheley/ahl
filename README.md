@@ -70,8 +70,6 @@ Use `null` for seasons where the playoff season hasn't been created yet:
 AHL_SEASON_PAIRS={"77": 80, "81": 84, "86": 88, "90": null}
 ```
 
-See `.env.example` for complete configuration options.
-
 ### Deployment
 
 **Environment Variables:**
