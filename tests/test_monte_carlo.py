@@ -46,7 +46,7 @@ def test_identical_teams_home_advantage():
         away_defense=1.0,
         official_bias=0.0,
     )
-    config = SimConfig(n_simulations=10_000)
+    config = SimConfig(n_simulations=10_000, seed=42)
 
     result = run_simulation(params, config)
 
@@ -66,7 +66,7 @@ def test_win_percentages_sum_to_100():
         away_attack=0.9,
         away_defense=1.05,
     )
-    config = SimConfig(n_simulations=5_000)
+    config = SimConfig(n_simulations=5_000, seed=42)
 
     result = run_simulation(params, config)
 
@@ -87,7 +87,7 @@ def test_ot_and_so_percentages_reasonable():
         away_attack=1.0,
         away_defense=1.0,
     )
-    config = SimConfig(n_simulations=10_000)
+    config = SimConfig(n_simulations=10_000, seed=42)
 
     result = run_simulation(params, config)
 
@@ -106,7 +106,7 @@ def test_score_distribution_sums_to_100():
         away_attack=1.0,
         away_defense=1.0,
     )
-    config = SimConfig(n_simulations=10_000)
+    config = SimConfig(n_simulations=10_000, seed=42)
 
     result = run_simulation(params, config)
 
@@ -126,7 +126,7 @@ def test_favorable_home_team():
         away_attack=0.8,
         away_defense=1.2,
     )
-    config = SimConfig(n_simulations=5_000)
+    config = SimConfig(n_simulations=5_000, seed=42)
 
     result = run_simulation(params, config)
 
@@ -145,7 +145,7 @@ def test_unfavorable_home_team():
         away_attack=1.4,
         away_defense=0.7,
     )
-    config = SimConfig(n_simulations=5_000)
+    config = SimConfig(n_simulations=5_000, seed=42)
 
     result = run_simulation(params, config)
 
@@ -175,7 +175,7 @@ def test_official_bias_positive():
         away_defense=1.0,
         official_bias=0.3,  # Larger positive bias to see effect clearly
     )
-    config = SimConfig(n_simulations=10_000)
+    config = SimConfig(n_simulations=10_000, seed=42)
 
     base_result = run_simulation(base_params, config)
     biased_result = run_simulation(biased_params, config)
@@ -233,12 +233,12 @@ def test_simulation_different_seed_same_outcomes():
         away_attack=1.0,
         away_defense=1.0,
     )
-    config = SimConfig(n_simulations=5_000)
+    config = SimConfig(n_simulations=5_000)  # unseeded: this test asserts runs differ
 
     result1 = run_simulation(params, config)
     result2 = run_simulation(params, config)
 
-    # Results should be similar but not identical (different random seeds)
+    # Results should be similar but not identical (different random draws)
     assert abs(result1.home_win_pct - result2.home_win_pct) < 5.0
     assert result1.home_win_pct != result2.home_win_pct  # Very unlikely to be exact
 
@@ -253,7 +253,7 @@ def test_high_scoring_teams():
         away_attack=1.25,
         away_defense=1.15,
     )
-    config = SimConfig(n_simulations=5_000)
+    config = SimConfig(n_simulations=5_000, seed=42)
 
     result = run_simulation(params, config)
 

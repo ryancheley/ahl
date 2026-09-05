@@ -24,6 +24,7 @@ class SimConfig(BaseModel):
     n_simulations: int = Field(ge=100, le=100_000, default=1_000)
     decay_rate: float = Field(ge=0.01, le=1.0, default=0.1)
     lookback_games: int = Field(ge=5, le=82, default=20)
+    seed: int | None = None  # set for reproducible runs (e.g. tests); None = random
 
 
 class GameParams(BaseModel):
@@ -73,7 +74,7 @@ def run_simulation(params: GameParams, config: SimConfig) -> SimResult:
     Returns:
         SimResult with outcome probabilities and score distribution.
     """
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(config.seed)
 
     # Poisson lambdas for home and away scoring (regulation)
     lambda_home = (
