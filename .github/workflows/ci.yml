@@ -19,5 +19,8 @@ jobs:
       - name: Ruff
         run: uv run --extra dev ruff check .
 
+      - name: Type check
+        run: uv run --extra dev ty check
+
       - name: Tests
         run: uv run --extra dev pytest

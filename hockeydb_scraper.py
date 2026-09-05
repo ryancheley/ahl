@@ -212,7 +212,7 @@ def fetch_franchise_urls() -> list[str]:
         links = div.find_all("a")
         for link in links:
             href = link.get("href")
-            if href:
+            if isinstance(href, str):
                 full_url = HOCKEYDB_BASE + href if href.startswith("/") else href
                 urls.append(full_url)
 
@@ -263,12 +263,13 @@ def parse_franchise_page(url: str, conn: sqlite3.Connection) -> Optional[Franchi
         cellpad_divs = []
         sibling = franchise_header.find_next_sibling("div")
         while sibling:
-            if sibling.get("class") and "team_header" in sibling.get("class"):
+            classes = sibling.get("class") or []
+            if isinstance(classes, str):
+                classes = classes.split()
+            if "team_header" in classes:
                 # Hit another section, stop
                 break
-            if sibling.get("class") and "cellpad" in sibling.get("class"):
-                cellpad_divs.append(sibling)
-            elif "cellpad" in str(sibling.get("class", [])):
+            if "cellpad" in classes:
                 cellpad_divs.append(sibling)
             sibling = sibling.find_next_sibling("div")
 
