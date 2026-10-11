@@ -1,0 +1,8 @@
+# zizmor configuration — https://docs.zizmor.sh/configuration/
+rules:
+  unpinned-uses:
+    config:
+      # Accept tag/branch ref pins (e.g. actions/checkout@v7); Dependabot keeps
+      # these updated. Only fully unpinned refs are flagged.
+      policies:
+        "*": ref-pin
