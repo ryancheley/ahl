@@ -4,8 +4,11 @@ on:
     workflow_dispatch:
       inputs:
         game_id:
-          description: 'Game ID'     
-          required: true    
+          description: 'Game ID'
+          required: true
+
+permissions:
+  contents: write
 
 jobs:
   scheduled:
@@ -13,6 +16,7 @@ jobs:
 
     steps:
     - name: Check out repository
+      # zizmor: ignore[artipacked] credentials are needed to push the committed database
       uses: actions/checkout@v7
 
     - name: Set up Python
@@ -26,13 +30,17 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run Python script to generate SQLite database
-      run: python program.py --game_id ${{ github.event.inputs.game_id }}
+      env:
+        GAME_ID: ${{ github.event.inputs.game_id }}
+      run: python program.py --game_id "$GAME_ID"
 
     - name: Commit and push if it changed
+      env:
+        GAME_ID: ${{ github.event.inputs.game_id }}
       run: |-
         git config user.name "Automated"
         git config user.email "actions@users.noreply.github.com"
         git add -A
         timestamp=$(date -u)
-        git commit -m "🗃️ Add Single Game: ${{ github.event.inputs.game_id }}" || exit 0
+        git commit -m "🗃️ Add Single Game: $GAME_ID" || exit 0
         git push
