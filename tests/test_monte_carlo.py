@@ -1,12 +1,13 @@
 """Unit tests for Monte Carlo game outcome predictor."""
 
 import pytest
+
 from monte_carlo import (
-    SimConfig,
     GameParams,
-    run_simulation,
-    compute_official_bias,
+    SimConfig,
     build_game_params,
+    compute_official_bias,
+    run_simulation,
 )
 
 

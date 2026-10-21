@@ -12,7 +12,6 @@ import re
 import sqlite3
 import sys
 import time
-from typing import Optional
 
 import httpx
 from bs4 import BeautifulSoup
@@ -45,11 +44,11 @@ class FranchiseHistoryEntry(BaseModel):
     team_code: str  # 2-4 uppercase letters
     active: bool  # True only if this era is still current
     start_year: int
-    end_year: Optional[int]  # None = currently active
-    matched_team_id: Optional[int] = None  # FK to team table; None if no match found
+    end_year: int | None  # None = currently active
+    matched_team_id: int | None = None  # FK to team table; None if no match found
 
     @model_validator(mode="after")
-    def check_years(self) -> "FranchiseHistoryEntry":
+    def check_years(self) -> FranchiseHistoryEntry:
         """Validate year ordering."""
         if self.end_year is not None and self.end_year < self.start_year:
             raise ValueError(
@@ -60,7 +59,7 @@ class FranchiseHistoryEntry(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def check_team_code(self) -> "FranchiseHistoryEntry":
+    def check_team_code(self) -> FranchiseHistoryEntry:
         """Validate team_code format: 2-4 uppercase letters."""
         if not (2 <= len(self.team_code) <= 4):
             raise ValueError(f"team_code must be 2-4 chars, got '{self.team_code}'")
@@ -80,7 +79,7 @@ class Franchise(BaseModel):
     history: list[FranchiseHistoryEntry]
 
     @model_validator(mode="after")
-    def history_not_empty(self) -> "Franchise":
+    def history_not_empty(self) -> Franchise:
         """Ensure at least one history entry."""
         if not self.history:
             raise ValueError("Franchise must have at least one history entry")
@@ -143,7 +142,7 @@ def generate_team_code(city: str) -> str:
 
 def find_matching_team(
     conn: sqlite3.Connection, name: str, city: str, nickname: str
-) -> tuple[Optional[int], Optional[str]]:
+) -> tuple[int | None, str | None]:
     """
     Find a matching team in the team table.
 
@@ -220,7 +219,7 @@ def fetch_franchise_urls() -> list[str]:
     return urls
 
 
-def parse_franchise_page(url: str, conn: sqlite3.Connection) -> Optional[Franchise]:
+def parse_franchise_page(url: str, conn: sqlite3.Connection) -> Franchise | None:
     """
     Fetch a franchise page and parse its Franchise History section.
 
@@ -360,7 +359,7 @@ def parse_franchise_page(url: str, conn: sqlite3.Connection) -> Optional[Franchi
                     matched_team_id=matched_team_id,
                 )
                 history_entries.append(entry)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 console.print(f"[yellow]Validation error for {team_name}: {e}[/yellow]")
                 continue
 
@@ -380,11 +379,11 @@ def parse_franchise_page(url: str, conn: sqlite3.Connection) -> Optional[Franchi
                 history=history_entries,
             )
             return franchise
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             console.print(f"[red]Franchise validation error for {url}: {e}[/red]")
             return None
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         console.print(f"[red]Error scraping {url}: {e}[/red]")
         return None
 

@@ -8,7 +8,7 @@ import json
 import sqlite3
 import sys
 import urllib.parse
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -20,13 +20,12 @@ from datasette import hookimpl
 from datasette.utils.asgi import Response
 
 from monte_carlo import (
-    SimConfig,
-    GameParams,
-    run_simulation,
-    compute_official_bias,
     HOME_OT_WIN_PCT,
+    GameParams,
+    SimConfig,
+    compute_official_bias,
+    run_simulation,
 )
-
 
 # Use /data/my_database.db in Docker/Coolify, otherwise use local path
 _docker_db = Path("/data/my_database.db")
@@ -62,13 +61,13 @@ async def _check_stats_freshness(datasette):
             return
 
         latest_str = row["latest"]
-        latest = datetime.fromisoformat(latest_str.replace("Z", "+00:00"))
+        latest = datetime.fromisoformat(latest_str)
         now = datetime.now(UTC)
         hours_ago = (now - latest).total_seconds() / 3600
 
         if hours_ago > 24:
             _run_retrain(datasette)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         # Silently fail on startup check - don't crash datasette
         print(f"[MC] Stats freshness check failed: {e}")
 
@@ -83,8 +82,9 @@ def _run_retrain(datasette):
             cwd=str(Path(__file__).parent.parent),
             timeout=60,
             capture_output=True,
+            check=False,
         )
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"[MC] Retrain failed: {e}")
 
 
@@ -280,7 +280,7 @@ async def predict_games_api(request, datasette):
 
         if not season_id:
             return Response.json({"error": "Missing season_id"}, status=400)
-    except (ValueError, IndexError):
+    except ValueError, IndexError:
         return Response.json({"error": "Invalid season_id"}, status=400)
 
     db = datasette.get_database("my_database")
@@ -432,9 +432,9 @@ async def predict_run_view(request, datasette):
         decay_preset = params.get("decay", ["medium"])[0]
         lookback = int(params.get("lookback", ["20"])[0])
     except ValueError as e:
-        return Response.html(f"<p>Invalid parameters: {str(e)}</p>", status=400)
-    except Exception as e:
-        return Response.html(f"<p>Error: {str(e)}</p>", status=500)
+        return Response.html(f"<p>Invalid parameters: {e!s}</p>", status=400)
+    except Exception as e:  # noqa: BLE001
+        return Response.html(f"<p>Error: {e!s}</p>", status=500)
 
     # Map decay preset to rate
     decay_rates = {"slow": 0.05, "medium": 0.1, "fast": 0.25}
@@ -596,7 +596,7 @@ async def predict_run_view(request, datasette):
         )
         conn.commit()
         conn.close()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"[MC] Error saving prediction: {e}")
 
     # Build goal differential chart data.

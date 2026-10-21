@@ -13,23 +13,24 @@ dependencies = [
 ///
 """
 
-from datetime import date, datetime
-import httpx
+import io
 import json
+import logging
+import logging.handlers
 import os
 import sqlite3
 import time
-import logging
-import logging.handlers
-import io
+from datetime import date, datetime
 from functools import wraps
 from pathlib import Path
-from pydantic import BaseModel, Field
+
 import click
+import httpx
+from pydantic import BaseModel, Field
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
 
 console = Console()
 
@@ -108,7 +109,7 @@ def _load_existing_players(conn: sqlite3.Connection):
         _existing_players = {row[0] for row in cursor.fetchall()}
         _existing_players_loaded = True
         logger.debug(f"Loaded {len(_existing_players)} existing player IDs into memory")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Failed to load existing players: {e}")
         _existing_players_loaded = True
 
@@ -569,8 +570,8 @@ def _migrate_gamepenalties_schema(conn: sqlite3.Connection):
 
             conn.commit()
             logger.info("Migration complete: gamepenalties table updated successfully")
-    except Exception as e:
-        logger.error(f"Migration error: {e}", exc_info=True)
+    except Exception:
+        logger.exception("Migration error")
         conn.rollback()
         raise
 
@@ -650,9 +651,9 @@ def _migrate_add_game_fk_constraints(conn: sqlite3.Connection):
         cursor.execute("PRAGMA foreign_keys = ON")
         conn.commit()
         logger.info("Migration complete: FK constraints added successfully")
-    except Exception as e:
+    except Exception:
         cursor.execute("PRAGMA foreign_keys = ON")
-        logger.error(f"Migration error: {e}", exc_info=True)
+        logger.exception("Migration error")
         conn.rollback()
         raise
 
@@ -667,9 +668,11 @@ def insert_model(
 
         # Convert date objects to ISO format strings for SQLite
         for key, value in data.items():
-            if isinstance(value, date) and not isinstance(value, datetime):
-                data[key] = value.isoformat()
-            elif isinstance(value, datetime):
+            if (
+                isinstance(value, date)
+                and not isinstance(value, datetime)
+                or isinstance(value, datetime)
+            ):
                 data[key] = value.isoformat()
 
         columns = ", ".join(data.keys())
@@ -679,7 +682,7 @@ def insert_model(
         cursor.execute(sql, tuple(data.values()))
         conn.commit()
         return True
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         console.print(f"[red]Error inserting into {table_name}: {e}[/red]")
         return False
 
@@ -762,7 +765,7 @@ def get_season_ids() -> list[int]:
         logger.error(f"JSON decode error fetching season IDs: {e}")
         console.print(f"[red]✗ JSON Decode Error: {e}[/red]")
         return []
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Unexpected error fetching season IDs: {type(e).__name__}: {e}")
         console.print(
             f"[red]✗ Error fetching season IDs: {type(e).__name__}: {e}[/red]"
@@ -792,7 +795,7 @@ def get_seasons_with_names() -> dict[int, str]:
         }
         logger.info(f"Fetched {len(result)} seasons with names")
         return result
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Error fetching seasons with names: {type(e).__name__}: {e}")
         return {}
 
@@ -815,7 +818,7 @@ def get_season_data(season_id: int) -> dict:
                 return season
         logger.warning(f"Season {season_id} not found in API response")
         return {}
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(
             f"Error fetching season data for season {season_id}: {type(e).__name__}: {e}"
         )
@@ -832,7 +835,7 @@ def get_season_game_ids(season_id: int) -> list[int]:
         schedule = data.get("SiteKit", {}).get("Schedule", [])
         game_ids = [item.get("id") for item in schedule if item.get("id")]
         logger.info(f"Found {len(game_ids)} games for season {season_id}")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(
             f"Error fetching game IDs for season {season_id}: {type(e).__name__}: {e}"
         )
@@ -873,7 +876,7 @@ def get_games_by_date(target_date: date) -> list[int]:
                     if year_match:
                         year = int(year_match.group(1))
                         seasons_with_years[season_id] = (year, year)
-    except Exception:
+    except Exception:  # noqa: BLE001
         return []
 
     # Now fetch schedules and filter by date
@@ -903,9 +906,9 @@ def get_games_by_date(target_date: date) -> list[int]:
 
                             if parsed_date == target_date:
                                 game_ids.append(game_id)
-                        except (ValueError, AttributeError):
+                        except ValueError, AttributeError:
                             continue
-        except Exception:
+        except Exception:  # noqa: BLE001, S112
             continue
 
     return game_ids
@@ -978,7 +981,7 @@ def get_player_details(player_id: int, season_id: int = 90) -> dict:
         details = _fetch_player_details_from_api(player_id, season_id)
         _player_details_cache[player_id] = details
         return details
-    except Exception:
+    except Exception:  # noqa: BLE001
         _player_details_cache[player_id] = {}
         return {}
 
@@ -1056,21 +1059,21 @@ def get_penalties(
                 player_served_id = int(player_served_info)
 
             penalties.append(
-                GamePenalties(  # type: ignore
+                GamePenalties(
                     game_id=game_id,
                     home=home,
                     period_id=period_id,
-                    pp=pp,  # type: ignore
+                    pp=pp,
                     bench=bench,
                     penalty_shot=penalty_shot,
                     minutes=minutes,
                     penalty=penalty,
-                    s=s,  # type: ignore
-                    player_penalized_info=player_penalized_id,  # type: ignore
-                    player_served_info=player_served_id,  # type: ignore
+                    s=s,
+                    player_penalized_info=player_penalized_id,
+                    player_served_info=player_served_id,
                 )
             )
-        except Exception:
+        except Exception:  # noqa: BLE001, S112
             # Skip malformed penalty records
             continue
 
@@ -1083,7 +1086,7 @@ def _safe_int(value) -> int:
         return 0
     try:
         return int(value)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return 0
 
 
@@ -1136,11 +1139,11 @@ def get_goals(game_id: int) -> list[GameGoals]:
             )
 
             goals.append(
-                GameGoals(  # type: ignore
+                GameGoals(
                     game_id=game_id,
                     home=home,
                     period_id=period_id,
-                    s=time_of_goal_seconds,  # type: ignore
+                    s=time_of_goal_seconds,
                     team_id=team_id,
                     goal_type=goal_type,
                     x_location=x_location,
@@ -1159,7 +1162,7 @@ def get_goals(game_id: int) -> list[GameGoals]:
                     assist2_player_id=assist2_player_id,
                 )
             )
-        except Exception:
+        except Exception:  # noqa: BLE001, S112
             # Skip malformed goal records
             continue
 
@@ -1192,7 +1195,7 @@ def get_game_instance(game_id: int) -> GameData:
     if isinstance(date_played_str, str):
         try:
             game_date = datetime.strptime(date_played_str, "%Y-%m-%d").date()
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             game_date = datetime.now().date()
     else:
         game_date = datetime.now().date()
@@ -1275,7 +1278,7 @@ def save_venue(conn: sqlite3.Connection, game_id: int) -> bool:
         conn.commit()
         logger.debug(f"Venue {venue_id} saved successfully")
         return True
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Error saving venue for game {game_id}: {type(e).__name__}: {e}")
         console.print(f"[red]Error saving venue: {e}[/red]")
         return False
@@ -1310,9 +1313,8 @@ def save_season(conn: sqlite3.Connection, game_id: int) -> bool:
         logger.debug(f"Successfully saved season {season_id}")
         return True
     except Exception as e:
-        logger.error(
-            f"Error saving season for game {game_id}: {type(e).__name__}: {e}",
-            exc_info=True,
+        logger.exception(
+            f"Error saving season for game {game_id}",
         )
         console.print(f"[red]Error saving season: {e}[/red]")
         return False
@@ -1401,7 +1403,7 @@ def save_players_and_rosters(conn: sqlite3.Connection, game_id: int) -> bool:
 
         # Process home team roster
         if home_lineup and isinstance(home_lineup, dict):
-            for position_group, players_list in home_lineup.items():
+            for players_list in home_lineup.values():
                 if isinstance(players_list, list):
                     for player in players_list:
                         if isinstance(player, dict):
@@ -1416,7 +1418,7 @@ def save_players_and_rosters(conn: sqlite3.Connection, game_id: int) -> bool:
 
         # Process away team roster
         if away_lineup and isinstance(away_lineup, dict):
-            for position_group, players_list in away_lineup.items():
+            for players_list in away_lineup.values():
                 if isinstance(players_list, list):
                     for player in players_list:
                         if isinstance(player, dict):
@@ -1466,9 +1468,8 @@ def save_players_and_rosters(conn: sqlite3.Connection, game_id: int) -> bool:
         logger.debug(f"Successfully saved players and rosters for game {game_id}")
         return True
     except Exception as e:
-        logger.error(
-            f"Error saving players and rosters for game {game_id}: {type(e).__name__}: {e}",
-            exc_info=True,
+        logger.exception(
+            f"Error saving players and rosters for game {game_id}",
         )
         console.print(f"[red]Error saving players and rosters: {e}[/red]")
         return False
@@ -1501,9 +1502,8 @@ def save_penalty_classes(conn: sqlite3.Connection, game_id: int) -> bool:
         logger.debug(f"Successfully saved penalty classes for game {game_id}")
         return True
     except Exception as e:
-        logger.error(
-            f"Error saving penalty classes for game {game_id}: {type(e).__name__}: {e}",
-            exc_info=True,
+        logger.exception(
+            f"Error saving penalty classes for game {game_id}",
         )
         console.print(f"[red]Error saving penalty classes: {e}[/red]")
         return False
@@ -1574,9 +1574,8 @@ def save_officials(conn: sqlite3.Connection, game_id: int) -> bool:
         logger.debug(f"Successfully saved officials for game {game_id}")
         return True
     except Exception as e:
-        logger.error(
-            f"Error saving officials for game {game_id}: {type(e).__name__}: {e}",
-            exc_info=True,
+        logger.exception(
+            f"Error saving officials for game {game_id}",
         )
         console.print(f"[red]Error saving officials: {e}[/red]")
         return False
@@ -1637,9 +1636,8 @@ def save_goalies(
         logger.debug(f"Successfully saved goalies for game {game_id}")
         return True
     except Exception as e:
-        logger.error(
-            f"Error saving goalies for game {game_id}: {type(e).__name__}: {e}",
-            exc_info=True,
+        logger.exception(
+            f"Error saving goalies for game {game_id}",
         )
         console.print(f"[red]Error saving goalies: {e}[/red]")
         return False
@@ -1696,7 +1694,7 @@ def save_game_data(conn: sqlite3.Connection, game_id: int) -> tuple[bool, str]:
             True,
             f"{away_team.name} vs {home_team.name} ({game.away_team_score}-{game.home_team_score})",
         )
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return False, str(e)
 
 
@@ -1712,7 +1710,7 @@ def save_scheduled_game(conn: sqlite3.Connection, game_id: int) -> tuple[bool, s
         if isinstance(date_played_str, str):
             try:
                 game_date = datetime.strptime(date_played_str, "%Y-%m-%d").date()
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 return False, "Invalid game date format"
         else:
             return False, "Could not extract game date"
@@ -1732,9 +1730,8 @@ def save_scheduled_game(conn: sqlite3.Connection, game_id: int) -> tuple[bool, s
 
         return True, f"{away_team.name} @ {home_team.name} on {game_date}"
     except Exception as e:
-        logger.error(
-            f"Error saving scheduled game {game_id}: {type(e).__name__}: {e}",
-            exc_info=True,
+        logger.exception(
+            f"Error saving scheduled game {game_id}",
         )
         return False, str(e)
 
@@ -1816,7 +1813,7 @@ def today(quiet: bool):
                     progress.advance(task)
                     continue
 
-                success, message = save_game_data(conn, game_id)
+                success, _message = save_game_data(conn, game_id)
                 if success:
                     game = get_game_instance(game_id)
                     away_team = get_game_team_instance(game_id, "visitor")
@@ -1833,7 +1830,7 @@ def today(quiet: bool):
                     saved_count += 1
                 else:
                     error_count += 1
-            except Exception:
+            except Exception:  # noqa: BLE001
                 error_count += 1
             finally:
                 progress.advance(task)
@@ -1935,7 +1932,7 @@ def season(season_id: int, limit: int):
                 f"[green]✓ All {len(game_ids)} games already loaded![/green]\n"
             )
             return
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         console.print(f"[yellow]⚠ Could not check for loaded games: {e}[/yellow]")
         console.print(
             f"[yellow]Proceeding to scrape all {len(game_ids)} games[/yellow]\n"
@@ -1978,7 +1975,7 @@ def season(season_id: int, limit: int):
                     else:
                         error_count += 1
                     break  # Success, move to next game
-                except Exception:
+                except Exception:  # noqa: BLE001
                     if attempt < max_retries - 1:
                         time.sleep(1 * (2**attempt))  # Exponential backoff
                     else:
@@ -2008,7 +2005,7 @@ def season(season_id: int, limit: int):
         table.add_column("Result")
 
         for game in games_data[:20]:  # Show first 20
-            table.add_row(str(game["ID"]), game["Result"])
+            table.add_row(str(game["ID"]), str(game["Result"]))
 
         if len(games_data) > 20:
             table.add_row("[dim]...[/dim]", f"[dim]+{len(games_data) - 20} more[/dim]")
@@ -2026,7 +2023,7 @@ def season(season_id: int, limit: int):
         table.add_column("Result")
 
         for game in scheduled_data[:20]:  # Show first 20
-            table.add_row(str(game["ID"]), game["Result"])
+            table.add_row(str(game["ID"]), str(game["Result"]))
 
         if len(scheduled_data) > 20:
             table.add_row(
@@ -2097,7 +2094,7 @@ def repopulate_penalties_for_game(conn: sqlite3.Connection, game_id: int) -> boo
 
         conn.commit()
         return True
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         console.print(
             f"[red]Error repopulating penalties for game {game_id}: {e}[/red]"
         )
@@ -2124,7 +2121,7 @@ def repopulate_goals_for_game(conn: sqlite3.Connection, game_id: int) -> bool:
 
         conn.commit()
         return True
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         console.print(f"[red]Error repopulating goals for game {game_id}: {e}[/red]")
         return False
 
@@ -2150,7 +2147,7 @@ def repopulate_goalies_for_game(conn: sqlite3.Connection, game_id: int) -> bool:
 
         # Fetch and save fresh goalie data
         return save_goalies(conn, game_id, home_team_id, away_team_id)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         console.print(f"[red]Error repopulating goalies for game {game_id}: {e}[/red]")
         return False
 
@@ -2174,7 +2171,7 @@ def delete_game_records(
             cursor.execute(f"DELETE FROM {table} WHERE game_id = ?", (game_id,))
         conn.commit()
         return True
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         console.print(f"[red]Error deleting game {game_id}: {e}[/red]")
         return False
 
@@ -2208,7 +2205,7 @@ def delete_season_records(
 
         conn.commit()
         return len(game_ids)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         console.print(f"[red]Error deleting season {season_id}: {e}[/red]")
         return 0
 
@@ -2353,14 +2350,14 @@ def repopulate(
                 else:
                     # Standard path: delete and rescrape all selected tables
                     if delete_game_records(conn, gid, tables_to_repopulate):
-                        success, message = save_game_data(conn, gid)
+                        success, _message = save_game_data(conn, gid)
                         if success:
                             repopulated += 1
                         else:
                             error_count += 1
                     else:
                         error_count += 1
-            except Exception:
+            except Exception:  # noqa: BLE001
                 error_count += 1
             finally:
                 progress.advance(task)
@@ -2477,9 +2474,7 @@ def list_scheduled(season_id: int | None, limit: int):
         else:
             console.print("[yellow]⊘ No scheduled games found[/yellow]")
     except Exception as e:
-        logger.error(
-            f"Error listing scheduled games: {type(e).__name__}: {e}", exc_info=True
-        )
+        logger.exception("Error listing scheduled games")
         console.print(f"[red]✗ Error listing scheduled games: {e}[/red]")
     finally:
         conn.close()
@@ -2513,9 +2508,7 @@ def clear_scheduled():
         logger.info(f"Cleared {count} scheduled games")
         console.print(f"[green]✓ Deleted {count} scheduled games[/green]")
     except Exception as e:
-        logger.error(
-            f"Error clearing scheduled games: {type(e).__name__}: {e}", exc_info=True
-        )
+        logger.exception("Error clearing scheduled games")
         console.print(f"[red]✗ Error clearing scheduled games: {e}[/red]")
     finally:
         conn.close()
@@ -2579,9 +2572,7 @@ def delete_scheduled(game_id: int | None, before_date: str | None):
 
         conn.commit()
     except Exception as e:
-        logger.error(
-            f"Error deleting scheduled games: {type(e).__name__}: {e}", exc_info=True
-        )
+        logger.exception("Error deleting scheduled games")
         console.print(f"[red]✗ Error deleting scheduled games: {e}[/red]")
     finally:
         conn.close()
@@ -2637,7 +2628,7 @@ def migrate_fk():
         console.print(
             "[cyan]gameofficial and gameroster now have FK constraints to gamedata[/cyan]"
         )
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         console.print(f"[red]✗ Migration failed: {e}[/red]")
     finally:
         conn.close()
