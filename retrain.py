@@ -6,7 +6,7 @@ Monte Carlo game outcome predictor. Runs daily via Coolify after data scrape.
 """
 
 import sqlite3
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 
 import click
@@ -14,7 +14,6 @@ from pydantic import BaseModel
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-
 
 console = Console()
 
@@ -341,7 +340,6 @@ def save_official_stats(conn: sqlite3.Connection, stats: list[OfficialStats]) ->
 @click.group()
 def cli():
     """Monte Carlo prediction stats trainer."""
-    pass
 
 
 @cli.command()
@@ -439,14 +437,14 @@ def status():
             for row in team_results:
                 latest = row["latest"]
                 # Parse ISO datetime with Z suffix as UTC
-                age = datetime.fromisoformat(latest.replace("Z", "+00:00"))
+                age = datetime.fromisoformat(latest)
                 # Compare with timezone-aware UTC now
                 now = datetime.now(UTC)
                 hours_ago = (now - age).total_seconds() / 3600
                 age_str = (
                     f"{hours_ago:.1f}h ago"
                     if hours_ago < 24
-                    else f"{hours_ago/24:.1f}d ago"
+                    else f"{hours_ago / 24:.1f}d ago"
                 )
 
                 table.add_row(str(row["season_id"]), str(row["team_count"]), age_str)
@@ -462,14 +460,14 @@ def status():
             console.print(f"  Officials: {official_result['official_count']}")
             latest = official_result["latest"]
             # Parse ISO datetime with Z suffix as UTC
-            age = datetime.fromisoformat(latest.replace("Z", "+00:00"))
+            age = datetime.fromisoformat(latest)
             # Compare with timezone-aware UTC now
             now = datetime.now(UTC)
             hours_ago = (now - age).total_seconds() / 3600
             age_str = (
                 f"{hours_ago:.1f}h ago"
                 if hours_ago < 24
-                else f"{hours_ago/24:.1f}d ago"
+                else f"{hours_ago / 24:.1f}d ago"
             )
             console.print(f"  Latest Update: {age_str}")
         else:

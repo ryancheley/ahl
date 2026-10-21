@@ -1,6 +1,7 @@
 """Migration script to add latitude/longitude to venue table and populate AHL arena coordinates."""
 
 import sqlite3
+import sys
 from pathlib import Path
 
 # Current AHL arenas (2025-26 season) with coordinates in decimal degrees
@@ -101,7 +102,7 @@ def migrate():
 
         return True
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Error during migration: {e}")
         conn.rollback()
         return False
@@ -112,4 +113,4 @@ def migrate():
 
 if __name__ == "__main__":
     success = migrate()
-    exit(0 if success else 1)
+    sys.exit(0 if success else 1)

@@ -1,7 +1,9 @@
 """Monte Carlo simulation functions for AHL playoff predictions."""
 
 import sqlite3
+
 import numpy as np
+
 from monte_carlo import GameParams, SimConfig, run_simulation
 
 # Constants
