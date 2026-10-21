@@ -6,10 +6,10 @@ scoring model with exponential decay recency weighting and official bias adjustm
 No datasette imports — this module can be tested independently.
 """
 
-from pydantic import BaseModel, Field
-import numpy as np
 from collections import Counter
 
+import numpy as np
+from pydantic import BaseModel, Field
 
 # Empirical statistics from historical data
 LEAGUE_HOME_WIN_PCT = 0.5361

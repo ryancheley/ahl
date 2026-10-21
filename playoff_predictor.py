@@ -4,16 +4,17 @@ Monte Carlo-based predictions for AHL playoff outcomes with historical backtesti
 Run 'playoff_predictor.py --help' for available commands.
 """
 
-import click
-import math
-import sqlite3
 import json
+import math
 import os
-from datetime import datetime, UTC, date
+import sqlite3
+from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import Optional
-from pydantic import BaseModel, Field
+
+import click
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field
+
 from playoff_simulations import get_series_win_probability
 
 # Load environment variables from .env file
@@ -27,7 +28,7 @@ DB_PATH = (
 )
 
 
-def _load_season_pairs() -> dict[int, Optional[int]]:
+def _load_season_pairs() -> dict[int, int | None]:
     """Load season pairings from environment variable or use defaults.
 
     Environment variable: AHL_SEASON_PAIRS
@@ -105,7 +106,7 @@ HOME_ICE_SCHEDULES = {
 class PlayoffSeeding(BaseModel):
     """Team seeding for a playoff bracket."""
 
-    seeding_id: Optional[int] = None
+    seeding_id: int | None = None
     reg_season_id: int
     team_id: int
     division_name: str
@@ -122,28 +123,28 @@ class PlayoffSeeding(BaseModel):
 class SeriesState(BaseModel):
     """State of a playoff series."""
 
-    series_id: Optional[int] = None
+    series_id: int | None = None
     playoff_season_id: int
     reg_season_id: int
     round_number: int
-    division_name: Optional[str] = None
-    conference_name: Optional[str] = None
+    division_name: str | None = None
+    conference_name: str | None = None
     series_label: str
-    higher_seed_team_id: Optional[int] = None
-    lower_seed_team_id: Optional[int] = None
+    higher_seed_team_id: int | None = None
+    lower_seed_team_id: int | None = None
     higher_seed_wins: int = 0
     lower_seed_wins: int = 0
-    series_winner_team_id: Optional[int] = None
+    series_winner_team_id: int | None = None
     series_complete: bool = False
-    source_series_a_id: Optional[int] = None
-    source_series_b_id: Optional[int] = None
+    source_series_a_id: int | None = None
+    source_series_b_id: int | None = None
     updated_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 class SeriesPrediction(BaseModel):
     """Win probability prediction for a series."""
 
-    prediction_id: Optional[int] = None
+    prediction_id: int | None = None
     series_id: int
     snapshot_date: str
     home_team_id: int
@@ -159,7 +160,7 @@ class SeriesPrediction(BaseModel):
 class BracketSnapshot(BaseModel):
     """Daily snapshot of full bracket predictions."""
 
-    snapshot_id: Optional[int] = None
+    snapshot_id: int | None = None
     playoff_season_id: int
     snapshot_date: str
     snapshot_type: str  # 'pre', 'live', 'mid', 'final'
@@ -1067,20 +1068,19 @@ def _build_series_relationships(
                     )  # R1-A → R2-B
 
             # For Pacific (7-team): R1-A → R2-B, R1-B → R2-B, R1-C → R2-A (vs #1)
-            elif div == "Pacific Division":
-                if len(r1_series) >= 3:
-                    relationships[r1_series[0].series_label] = (
-                        r2_series[1].series_label,
-                        "a",
-                    )
-                    relationships[r1_series[1].series_label] = (
-                        r2_series[1].series_label,
-                        "b",
-                    )
-                    relationships[r1_series[2].series_label] = (
-                        r2_series[0].series_label,
-                        "b",
-                    )
+            elif div == "Pacific Division" and len(r1_series) >= 3:
+                relationships[r1_series[0].series_label] = (
+                    r2_series[1].series_label,
+                    "a",
+                )
+                relationships[r1_series[1].series_label] = (
+                    r2_series[1].series_label,
+                    "b",
+                )
+                relationships[r1_series[2].series_label] = (
+                    r2_series[0].series_label,
+                    "b",
+                )
 
     # Map Round 2 → Round 3 for each division
     for div in divisions:
@@ -1230,7 +1230,6 @@ def save_bracket(conn: sqlite3.Connection, series_list: list[SeriesState]) -> in
 @click.group()
 def cli():
     """AHL Playoff Bracket Prediction Engine."""
-    pass
 
 
 @cli.command()
@@ -1621,7 +1620,7 @@ def update(season_id: int, n_simulations: int, projected: bool):
                     updates["lower_seed_team_id"] = expected_winners[source_b]
 
                 if updates:
-                    update_cols = ", ".join([f"{k} = ?" for k in updates.keys()])
+                    update_cols = ", ".join([f"{k} = ?" for k in updates])
                     update_vals = list(updates.values())
                     update_vals.append(datetime.now(UTC).isoformat())
                     update_vals.append(series_id)

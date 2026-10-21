@@ -2,9 +2,9 @@
 
 import sqlite3
 from pathlib import Path
+
 from datasette import hookimpl
 from datasette.utils.asgi import Response
-
 
 _docker_db = Path("/data/my_database.db")
 DB_PATH = (
@@ -514,7 +514,7 @@ async def playoffs_data_api(request, datasette):
             }
         )
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return Response.json({"error": str(e)}, status=500)
 
 
@@ -568,5 +568,5 @@ async def playoffs_dates_api(request, datasette):
             }
         )
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return Response.json({"error": str(e)}, status=500)
