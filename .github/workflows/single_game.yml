@@ -7,20 +7,21 @@ on:
           description: 'Game ID'
           required: true
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   scheduled:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
     - name: Check out repository
       # zizmor: ignore[artipacked] credentials are needed to push the committed database
-      uses: actions/checkout@v7
+      uses: actions/checkout@v7.0.1
 
     - name: Set up Python
-      uses: actions/setup-python@v7
+      uses: actions/setup-python@v7.1.0
       with:
         python-version: '3.14'
 
