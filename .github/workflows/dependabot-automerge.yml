@@ -3,13 +3,14 @@ name: Dependabot auto-merge
 # required for a writable token on Dependabot PRs; this job checks out no PR-controlled code
 on: pull_request_target  # zizmor: ignore[dangerous-triggers]
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   automerge:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
       - name: Enable auto-merge
